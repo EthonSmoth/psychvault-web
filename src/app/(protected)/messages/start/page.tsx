@@ -5,13 +5,13 @@ import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification
 import { getOrCreateConversation } from "@/server/actions/message-actions";
 
 type StartConversationPageProps = {
-  searchParams: {
+  searchParams: Promise<{
     creatorId?: string;
-  };
+  }>;
 };
 
 export default async function StartConversationPage({ searchParams }: StartConversationPageProps) {
-  const creatorId = searchParams.creatorId;
+  const { creatorId } = await searchParams;
   const session = await auth();
   const userId = session?.user?.id;
 
