@@ -3,7 +3,10 @@ import { auth } from "@/lib/auth";
 import { isEmailVerified } from "@/lib/require-email-verification";
 import { UPLOAD_RULES, validateUpload, type UploadKind } from "@/lib/resource-moderation";
 import { supabase } from "@/lib/supabase";
-import { getStoredUploadValue, getBucketForUploadKind } from "@/lib/storage";
+import {
+  getStoredUploadValue,
+  getBucketCandidatesForUploadKind,
+} from "@/lib/storage";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 const DISALLOWED_EXTENSIONS = [
@@ -117,21 +120,43 @@ export async function POST(req: NextRequest) {
   const timestamp = Date.now();
   const safeName = getSafeFileName(file.name);
   const path = `uploads/${session.user.id}/${timestamp}-${safeName}`;
-  const bucket = getBucketForUploadKind(uploadKind);
+  const bucketCandidates = getBucketCandidatesForUploadKind(uploadKind);
+  let uploadedPath: string | null = null;
+  let uploadedBucket: string | null = null;
+  let lastErrorMessage = "Unable to upload file.";
 
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
+  for (const bucket of bucketCandidates) {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
 
-  if (error || !data?.path) {
-    return NextResponse.json({ error: error?.message || "Unable to upload file." }, { status: 500 });
+    if (data?.path) {
+      uploadedPath = data.path;
+      uploadedBucket = bucket;
+      break;
+    }
+
+    lastErrorMessage = error?.message || lastErrorMessage;
+
+    const shouldTryNextBucket =
+      uploadKind === "main" &&
+      bucket !== bucketCandidates[bucketCandidates.length - 1] &&
+      error?.message?.toLowerCase().includes("bucket not found");
+
+    if (!shouldTryNextBucket) {
+      break;
+    }
+  }
+
+  if (!uploadedPath || !uploadedBucket) {
+    return NextResponse.json({ error: lastErrorMessage }, { status: 500 });
   }
 
   return NextResponse.json({
-    url: getStoredUploadValue(uploadKind, bucket, data.path),
+    url: getStoredUploadValue(uploadKind, uploadedBucket, uploadedPath),
     name: safeName,
     mime: file.type,
     size: file.size,
