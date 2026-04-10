@@ -165,7 +165,7 @@ export async function sendContactEmail(options: ContactEmailOptions) {
   });
 }
 
-export async function trySendVerificationEmail(options: VerificationEmailOptions) {
+function buildVerificationEmail(options: VerificationEmailOptions) {
   const html = `
     <h2>Verify your PsychVault email</h2>
     <p>Hi ${htmlEscape(options.name)},</p>
@@ -182,11 +182,19 @@ export async function trySendVerificationEmail(options: VerificationEmailOptions
     options.verificationUrl,
   ].join("\n");
 
-  return trySendEmail({
+  return {
     to: options.email,
     subject: "Verify your PsychVault email address",
     html,
     text,
-    tags: [{ name: "type", value: "verification" }],
-  });
+    tags: [{ name: "type", value: "verification" }] as EmailTag[],
+  };
+}
+
+export async function sendVerificationEmail(options: VerificationEmailOptions) {
+  return sendEmail(buildVerificationEmail(options));
+}
+
+export async function trySendVerificationEmail(options: VerificationEmailOptions) {
+  return trySendEmail(buildVerificationEmail(options));
 }
