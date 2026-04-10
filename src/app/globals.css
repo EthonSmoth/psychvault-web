@@ -1,0 +1,301 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  
+  /* Core backgrounds - warm, cohesive hierarchy */
+  --background: #f4eadc;
+  --surface: #eddcc5;
+  --surface-strong: #e2cdb2;
+  --surface-alt: #f7efe2;
+  --card: #fbf6ee;
+  --frame: #e8d5bb;
+  --page-bg: #f0e3d2;
+  
+  /* Borders - subtle warm taupe */
+  --border: rgba(112, 79, 52, 0.24);
+  --border-strong: rgba(112, 79, 52, 0.38);
+  
+  /* Text - warm charcoal with hierarchy */
+  --text: #3f2d1f;
+  --text-muted: #624936;
+  --text-light: #7e624c;
+  --muted: var(--text-muted);
+  
+  /* Primary UI - warm walnut/clay tones */
+  --primary: #80502d;
+  --primary-dark: #6a3f21;
+  --primary-foreground: #ffffff;
+  
+  /* Secondary UI */
+  --secondary: #eadbc6;
+  --secondary-foreground: #3f2d1f;
+  
+  /* Accent */
+  --accent: #97623d;
+  
+  /* Status colors (warm-friendly) */
+  --success: #6b8e23;
+  --error: #d0574e;
+  --warning: #d97e3b;
+  --info: #a8734a;
+  
+  /* Interactive states */
+  --ring: rgba(128, 80, 45, 0.45);
+  --ring-focus: rgba(128, 80, 45, 0.24);
+  
+  /* Shadows */
+  --shadow: 0 18px 60px rgba(112, 79, 52, 0.10);
+  --shadow-md: 0 10px 25px rgba(112, 79, 52, 0.14);
+  
+  /* Radius */
+  --radius: 28px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, rgba(150, 103, 67, 0.16), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(110, 72, 45, 0.08), transparent 34%),
+    var(--page-bg);
+  color: var(--text);
+  font-family: "Nunito Sans", "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--ring);
+  color: var(--text);
+}
+
+a:not([class]) {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:not([class]):hover {
+  color: var(--accent);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--ring-focus);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border-radius: var(--radius);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.shadow-soft {
+  box-shadow: var(--shadow);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-light {
+  color: var(--text-light);
+}
+
+.bg-frame {
+  background: var(--frame);
+}
+
+.bg-surface {
+  background: var(--surface);
+}
+
+.bg-surface-alt {
+  background: var(--surface-alt);
+}
+
+.app-main {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 50%, var(--page-bg) 50%) 0%, var(--surface-alt) 38%, var(--page-bg) 100%);
+}
+
+.defer-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 900px;
+}
+
+.focus-ring {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--ring-focus);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid transparent;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  color: var(--primary-foreground);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--ring-focus), 0 0 0 2px var(--primary);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1.5px solid var(--border-strong);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--secondary) 80%, var(--surface) 20%);
+  border-color: var(--accent);
+}
+
+.btn-secondary:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--ring-focus);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tag-amber {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.badge-verified {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid transparent;
+}
+
+.input-surface {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-surface::placeholder {
+  color: var(--text-muted);
+}
+
+.input-surface:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--ring-focus);
+  border-color: var(--primary);
+}
+
+/* Standard form elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="search"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="url"]::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--ring-focus);
+}
+
+.border-soft {
+  border-color: var(--border);
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}

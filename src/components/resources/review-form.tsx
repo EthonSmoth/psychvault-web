@@ -1,0 +1,112 @@
+"use client";
+
+import { useActionState } from "react";
+import {
+  saveReviewAction,
+  type ReviewFormState,
+} from "@/server/actions/review-actions";
+
+const initialState: ReviewFormState = {};
+
+type ExistingReview = {
+  rating: number;
+  body: string | null;
+} | null;
+
+type ReviewFormProps = {
+  resourceId: string;
+  resourceSlug: string;
+  existingReview: ExistingReview;
+  csrfToken: string;
+};
+
+export default function ReviewForm({
+  resourceId,
+  resourceSlug,
+  existingReview,
+  csrfToken,
+}: ReviewFormProps) {
+  const [state, formAction, pending] = useActionState(
+    saveReviewAction,
+    initialState
+  );
+
+  return (
+    <form action={formAction} className="space-y-4 rounded-3xl border border-soft bg-[var(--card)] p-6 shadow-soft">
+      <div>
+        <h3 className="text-lg font-semibold text-[var(--text)]">
+          {existingReview ? "Update your review" : "Leave a review"}
+        </h3>
+        <p className="mt-1 text-sm text-[var(--muted)]">
+          Share what this resource was like to use.
+        </p>
+      </div>
+
+      <input type="hidden" name="resourceId" value={resourceId} />
+      <input type="hidden" name="resourceSlug" value={resourceSlug} />
+      <input type="hidden" name="_csrf" value={csrfToken} />
+
+      <div>
+        <label
+          htmlFor="rating"
+          className="mb-2 block text-sm font-medium text-[var(--text)]"
+        >
+          Rating
+        </label>
+        <select
+          id="rating"
+          name="rating"
+          required
+          defaultValue={existingReview?.rating?.toString() ?? ""}
+          className="w-full rounded-xl border border-soft bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[rgba(183,110,10,0.12)]"
+        >
+          <option value="" disabled>
+            Select a rating
+          </option>
+          <option value="5">5 - Excellent</option>
+          <option value="4">4 - Very good</option>
+          <option value="3">3 - Good</option>
+          <option value="2">2 - Fair</option>
+          <option value="1">1 - Poor</option>
+        </select>
+      </div>
+
+      <div>
+        <label
+          htmlFor="body"
+          className="mb-2 block text-sm font-medium text-[var(--text)]"
+        >
+          Review
+        </label>
+        <textarea
+          id="body"
+          name="body"
+          rows={5}
+          defaultValue={existingReview?.body ?? ""}
+          placeholder="What did you find helpful? Who would this resource be useful for?"
+          className="w-full rounded-xl border border-soft bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[rgba(183,110,10,0.12)]"
+        />
+      </div>
+
+      {state.error ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {state.error}
+        </div>
+      ) : null}
+
+      {state.success ? (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {state.success}
+        </div>
+      ) : null}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="inline-flex rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {pending ? "Saving..." : existingReview ? "Update review" : "Submit review"}
+      </button>
+    </form>
+  );
+}

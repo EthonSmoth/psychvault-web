@@ -1,0 +1,423 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUYER
+  CREATOR
+  ADMIN
+}
+
+enum ResourceStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ModerationStatus {
+  APPROVED
+  PENDING_REVIEW
+  REJECTED
+}
+
+enum ResourceReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum ResourceReportReason {
+  INAPPROPRIATE_CONTENT
+  COPYRIGHT
+  MISLEADING_OR_UNSAFE
+  SPAM
+  IMPERSONATION
+}
+
+enum ModerationTargetType {
+  RESOURCE
+  STORE
+  REPORT
+}
+
+enum ModerationActionType {
+  AUTO_APPROVED
+  AUTO_FLAGGED
+  AUTO_BLOCKED
+  AUTO_HIDDEN
+  ADMIN_APPROVED
+  ADMIN_REJECTED
+  ADMIN_ARCHIVED
+  ADMIN_UNPUBLISHED
+  ADMIN_RESOLVED_REPORT
+  ADMIN_DISMISSED_REPORT
+}
+
+enum PreviewType {
+  PDF_PREVIEW
+  IMAGE_PREVIEW
+  TEXT_PREVIEW
+}
+
+enum ResourceFileKind {
+  MAIN_DOWNLOAD
+  PREVIEW
+  THUMBNAIL
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          UserRole       @default(BUYER)
+  avatarUrl     String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  store         Store?
+  purchases     Purchase[]     @relation("BuyerPurchases")
+  reviews       Review[]
+  follows       Follow[]       @relation("UserFollows")
+  payoutAccount PayoutAccount?
+  resources     Resource[]     @relation("CreatorResources")
+  submittedResourceReports ResourceReport[] @relation("SubmittedResourceReports")
+  submittedStoreReports    StoreReport[]    @relation("SubmittedStoreReports")
+  reviewedResourceReports  ResourceReport[] @relation("ReviewedResourceReports")
+  reviewedStoreReports     StoreReport[]    @relation("ReviewedStoreReports")
+  moderatedResources       Resource[]       @relation("ResourceModerator")
+  moderatedStores          Store[]          @relation("StoreModerator")
+  moderationEvents         ModerationEvent[]
+  conversationParticipants ConversationParticipant[]
+  sentMessages             Message[]
+}
+
+model Conversation {
+  id           String                    @id @default(cuid())
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([updatedAt])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  body           String
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @id
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Store {
+  id          String     @id @default(cuid())
+  ownerId     String     @unique
+  name        String
+  slug        String     @unique
+  bio         String?
+  bannerUrl   String?
+  logoUrl     String?
+  location    String?
+  isPublished Boolean    @default(false)
+  isVerified  Boolean    @default(false)
+  moderationStatus ModerationStatus @default(APPROVED)
+  moderationReason String?
+  moderatedAt      DateTime?
+  moderatedById    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  owner       User       @relation(fields: [ownerId], references: [id])
+  resources   Resource[]
+  followers   Follow[]   @relation("StoreFollowers")
+  reports     StoreReport[]
+  moderatedBy User?      @relation("StoreModerator", fields: [moderatedById], references: [id])
+
+  @@index([moderationStatus])
+}
+
+model Resource {
+  id               String             @id @default(cuid())
+  storeId          String
+  creatorId        String
+  title            String
+  slug             String             @unique
+  description      String
+  shortDescription String?
+  priceCents       Int
+  currency         String             @default("AUD")
+  status           ResourceStatus     @default(DRAFT)
+  isFree           Boolean            @default(false)
+  moderationStatus ModerationStatus   @default(APPROVED)
+  moderationReason String?
+  moderatedAt      DateTime?
+  moderatedById    String?
+  thumbnailUrl     String?
+  imageUrl         String?
+  previewType      PreviewType?
+  averageRating    Float              @default(0)
+  reviewCount      Int                @default(0)
+  salesCount       Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  store            Store              @relation(fields: [storeId], references: [id])
+  creator          User               @relation("CreatorResources", fields: [creatorId], references: [id])
+  files            ResourceFile[]
+  purchases        Purchase[]
+  reviews          Review[]
+  categories       ResourceCategory[]
+  tags             ResourceTag[]
+  reports          ResourceReport[]
+  moderatedBy      User?              @relation("ResourceModerator", fields: [moderatedById], references: [id])
+
+  @@index([storeId])
+  @@index([creatorId])
+  @@index([status])
+  @@index([moderationStatus])
+  @@index([createdAt])
+  @@index([salesCount])
+}
+
+model ResourceReport {
+  id           String               @id @default(cuid())
+  resourceId   String
+  reporterId   String
+  reviewedById String?
+  reason       ResourceReportReason
+  details      String?
+  status       ResourceReportStatus @default(OPEN)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  reviewedAt   DateTime?
+
+  resource     Resource             @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  reporter     User                 @relation("SubmittedResourceReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy   User?                @relation("ReviewedResourceReports", fields: [reviewedById], references: [id])
+
+  @@unique([resourceId, reporterId])
+  @@index([resourceId, status])
+  @@index([reporterId])
+  @@index([status, createdAt])
+}
+
+model StoreReport {
+  id           String               @id @default(cuid())
+  storeId       String
+  reporterId    String
+  reviewedById  String?
+  reason        ResourceReportReason
+  details       String?
+  status        ResourceReportStatus @default(OPEN)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  reviewedAt    DateTime?
+
+  store         Store                @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  reporter      User                 @relation("SubmittedStoreReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy    User?                @relation("ReviewedStoreReports", fields: [reviewedById], references: [id])
+
+  @@unique([storeId, reporterId])
+  @@index([storeId, status])
+  @@index([reporterId])
+  @@index([status, createdAt])
+}
+
+model ModerationEvent {
+  id          String               @id @default(cuid())
+  targetType  ModerationTargetType
+  targetId    String
+  action      ModerationActionType
+  message     String?
+  actorUserId String?
+  createdAt   DateTime             @default(now())
+
+  actorUser   User?                @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([targetType, targetId, createdAt])
+  @@index([createdAt])
+  @@index([actorUserId])
+}
+
+model ResourceFile {
+  id            String           @id @default(cuid())
+  resourceId    String
+  kind          ResourceFileKind
+  fileUrl       String
+  fileName      String
+  mimeType      String?
+  fileSizeBytes Int?
+  sortOrder     Int              @default(0)
+  createdAt     DateTime         @default(now())
+
+  resource      Resource         @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId, kind])
+}
+
+model Category {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  slug        String             @unique
+  resources   ResourceCategory[]
+}
+
+model ResourceCategory {
+  resourceId  String
+  categoryId  String
+
+  resource    Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  category    Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, categoryId])
+}
+
+model Tag {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  slug        String             @unique
+  resources   ResourceTag[]
+}
+
+model ResourceTag {
+  resourceId  String
+  tagId       String
+
+  resource    Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  tag         Tag                @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, tagId])
+}
+
+model Purchase {
+  id                String    @id @default(cuid())
+  buyerId           String
+  resourceId        String
+  amountCents       Int
+  platformFeeCents  Int
+  creatorShareCents Int
+  currency          String    @default("AUD")
+  stripePaymentId   String?   @unique
+  createdAt         DateTime  @default(now())
+
+  buyer             User      @relation("BuyerPurchases", fields: [buyerId], references: [id])
+  resource          Resource  @relation(fields: [resourceId], references: [id])
+
+  @@unique([buyerId, resourceId])
+  @@index([buyerId])
+  @@index([resourceId])
+}
+
+model Review {
+  id          String    @id @default(cuid())
+  buyerId     String
+  resourceId  String
+  rating      Int
+  body        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  buyer       User      @relation(fields: [buyerId], references: [id])
+  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([buyerId, resourceId])
+  @@index([resourceId])
+}
+
+model Follow {
+  followerId  String
+  storeId     String
+  createdAt   DateTime  @default(now())
+
+  follower    User      @relation("UserFollows", fields: [followerId], references: [id])
+  store       Store     @relation("StoreFollowers", fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, storeId])
+}
+
+model PayoutAccount {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  stripeAccountId  String    @unique
+  chargesEnabled   Boolean   @default(false)
+  payoutsEnabled   Boolean   @default(false)
+  detailsSubmitted Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user             User      @relation(fields: [userId], references: [id])
+}
+
+model RateLimitState {
+  key       String   @id
+  hits      Int
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+}
