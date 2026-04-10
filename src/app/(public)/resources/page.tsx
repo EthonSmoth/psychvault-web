@@ -9,6 +9,7 @@ type ResourcesPageProps = {
     category?: string;
     tag?: string;
     price?: string;
+    store?: string;
     sort?: string;
   }>;
 };
@@ -42,6 +43,7 @@ export default async function Page({ searchParams }: ResourcesPageProps) {
   const category = normaliseSingle(params.category);
   const tag = normaliseSingle(params.tag);
   const price = normaliseSingle(params.price);
+  const store = normaliseSingle(params.store);
   const sort = normaliseSingle(params.sort) || "newest";
 
   const [categories, tags, resources] = await Promise.all([
@@ -95,6 +97,13 @@ export default async function Page({ searchParams }: ResourcesPageProps) {
         ...(price === "paid"
           ? {
               isFree: false,
+            }
+          : {}),
+        ...(store
+          ? {
+              store: {
+                slug: store,
+              },
             }
           : {}),
         ...(q
@@ -176,7 +185,7 @@ export default async function Page({ searchParams }: ResourcesPageProps) {
     }),
   ]);
 
-  const activeFiltersCount = [q, category, tag, price].filter(Boolean).length;
+  const activeFiltersCount = [q, category, tag, price, store].filter(Boolean).length;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

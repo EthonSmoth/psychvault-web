@@ -59,6 +59,9 @@ export function Footer() {
               <Link href="/resources" className="block hover:text-[var(--accent)] transition-colors">
                 All resources
               </Link>
+              <Link href="/stores" className="block hover:text-[var(--accent)] transition-colors">
+                Creator stores
+              </Link>
               <Link href="/resources?price=free" className="block hover:text-[var(--accent)] transition-colors">
                 Free resources
               </Link>

@@ -278,6 +278,35 @@ export async function markConversationRead(conversationId: string, userId: strin
 }
 
 export async function getUnreadConversationCount(userId: string) {
-  const conversations = await findUserConversations(userId);
-  return conversations.reduce((count, conversation) => count + conversation.unreadCount, 0);
+  const participation = await db.conversationParticipant.findMany({
+    where: {
+      userId,
+    },
+    select: {
+      conversationId: true,
+      lastReadAt: true,
+    },
+  });
+
+  if (participation.length === 0) {
+    return 0;
+  }
+
+  const unreadCounts = await Promise.all(
+    participation.map((item) =>
+      db.message.count({
+        where: {
+          conversationId: item.conversationId,
+          senderId: {
+            not: userId,
+          },
+          createdAt: {
+            gt: item.lastReadAt ?? new Date(0),
+          },
+        },
+      })
+    )
+  );
+
+  return unreadCounts.reduce((count, unreadCount) => count + unreadCount, 0);
 }

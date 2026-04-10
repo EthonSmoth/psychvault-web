@@ -21,20 +21,15 @@ export async function Navbar() {
 
   if (user?.email) {
     const email = normalizeEmail(user.email);
-    const dbUser =
-      (await db.user.findUnique({
-        where: { email },
-        select: { role: true, id: true, emailVerified: true },
-      })) ??
-      (await db.user.findFirst({
-        where: {
-          email: {
-            equals: email,
-            mode: "insensitive",
-          },
+    const dbUser = await db.user.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: "insensitive",
         },
-        select: { role: true, id: true, emailVerified: true },
-      }));
+      },
+      select: { role: true, id: true, emailVerified: true },
+    });
 
     role = dbUser?.role ?? null;
     emailVerified = Boolean(dbUser?.emailVerified);
@@ -95,6 +90,13 @@ export async function Navbar() {
             className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
           >
             Browse
+          </Link>
+
+          <Link
+            href="/stores"
+            className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
+          >
+            Stores
           </Link>
 
           <Link
@@ -177,6 +179,12 @@ export async function Navbar() {
                   className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
                 >
                   Browse
+                </Link>
+                <Link
+                  href="/stores"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Stores
                 </Link>
                 <Link
                   href="/creator"
@@ -408,6 +416,12 @@ export async function Navbar() {
                   className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
                 >
                   Browse
+                </Link>
+                <Link
+                  href="/stores"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Stores
                 </Link>
                 <Link
                   href="/creator"
