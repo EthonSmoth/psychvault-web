@@ -6,6 +6,10 @@ import { resendVerificationEmailFormAction } from "@/server/actions/email-verifi
 import { logoutAction } from "@/server/actions/auth-actions";
 import { getUnreadConversationCount } from "@/server/actions/message-actions";
 
+function normalizeEmail(value: string | undefined) {
+  return value?.trim().toLowerCase() ?? "";
+}
+
 export async function Navbar() {
   const session = await auth();
   const user = session?.user;
@@ -15,10 +19,21 @@ export async function Navbar() {
   let emailVerified = true;
 
   if (user?.email) {
-    const dbUser = await db.user.findUnique({
-      where: { email: user.email },
-      select: { role: true, id: true, emailVerified: true },
-    });
+    const email = normalizeEmail(user.email);
+    const dbUser =
+      (await db.user.findUnique({
+        where: { email },
+        select: { role: true, id: true, emailVerified: true },
+      })) ??
+      (await db.user.findFirst({
+        where: {
+          email: {
+            equals: email,
+            mode: "insensitive",
+          },
+        },
+        select: { role: true, id: true, emailVerified: true },
+      }));
 
     role = dbUser?.role ?? null;
     emailVerified = Boolean(dbUser?.emailVerified);
