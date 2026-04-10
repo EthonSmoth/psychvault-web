@@ -37,7 +37,7 @@ The project now goes well beyond a starter. It includes moderation workflows, cr
 | Auth | Auth.js / NextAuth with credentials |
 | Payments | Stripe Checkout plus Webhooks |
 | Storage | Supabase Storage |
-| Email | Nodemailer / SMTP |
+| Email | Resend |
 
 ## Core features
 
@@ -75,7 +75,7 @@ The project now goes well beyond a starter. It includes moderation workflows, cr
 - PostgreSQL / Supabase database
 - Supabase Storage bucket for public assets, default `psychvault-resources`
 - Supabase Storage bucket for private downloads, default `psychvault-downloads`
-- SMTP credentials for email sending
+- Resend account and API key for outbound email
 - Stripe account and webhook secret for paid checkout
 
 ## Environment setup
@@ -103,12 +103,9 @@ NEXT_PUBLIC_APP_URL=https://www.psychvault.com.au
 PAYMENTS_AVAILABLE=false
 PLATFORM_FEE_BPS=2000
 
-EMAIL_SERVER_HOST=
-EMAIL_SERVER_PORT=465
-EMAIL_SERVER_USER=
-EMAIL_SERVER_PASSWORD=
-EMAIL_FROM=
-SUPPORT_EMAIL=support@psychvault.com
+RESEND_API_KEY=
+EMAIL_FROM="PsychVault <noreply@auth.psychvault.com.au>"
+SUPPORT_EMAIL=hello@psychvault.com.au
 ```
 
 Notes:
@@ -117,7 +114,8 @@ Notes:
 - `CSRF_SECRET` should be set explicitly in every non-local environment.
 - `SUPABASE_DOWNLOADS_BUCKET` should point at a private bucket used only for main download files.
 - `PAYMENTS_AVAILABLE=false` is useful while Stripe live charges are still being activated.
-- The mailer supports the `EMAIL_SERVER_*` variables shown above.
+- App-generated email is sent through Resend using `EMAIL_FROM`.
+- Support enquiries from the contact form are sent via Resend to `SUPPORT_EMAIL` with the submitter's address set as `replyTo`.
 - For local development, `NEXTAUTH_URL` can remain `http://localhost:3000`.
 
 ## Getting started

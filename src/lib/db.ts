@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client/index";
+import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = global as unknown as {
+const globalForPrisma = globalThis as unknown as {
   db: PrismaClient | undefined;
 };
 

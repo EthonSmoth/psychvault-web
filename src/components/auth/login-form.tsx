@@ -30,30 +30,33 @@ export function LoginForm() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") || "").trim();
+    const email = String(formData.get("email") || "").trim().toLowerCase();
     const password = String(formData.get("password") || "");
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: redirectTo,
+      });
 
-    setLoading(false);
+      if (!result || result.error || !result.ok) {
+        setError("Invalid email or password.");
+        return;
+      }
 
-    if (result?.error) {
-      setError("Invalid email or password.");
-      return;
+      router.push(result.url ?? redirectTo);
+      router.refresh();
+    } catch {
+      setError("Could not log in right now. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    router.push(redirectTo);
-    router.refresh();
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <input type="hidden" name="redirectTo" value={redirectTo} />
-
       <div>
         <label
           htmlFor="email"
@@ -79,7 +82,10 @@ export function LoginForm() {
           >
             Password
           </label>
-          <Link href="/signup" className="text-xs font-medium text-[var(--text-light)] hover:text-[var(--text)]">
+          <Link
+            href="/signup"
+            className="text-xs font-medium text-[var(--text-light)] hover:text-[var(--text)]"
+          >
             Need an account?
           </Link>
         </div>

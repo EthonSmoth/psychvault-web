@@ -18,23 +18,24 @@ export function LoginForm() {
     const email = String(formData.get("email") || "");
     const password = String(formData.get("password") || "");
 
+    
     const result = await signIn("credentials", {
       email,
       password,
-      redirect: false
+      redirect: false,
+      callbackUrl: "/creator",
     });
 
     setLoading(false);
 
-    if (result?.error) {
+    if (!result || result.error || !result.ok) {
       setError("Invalid email or password.");
       return;
     }
 
-    router.push("/creator");
+    router.push(result.url ?? "/creator");
     router.refresh();
   }
-
   return (
     <form onSubmit={handleSubmit} className="stack">
       <div className="field">

@@ -8,12 +8,22 @@ export type LoginFormState = {
   error?: string;
 };
 
+function getSafeRedirect(redirectTo: string | null) {
+  if (!redirectTo) return "/library";
+  if (!redirectTo.startsWith("/")) return "/library";
+  if (redirectTo.startsWith("//")) return "/library";
+  return redirectTo;
+}
+
 export async function loginAction(
   _prevState: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
+  const redirectTo = getSafeRedirect(
+    String(formData.get("redirectTo") || "") || null
+  );
 
   if (!email || !password) {
     return { error: "Please enter your email and password." };
@@ -36,7 +46,7 @@ export async function loginAction(
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/creator",
+      redirectTo,
     });
 
     await clearRateLimit(rateLimitKey);

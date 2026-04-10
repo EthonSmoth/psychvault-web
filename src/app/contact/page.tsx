@@ -2,7 +2,7 @@ import ContactForm from "@/components/forms/contact-form";
 
 // Gives buyers, creators, and reviewers a clear way to contact the marketplace team.
 export default function ContactPage() {
-  const supportEmail = process.env.SUPPORT_EMAIL || "support@psychvault.com";
+  const supportEmail = process.env.SUPPORT_EMAIL || "hello@psychvault.com.au";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">

@@ -1,81 +1,171 @@
-import nodemailer from "nodemailer";
-import { getRequiredServerEnv, parsePositiveIntEnv } from "@/lib/env";
 import { htmlEscape } from "escape-goat";
+import { Resend } from "resend";
+import { logger } from "@/lib/logger";
 
-let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
-let emailFrom: string;
-let supportEmail: string;
+type EmailTag = {
+  name: string;
+  value: string;
+};
 
-function getTransporter() {
-  if (transporter) {
-    return transporter;
-  }
+type SendEmailOptions = {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string | string[];
+  tags?: EmailTag[];
+};
 
-  const smtpHost = process.env.SMTP_HOST || process.env.EMAIL_SERVER_HOST;
-  const smtpPortRaw = process.env.SMTP_PORT || process.env.EMAIL_SERVER_PORT;
-  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER;
-  const smtpPassword = process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD;
-
-  if (!smtpHost || !smtpUser || !smtpPassword) {
-    throw new Error("Missing SMTP configuration for email sending.");
-  }
-
-  const smtpPort =
-    Number.isFinite(Number(smtpPortRaw)) && Number(smtpPortRaw) > 0
-      ? Number(smtpPortRaw)
-      : parsePositiveIntEnv("SMTP_PORT", 587);
-
-  emailFrom = getRequiredServerEnv("EMAIL_FROM");
-  supportEmail = getRequiredServerEnv("SUPPORT_EMAIL");
-
-  transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465,
-    auth: {
-      user: smtpUser,
-      pass: smtpPassword,
-    },
-  });
-
-  return transporter;
-}
-
-export async function sendContactEmail(options: {
+type ContactEmailOptions = {
   name: string;
   email: string;
   subject: string;
   message: string;
-}) {
-  const transporterInstance = getTransporter();
+};
 
-  const html = `
-    <h2>PsychVault contact form</h2>
-    <p><strong>Name:</strong> ${htmlEscape(options.name)}</p>
-    <p><strong>Email:</strong> ${htmlEscape(options.email)}</p>
-    <p><strong>Subject:</strong> ${htmlEscape(options.subject)}</p>
-    <hr />
-    <p>${htmlEscape(options.message).replace(/\n/g, "<br/>")}</p>
-  `;
-
-  return transporterInstance.sendMail({
-    from: emailFrom,
-    to: supportEmail,
-    subject: `[PsychVault] ${options.subject}`,
-    replyTo: options.email,
-    text: `Name: ${options.name}\nEmail: ${options.email}\nSubject: ${options.subject}\n\n${options.message}`,
-    html,
-  });
-}
-
-// Sends the verification email used to confirm a newly registered account.
-export async function sendVerificationEmail(options: {
+type VerificationEmailOptions = {
   email: string;
   name: string;
   verificationUrl: string;
-}) {
-  const transporterInstance = getTransporter();
+};
 
+let resendClient: Resend | null = null;
+
+function getOptionalServerEnv(name: string) {
+  const value = process.env[name];
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function getResendClient() {
+  if (resendClient) return resendClient;
+
+  const apiKey = getOptionalServerEnv("RESEND_API_KEY");
+  if (!apiKey) return null;
+
+  resendClient = new Resend(apiKey);
+  return resendClient;
+}
+
+function getEmailFrom() {
+  return getOptionalServerEnv("EMAIL_FROM");
+}
+
+function getSupportEmail() {
+  return getOptionalServerEnv("SUPPORT_EMAIL");
+}
+
+export function isEmailConfigured() {
+  return Boolean(getResendClient() && getEmailFrom());
+}
+
+export class EmailConfigurationError extends Error {
+  constructor(message = "Missing email configuration for email sending.") {
+    super(message);
+    this.name = "EmailConfigurationError";
+  }
+}
+
+export async function sendEmail(options: SendEmailOptions) {
+  const resend = getResendClient();
+  const from = getEmailFrom();
+
+  if (!resend || !from) {
+    throw new EmailConfigurationError();
+  }
+
+  const { data, error } = await resend.emails.send({
+    from,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+    text: options.text,
+    replyTo: options.replyTo,
+    tags: options.tags,
+  });
+
+  if (error) {
+    logger.error("Resend email send failed", error);
+    throw new Error(`Unable to send email: ${error.message}`);
+  }
+
+  if (!data?.id) {
+    logger.error("Resend email send returned no id", data);
+    throw new Error("Unable to send email.");
+  }
+
+  return data;
+}
+
+export async function trySendEmail(options: SendEmailOptions) {
+  try {
+    const data = await sendEmail(options);
+    return {
+      ok: true as const,
+      skipped: false as const,
+      data,
+    };
+  } catch (error) {
+    if (error instanceof EmailConfigurationError) {
+      logger.warn("Email skipped due to missing configuration");
+      return {
+        ok: false as const,
+        skipped: true as const,
+        reason: "missing_configuration" as const,
+      };
+    }
+
+    logger.error("Email send failed unexpectedly", error);
+    return {
+      ok: false as const,
+      skipped: false as const,
+      reason: "send_failed" as const,
+    };
+  }
+}
+
+export async function sendContactEmail(options: ContactEmailOptions) {
+  const subject = options.subject.trim();
+  const supportEmail = getSupportEmail();
+
+  if (!supportEmail) {
+    throw new EmailConfigurationError("Missing SUPPORT_EMAIL configuration.");
+  }
+
+  const html = `
+    <h2>PsychVault contact/support enquiry</h2>
+    <p><strong>Name:</strong> ${htmlEscape(options.name)}</p>
+    <p><strong>Email:</strong> ${htmlEscape(options.email)}</p>
+    <p><strong>Subject:</strong> ${htmlEscape(subject)}</p>
+    <hr />
+    <p><strong>Message:</strong></p>
+    <p>${htmlEscape(options.message).replace(/\n/g, "<br/>")}</p>
+  `;
+
+  const text = [
+    "PsychVault contact/support enquiry",
+    "",
+    `Name: ${options.name}`,
+    `Email: ${options.email}`,
+    `Subject: ${subject}`,
+    "",
+    "Message:",
+    options.message,
+  ].join("\n");
+
+  return sendEmail({
+    to: supportEmail,
+    subject: `[PsychVault Contact] ${subject}`,
+    html,
+    text,
+    replyTo: options.email,
+    tags: [
+      { name: "type", value: "contact" },
+      { name: "channel", value: "support-form" },
+    ],
+  });
+}
+
+export async function trySendVerificationEmail(options: VerificationEmailOptions) {
   const html = `
     <h2>Verify your PsychVault email</h2>
     <p>Hi ${htmlEscape(options.name)},</p>
@@ -85,11 +175,18 @@ export async function sendVerificationEmail(options: {
     <p>${htmlEscape(options.verificationUrl)}</p>
   `;
 
-  return transporterInstance.sendMail({
-    from: emailFrom,
+  const text = [
+    `Hi ${options.name},`,
+    "",
+    "Please verify your email address for PsychVault by opening this link:",
+    options.verificationUrl,
+  ].join("\n");
+
+  return trySendEmail({
     to: options.email,
     subject: "Verify your PsychVault email address",
-    text: `Hi ${options.name},\n\nPlease verify your email address for PsychVault by opening this link:\n${options.verificationUrl}\n`,
     html,
+    text,
+    tags: [{ name: "type", value: "verification" }],
   });
 }

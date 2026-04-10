@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
 const baseUrl = getAppBaseUrl();
-const supportEmail = process.env.SUPPORT_EMAIL || "support@psychvault.com";
+const supportEmail = process.env.SUPPORT_EMAIL || "hello@psychvault.com.au";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

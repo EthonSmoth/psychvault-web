@@ -2,7 +2,7 @@ import Link from "next/link";
 
 // Explains what PsychVault is, who it serves, and how the marketplace operates.
 export default function AboutPage() {
-  const supportEmail = process.env.SUPPORT_EMAIL || "support@psychvault.com";
+  const supportEmail = process.env.SUPPORT_EMAIL || "hello@psychvault.com.au";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
