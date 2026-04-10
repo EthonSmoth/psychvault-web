@@ -34,7 +34,18 @@ export async function POST(request: Request) {
     const parsed = contactSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid contact request.", details: parsed.error.flatten() }, { status: 400 });
+      const details = parsed.error.flatten();
+      const firstFieldError = Object.values(details.fieldErrors)
+        .flat()
+        .find((message): message is string => Boolean(message));
+
+      return NextResponse.json(
+        {
+          error: firstFieldError || "Invalid contact request.",
+          details,
+        },
+        { status: 400 }
+      );
     }
 
     await sendContactEmail(parsed.data);

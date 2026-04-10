@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { resendVerificationEmailFormAction } from "@/server/actions/email-verification-actions";
 import { logoutAction } from "@/server/actions/auth-actions";
 import { getUnreadConversationCount } from "@/server/actions/message-actions";
+import { MobileOverlayMenu } from "@/components/layout/mobile-overlay-menu";
 
 function normalizeEmail(value: string | undefined) {
   return value?.trim().toLowerCase() ?? "";
@@ -157,75 +158,136 @@ export async function Navbar() {
           </details>
         </nav>
 
-        <div className="md:hidden">
-          <details className="static">
-            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-2xl border border-soft bg-[var(--surface-alt)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-sm hover:bg-[var(--surface)]">
-              Menu
-            </summary>
-
-            <div className="absolute left-1/2 top-full z-20 mt-3 w-[min(20rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-3xl border border-soft bg-[var(--card)] shadow-lg">
-              <div className="flex flex-col px-3 py-3">
+        {user ? (
+          <>
+            <div className="flex items-center gap-2 md:hidden">
+              <MobileOverlayMenu
+                title="Menu"
+                triggerClassName="inline-flex items-center gap-2 rounded-2xl border border-soft bg-[var(--surface-alt)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-sm transition hover:bg-[var(--surface)]"
+                triggerContent={<>Menu</>}
+              >
                 <Link
                   href="/"
-                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
                 >
                   Home
                 </Link>
                 <Link
                   href="/resources"
-                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
                 >
                   Browse
                 </Link>
                 <Link
                   href="/creator"
-                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
                 >
                   Sell
                 </Link>
                 <Link
                   href="/about"
-                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
                 >
                   About
                 </Link>
                 <Link
                   href="/contact"
-                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
                 >
                   Contact
                 </Link>
                 <Link
                   href="/resources?category=assessment-tools"
-                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
                 >
                   Categories
                 </Link>
-                {user ? (
-                  <>
-                    <Link
-                      href="/messages"
-                      className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
-                    >
-                      Messages
-                    </Link>
-                    <Link
-                      href="/following"
-                      className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
-                    >
-                      Following
-                    </Link>
-                  </>
-                ) : null}
-              </div>
+                <Link
+                  href="/messages"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Messages
+                </Link>
+                <Link
+                  href="/following"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Following
+                </Link>
+              </MobileOverlayMenu>
+
+              <MobileOverlayMenu
+                title={user.name || "Account"}
+                triggerClassName="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-soft bg-[var(--surface-alt)] shadow-sm transition hover:bg-[var(--surface)]"
+                triggerContent={
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-semibold text-white">
+                    {initials}
+                  </span>
+                }
+              >
+                <div className="rounded-2xl border border-soft bg-[var(--surface-alt)] px-4 py-3">
+                  <div className="text-sm font-semibold text-[var(--text)]">
+                    {user.name || "Account"}
+                  </div>
+                  <div className="mt-1 text-xs text-[var(--muted)]">{user.email}</div>
+                </div>
+                <Link
+                  href="/library"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  My library
+                </Link>
+                <Link
+                  href="/following"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Following feed
+                </Link>
+                <Link
+                  href="/creator"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Creator dashboard
+                </Link>
+                <Link
+                  href="/creator/store"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Store settings
+                </Link>
+                <Link
+                  href="/creator/resources"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Your resources
+                </Link>
+                <Link
+                  href="/creator/analytics"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Analytics
+                </Link>
+                {role === "ADMIN" && (
+                  <Link
+                    href="/admin"
+                    className="block rounded-2xl px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                  >
+                    Admin dashboard
+                  </Link>
+                )}
+                <form action={logoutAction} className="pt-2">
+                  <button
+                    type="submit"
+                    className="block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                  >
+                    Log out
+                  </button>
+                </form>
+              </MobileOverlayMenu>
             </div>
-          </details>
-        </div>
 
-        {user ? (
-          <div className="flex items-center gap-3">
-
-            <details className="relative">
+            <div className="hidden items-center gap-3 md:flex">
+              <details className="relative">
               <summary className="flex cursor-pointer list-none items-center gap-3 rounded-2xl border border-soft bg-[var(--surface-alt)] px-3 py-2 shadow-sm hover:bg-[var(--surface)]">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-semibold text-white">
                   {initials}
@@ -312,23 +374,83 @@ export async function Navbar() {
                   </form>
                 </div>
               </div>
-            </details>
-          </div>
+              </details>
+            </div>
+          </>
         ) : (
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className="inline-flex rounded-xl border border-soft bg-[var(--surface-strong)] px-3 py-2 text-xs font-medium text-[var(--text)] hover:bg-[var(--card)] sm:px-4 sm:text-sm"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-[var(--primary-dark)] hover:text-white sm:px-4 sm:text-sm"
-            >
-              Sign up
-            </Link>
-          </div>
+          <>
+            <div className="flex items-center gap-2 md:hidden">
+              <Link
+                href="/login"
+                className="inline-flex rounded-xl border border-soft bg-[var(--surface-strong)] px-3 py-2 text-xs font-medium text-[var(--text)] hover:bg-[var(--card)]"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-flex rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-[var(--primary-dark)] hover:text-white"
+              >
+                Sign up
+              </Link>
+              <MobileOverlayMenu
+                title="Menu"
+                triggerClassName="inline-flex items-center gap-2 rounded-2xl border border-soft bg-[var(--surface-alt)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-sm transition hover:bg-[var(--surface)]"
+                triggerContent={<>Menu</>}
+              >
+                <Link
+                  href="/"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Home
+                </Link>
+                <Link
+                  href="/resources"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Browse
+                </Link>
+                <Link
+                  href="/creator"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Sell
+                </Link>
+                <Link
+                  href="/about"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  About
+                </Link>
+                <Link
+                  href="/contact"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Contact
+                </Link>
+                <Link
+                  href="/resources?category=assessment-tools"
+                  className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                >
+                  Categories
+                </Link>
+              </MobileOverlayMenu>
+            </div>
+
+            <div className="hidden items-center gap-2 sm:gap-3 md:flex">
+              <Link
+                href="/login"
+                className="inline-flex rounded-xl border border-soft bg-[var(--surface-strong)] px-3 py-2 text-xs font-medium text-[var(--text)] hover:bg-[var(--card)] sm:px-4 sm:text-sm"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-flex rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-[var(--primary-dark)] hover:text-white sm:px-4 sm:text-sm"
+              >
+                Sign up
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </header>

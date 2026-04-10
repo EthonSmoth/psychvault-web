@@ -111,6 +111,7 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
   );
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [thumbnailError, setThumbnailError] = useState("");
+  const [thumbnailStatus, setThumbnailStatus] = useState("");
 
   const [mainFile, setMainFile] = useState<UploadedFile | null>(
     existingMainFile
@@ -124,6 +125,7 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
   );
   const [mainFileLoading, setMainFileLoading] = useState(false);
   const [mainFileError, setMainFileError] = useState("");
+  const [mainFileStatus, setMainFileStatus] = useState("");
 
   const [previews, setPreviews] = useState<UploadedFile[]>(
     existingPreviews.map((file, index) => ({
@@ -135,6 +137,7 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
   );
   const [previewsLoading, setPreviewsLoading] = useState(false);
   const [previewsError, setPreviewsError] = useState("");
+  const [previewsStatus, setPreviewsStatus] = useState("");
   const [publishResource, setPublishResource] = useState(
     resource ? resource.status === "PUBLISHED" : true
   );
@@ -145,6 +148,11 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
 
   const isUploading = thumbnailLoading || mainFileLoading || previewsLoading;
   const isSubmitDisabled = pending || isUploading;
+  const activeUploadMessages = [
+    thumbnailLoading ? thumbnailStatus || "Uploading thumbnail..." : null,
+    mainFileLoading ? mainFileStatus || "Uploading main file..." : null,
+    previewsLoading ? previewsStatus || "Uploading preview images..." : null,
+  ].filter(Boolean) as string[];
 
   useEffect(() => {
     if (state.success) {
@@ -163,11 +171,14 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
 
     setThumbnailLoading(true);
     setThumbnailError("");
+    setThumbnailStatus(`Uploading ${file.name}...`);
 
     try {
       const result = await uploadFile(file, "thumbnail");
       setThumbnail(result);
+      setThumbnailStatus(`Thumbnail uploaded: ${result.name}`);
     } catch (error) {
+      setThumbnailStatus("");
       setThumbnailError(error instanceof Error ? error.message : "Thumbnail upload failed. Try again.");
     } finally {
       setThumbnailLoading(false);
@@ -180,11 +191,14 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
 
     setMainFileLoading(true);
     setMainFileError("");
+    setMainFileStatus(`Uploading ${file.name}...`);
 
     try {
       const result = await uploadFile(file, "main");
       setMainFile(result);
+      setMainFileStatus(`Main file uploaded: ${result.name}`);
     } catch (error) {
+      setMainFileStatus("");
       setMainFileError(error instanceof Error ? error.message : "Main file upload failed. Try again.");
     } finally {
       setMainFileLoading(false);
@@ -200,11 +214,18 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
 
     setPreviewsLoading(true);
     setPreviewsError("");
+    setPreviewsStatus(
+      `Uploading ${allowedFiles.length} preview image${allowedFiles.length === 1 ? "" : "s"}...`
+    );
 
     try {
       const results = await Promise.all(allowedFiles.map((file) => uploadFile(file, "preview")));
       setPreviews((prev) => [...prev, ...results].slice(0, 4));
+      setPreviewsStatus(
+        `${results.length} preview image${results.length === 1 ? "" : "s"} uploaded.`
+      );
     } catch (error) {
+      setPreviewsStatus("");
       setPreviewsError(error instanceof Error ? error.message : "One or more preview uploads failed. Try again.");
     } finally {
       setPreviewsLoading(false);
@@ -254,6 +275,17 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
             <div className="font-semibold">Moderation status: Approved</div>
             <div className="mt-1">
               This resource has passed moderation and can be published when you are ready.
+            </div>
+          </div>
+        ) : null}
+
+        {activeUploadMessages.length > 0 ? (
+          <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)]">
+            <div className="font-semibold">Uploading files</div>
+            <div className="mt-2 space-y-1 text-xs text-[var(--text-muted)]">
+              {activeUploadMessages.map((message) => (
+                <div key={message}>{message}</div>
+              ))}
             </div>
           </div>
         ) : null}
@@ -448,6 +480,7 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
                   type="button"
                   onClick={() => {
                     setThumbnail(null);
+                    setThumbnailStatus("");
                     if (thumbnailRef.current) thumbnailRef.current.value = "";
                   }}
                   className="absolute right-3 top-3 rounded-lg bg-[var(--card)]/90 px-2 py-1 text-xs font-medium text-[var(--text)] shadow transition hover:bg-[var(--card)]"
@@ -464,7 +497,10 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
                 className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] py-10 text-sm text-[var(--text-light)] transition hover:border-[var(--accent)] hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {thumbnailLoading ? (
-                  <span>Uploading...</span>
+                  <>
+                    <span className="font-medium text-[var(--text)]">Uploading thumbnail...</span>
+                    <span className="text-xs">{thumbnailStatus}</span>
+                  </>
                 ) : (
                   <>
                     <span className="text-2xl">🖼️</span>
@@ -487,6 +523,9 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
 
             {thumbnailError ? (
               <p className="mt-2 text-xs text-red-600">{thumbnailError}</p>
+            ) : null}
+            {!thumbnailLoading && thumbnailStatus ? (
+              <p className="mt-2 text-xs text-[var(--text-muted)]">{thumbnailStatus}</p>
             ) : null}
           </div>
 
@@ -513,6 +552,7 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
                   type="button"
                   onClick={() => {
                     setMainFile(null);
+                    setMainFileStatus("");
                     if (mainFileRef.current) mainFileRef.current.value = "";
                   }}
                   className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] transition hover:bg-[var(--surface)]"
@@ -533,7 +573,10 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
                 className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] py-10 text-sm text-[var(--text-light)] transition hover:border-[var(--accent)] hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {mainFileLoading ? (
-                  <span>Uploading...</span>
+                  <>
+                    <span className="font-medium text-[var(--text)]">Uploading main file...</span>
+                    <span className="text-xs">{mainFileStatus}</span>
+                  </>
                 ) : (
                   <>
                     <span className="text-2xl">📄</span>
@@ -556,6 +599,9 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
 
             {mainFileError ? (
               <p className="mt-2 text-xs text-red-600">{mainFileError}</p>
+            ) : null}
+            {!mainFileLoading && mainFileStatus ? (
+              <p className="mt-2 text-xs text-[var(--text-muted)]">{mainFileStatus}</p>
             ) : null}
           </div>
 
@@ -603,7 +649,10 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
                 className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] py-8 text-sm text-[var(--text-light)] transition hover:border-[var(--accent)] hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {previewsLoading ? (
-                  <span>Uploading...</span>
+                  <>
+                    <span className="font-medium text-[var(--text)]">Uploading previews...</span>
+                    <span className="text-xs">{previewsStatus}</span>
+                  </>
                 ) : (
                   <>
                     <span className="text-2xl">🖼️</span>
@@ -628,13 +677,16 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
             {previewsError ? (
               <p className="mt-2 text-xs text-red-600">{previewsError}</p>
             ) : null}
+            {!previewsLoading && previewsStatus ? (
+              <p className="mt-2 text-xs text-[var(--text-muted)]">{previewsStatus}</p>
+            ) : null}
           </div>
         </div>
       </div>
 
       {isUploading ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Please wait until uploads finish before saving.
+          Uploads are in progress. The save button will unlock as soon as everything finishes.
         </div>
       ) : null}
 

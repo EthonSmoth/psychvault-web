@@ -4,6 +4,13 @@ import { useState } from "react";
 
 type ContactFormState = "idle" | "sending" | "success" | "error";
 
+type ContactErrorPayload = {
+  error?: string;
+  details?: {
+    fieldErrors?: Record<string, string[] | undefined>;
+  };
+};
+
 export default function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -11,19 +18,26 @@ export default function ContactForm() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<ContactFormState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[] | undefined>>({});
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setStatus("sending");
     setErrorMessage(null);
+    setFieldErrors({});
 
     const response = await fetch("/api/contact", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, email, subject, message }),
+      body: JSON.stringify({
+        name: name.trim(),
+        email: email.trim(),
+        subject: subject.trim(),
+        message: message.trim(),
+      }),
     });
 
     if (response.ok) {
@@ -35,7 +49,8 @@ export default function ContactForm() {
       return;
     }
 
-    const payload = await response.json();
+    const payload = (await response.json().catch(() => null)) as ContactErrorPayload | null;
+    setFieldErrors(payload?.details?.fieldErrors || {});
     setErrorMessage(payload?.error || "Something went wrong. Please try again.");
     setStatus("error");
   };
@@ -50,8 +65,13 @@ export default function ContactForm() {
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
+            minLength={2}
+            maxLength={80}
             className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)] ring-0 transition focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
           />
+          {fieldErrors.name?.[0] ? (
+            <span className="block text-xs text-rose-700">{fieldErrors.name[0]}</span>
+          ) : null}
         </label>
 
         <label className="space-y-2 text-sm font-medium text-[var(--text)]">
@@ -61,8 +81,12 @@ export default function ContactForm() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
+            maxLength={320}
             className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)] ring-0 transition focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
           />
+          {fieldErrors.email?.[0] ? (
+            <span className="block text-xs text-rose-700">{fieldErrors.email[0]}</span>
+          ) : null}
         </label>
       </div>
 
@@ -73,8 +97,13 @@ export default function ContactForm() {
           value={subject}
           onChange={(event) => setSubject(event.target.value)}
           required
+          minLength={3}
+          maxLength={120}
           className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)] ring-0 transition focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
         />
+        {fieldErrors.subject?.[0] ? (
+          <span className="block text-xs text-rose-700">{fieldErrors.subject[0]}</span>
+        ) : null}
       </label>
 
       <label className="space-y-2 text-sm font-medium text-[var(--text)]">
@@ -84,8 +113,13 @@ export default function ContactForm() {
           onChange={(event) => setMessage(event.target.value)}
           required
           rows={6}
+          minLength={10}
+          maxLength={5000}
           className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)] ring-0 transition focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
         />
+        {fieldErrors.message?.[0] ? (
+          <span className="block text-xs text-rose-700">{fieldErrors.message[0]}</span>
+        ) : null}
       </label>
 
       {status === "success" ? (

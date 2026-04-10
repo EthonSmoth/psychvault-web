@@ -176,6 +176,8 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
     notFound();
   }
 
+  const resourceData = resource as NonNullable<typeof resource>;
+
   const sessionUserId = sessionUser?.id ?? null;
   const isEmailVerified = Boolean(sessionUser?.emailVerified);
   const buyerId = sessionUserId;
@@ -343,6 +345,236 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
   // Filter out undefined values
   const cleanSchema = JSON.parse(JSON.stringify(productSchema));
 
+  function renderPurchasePanel(extraClassName = "") {
+    return (
+      <aside className={extraClassName}>
+        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+          <div className="text-3xl font-semibold text-[var(--text)]">
+            {formatPrice(resourceData.priceCents, resourceData.isFree)}
+          </div>
+
+          <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
+            {resourceData.isFree
+              ? "Create an account to add this free resource to your library and download it."
+              : paidCheckoutUnavailable
+              ? "Paid checkout is temporarily paused while payment activation is being completed."
+              : "Purchase once and access the downloadable resource through your library."}
+          </p>
+
+          <div className="mt-4 rounded-2xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--text)]">
+            <div className="flex items-start justify-between gap-4">
+              <span className="font-medium text-[var(--text)]">File format</span>
+              <span className="text-right text-[var(--text-muted)]">
+                {fileFormat || "Not specified"}
+              </span>
+            </div>
+            <div className="mt-3 flex items-start justify-between gap-4">
+              <span className="font-medium text-[var(--text)]">Access</span>
+              <span className="text-right text-[var(--text-muted)]">
+                {resourceData.isFree
+                  ? "Instant after claim"
+                  : paidCheckoutUnavailable
+                  ? "Temporarily paused"
+                  : "Instant after payment"}
+              </span>
+            </div>
+            <div className="mt-3 flex items-start justify-between gap-4">
+              <span className="font-medium text-[var(--text)]">License</span>
+              <span className="text-right text-[var(--text-muted)]">
+                Single-buyer digital use
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4 inline-flex rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)]">
+            {hasMainFile ? "Download ready" : "No download attached"}
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3">
+            {hasPurchased ? (
+              <>
+                <div className="inline-flex self-start rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  In your library
+                </div>
+
+                {mainFile ? (
+                  <a
+                    href={`/api/downloads/${resourceData.id}`}
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
+                  >
+                    Download resource
+                  </a>
+                ) : (
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    This resource does not have a download attached yet.
+                  </div>
+                )}
+
+                <Link
+                  href="/library"
+                  className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border-strong)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+                >
+                  View library
+                </Link>
+              </>
+            ) : hasMainFile ? (
+              <>
+                {paidCheckoutUnavailable ? (
+                  <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    Paid checkout is temporarily unavailable. You can still message the
+                    creator or browse free resources while payment activation is completed.
+                  </div>
+                ) : (
+                  <form method="POST" action="/api/checkout">
+                    <input type="hidden" name="resourceId" value={resourceData.id} />
+                    <input
+                      type="hidden"
+                      name="redirectTo"
+                      value={`/resources/${resourceData.slug}`}
+                    />
+                    <button
+                      type="submit"
+                      className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
+                    >
+                      {resourceData.isFree
+                        ? "Get for free"
+                        : `Buy for ${formatPrice(resourceData.priceCents)}`}
+                    </button>
+                  </form>
+                )}
+
+                {resourceData.store && resourceData.store.ownerId !== buyerId ? (
+                  <Link
+                    href={
+                      buyerId
+                        ? isEmailVerified
+                          ? messageLink ?? "/messages"
+                          : `/verify-email?redirectTo=${encodeURIComponent(messageLink ?? "/messages")}`
+                        : loginMessageLink
+                    }
+                    className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+                  >
+                    {buyerId
+                      ? isEmailVerified
+                        ? "Message creator"
+                        : "Verify email to message creator"
+                      : "Log in to message creator"}
+                  </Link>
+                ) : null}
+              </>
+            ) : (
+              <div className="rounded-3xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+                This resource cannot be purchased until the creator attaches the downloadable file.
+              </div>
+            )}
+          </div>
+
+          {!resourceData.isFree && hasMainFile ? (
+            <div className="mt-6 rounded-2xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--text)]">
+              <div className="font-semibold text-[var(--text)]">
+                {paidCheckoutUnavailable ? "Payment activation in progress" : "Secure purchase"}
+              </div>
+              <p className="mt-2">
+                {paidCheckoutUnavailable
+                  ? "This listing is ready for sale, but paid checkout is temporarily paused while live payments are being finalised."
+                  : "Stripe checkout protects the transaction and grants instant access once payment clears."}
+              </p>
+              <p className="mt-3 text-xs text-[var(--text-muted)]">
+                By purchasing, you agree to the{" "}
+                <Link href={policyLinks.terms} className="font-medium underline">
+                  Terms of Service
+                </Link>
+                {" "}and{" "}
+                <Link href={policyLinks.refunds} className="font-medium underline">
+                  Refund Policy
+                </Link>
+                .
+              </p>
+            </div>
+          ) : null}
+
+          <div className="mt-6 border-t border-[var(--border)] pt-6">
+            {canReportResource ? (
+              isEmailVerified ? (
+                <ReportResourceForm
+                  resourceId={resourceData.id}
+                  resourceSlug={resourceData.slug}
+                  csrfToken={actionCsrfToken}
+                />
+              ) : (
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
+                  <Link
+                    href={`/verify-email?redirectTo=${encodeURIComponent(`/resources/${resourceData.slug}`)}`}
+                    className="font-medium text-[var(--text)] underline"
+                  >
+                    Verify your email
+                  </Link>{" "}
+                  to report this resource.
+                </div>
+              )
+            ) : sessionUserId ? (
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
+                You cannot report your own resource.
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
+                <Link
+                  href={`/login?redirectTo=/resources/${resourceData.slug}`}
+                  className="font-medium text-[var(--text)] underline"
+                >
+                  Log in
+                </Link>{" "}
+                to report this resource.
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 border-t border-[var(--border)] pt-6">
+            <div className="text-sm font-semibold text-[var(--text)]">Creator</div>
+
+            {resourceData.store ? (
+              <div className="mt-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href={`/stores/${resourceData.store.slug}`}
+                    className="font-medium text-[var(--text)] hover:text-[var(--accent)]"
+                  >
+                    {resourceData.store.name}
+                  </Link>
+
+                  {resourceData.store.isVerified ? <VerifiedBadge size="sm" /> : null}
+                </div>
+
+                {resourceData.store.bio ? (
+                  <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+                    {resourceData.store.bio}
+                  </p>
+                ) : null}
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
+                    <div className="font-medium text-[var(--text)]">Delivery</div>
+                    <div className="mt-1">
+                      {resourceData.isFree ? "Instant library access" : "Digital delivery after checkout"}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
+                    <div className="font-medium text-[var(--text)]">Usage</div>
+                    <div className="mt-1">Single-buyer digital license unless the listing says otherwise.</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-[var(--text-muted)]">
+                Creator details coming soon.
+              </p>
+            )}
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <>
       <script
@@ -359,7 +591,7 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
 
         <div>
           <div className="mb-6 flex flex-wrap gap-2">
-            {resource.categories.map((item) => (
+            {resourceData.categories.map((item) => (
               <Link
                 key={item.category.id}
                 href={`/resources?category=${item.category.slug}`}
@@ -369,7 +601,7 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
               </Link>
             ))}
 
-            {resource.tags.map((item) => (
+            {resourceData.tags.map((item) => (
               <Link
                 key={item.tag.id}
                 href={`/resources?tag=${item.tag.slug}`}
@@ -381,17 +613,17 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
           </div>
 
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)] sm:text-4xl">
-            {resource.title}
+            {resourceData.title}
           </h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[var(--text-muted)]">
-            {resource.store ? (
+            {resourceData.store ? (
               <span className="inline-flex flex-wrap items-center gap-2">
-                {resource.store.logoUrl ? (
+                {resourceData.store.logoUrl ? (
                   <span className="relative h-8 w-8 overflow-hidden rounded-full border border-[var(--border)] bg-[var(--surface)]">
                     <Image
-                      src={resource.store.logoUrl}
-                      alt={`${resource.store.name} logo`}
+                      src={resourceData.store.logoUrl}
+                      alt={`${resourceData.store.name} logo`}
                       fill
                       sizes="32px"
                       className="object-cover"
@@ -399,32 +631,32 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
                   </span>
                 ) : null}
                 <Link
-                  href={`/stores/${resource.store.slug}`}
+                  href={`/stores/${resourceData.store.slug}`}
                   className="font-medium text-[var(--text)] hover:text-[var(--accent)]"
                 >
-                  by {resource.store.name}
+                  by {resourceData.store.name}
                 </Link>
 
-                {resource.store.isVerified ? <VerifiedBadge size="sm" /> : null}
+                {resourceData.store.isVerified ? <VerifiedBadge size="sm" /> : null}
               </span>
             ) : (
               <span>Clinician-made resource</span>
             )}
 
-            {resource.reviewCount > 0 ? (
+            {resourceData.reviewCount > 0 ? (
               <>
                 <span>★ {resource.averageRating?.toFixed(1) || "0.0"}</span>
-                <span>{resource.reviewCount} reviews</span>
+                <span>{resourceData.reviewCount} reviews</span>
               </>
             ) : (
               <span>New listing</span>
             )}
-            <span>{resource.salesCount > 0 ? `${resource.salesCount} sales` : "No sales yet"}</span>
+            <span>{resourceData.salesCount > 0 ? `${resourceData.salesCount} sales` : "No sales yet"}</span>
           </div>
 
           <div className="mt-8 overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
             {galleryImages.length > 0 ? (
-              <ResourceGallery images={galleryImages} title={resource.title} />
+              <ResourceGallery images={galleryImages} title={resourceData.title} />
             ) : (
               <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-[var(--surface)] to-[var(--surface-strong)] text-sm font-medium text-[var(--text-light)]">
                 Preview coming soon
@@ -432,16 +664,20 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
             )}
           </div>
 
+          <div className="mt-6 lg:hidden">
+            {renderPurchasePanel()}
+          </div>
+
           <div className="mt-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-[var(--text)]">About this resource</h2>
             <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text)]">
-              {resource.shortDescription ? (
+              {resourceData.shortDescription ? (
                 <p className="text-base font-medium text-[var(--text)]">
-                  {resource.shortDescription}
+                  {resourceData.shortDescription}
                 </p>
               ) : null}
 
-              <p className="whitespace-pre-line">{resource.description}</p>
+              <p className="whitespace-pre-line">{resourceData.description}</p>
             </div>
           </div>
 
@@ -602,231 +838,7 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-            <div className="text-3xl font-semibold text-[var(--text)]">
-              {formatPrice(resource.priceCents, resource.isFree)}
-            </div>
-
-            <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
-              {resource.isFree
-                ? "Create an account to add this free resource to your library and download it."
-                : paidCheckoutUnavailable
-                ? "Paid checkout is temporarily paused while payment activation is being completed."
-                : "Purchase once and access the downloadable resource through your library."}
-            </p>
-
-            <div className="mt-4 rounded-2xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--text)]">
-              <div className="flex items-start justify-between gap-4">
-                <span className="font-medium text-[var(--text)]">File format</span>
-                <span className="text-right text-[var(--text-muted)]">
-                  {fileFormat || "Not specified"}
-                </span>
-              </div>
-              <div className="mt-3 flex items-start justify-between gap-4">
-                <span className="font-medium text-[var(--text)]">Access</span>
-                <span className="text-right text-[var(--text-muted)]">
-                  {resource.isFree
-                    ? "Instant after claim"
-                    : paidCheckoutUnavailable
-                    ? "Temporarily paused"
-                    : "Instant after payment"}
-                </span>
-              </div>
-              <div className="mt-3 flex items-start justify-between gap-4">
-                <span className="font-medium text-[var(--text)]">License</span>
-                <span className="text-right text-[var(--text-muted)]">
-                  Single-buyer digital use
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 inline-flex rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)]">
-              {hasMainFile ? "Download ready" : "No download attached"}
-            </div>
-
-            <div className="mt-6 flex flex-col gap-3">
-              {hasPurchased ? (
-                <>
-                  <div className="inline-flex self-start rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                    In your library
-                  </div>
-
-                  {mainFile ? (
-                    <a
-                      href={`/api/downloads/${resource.id}`}
-                      className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
-                    >
-                      Download resource
-                    </a>
-                  ) : (
-                    <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                      This resource does not have a download attached yet.
-                    </div>
-                  )}
-
-                  <Link
-                    href="/library"
-                    className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border-strong)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
-                  >
-                    View library
-                  </Link>
-                </>
-              ) : hasMainFile ? (
-                <>
-                  {paidCheckoutUnavailable ? (
-                    <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                      Paid checkout is temporarily unavailable. You can still message the
-                      creator or browse free resources while payment activation is completed.
-                    </div>
-                  ) : (
-                    <form method="POST" action="/api/checkout">
-                      <input type="hidden" name="resourceId" value={resource.id} />
-                      <input
-                        type="hidden"
-                        name="redirectTo"
-                        value={`/resources/${resource.slug}`}
-                      />
-                      <button
-                        type="submit"
-                        className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
-                      >
-                        {resource.isFree
-                          ? "Get for free"
-                          : `Buy for ${formatPrice(resource.priceCents)}`}
-                      </button>
-                    </form>
-                  )}
-
-                  {resource.store && resource.store.ownerId !== buyerId ? (
-                    <Link
-                      href={
-                        buyerId
-                          ? isEmailVerified
-                            ? messageLink ?? "/messages"
-                            : `/verify-email?redirectTo=${encodeURIComponent(messageLink ?? "/messages")}`
-                          : loginMessageLink
-                      }
-                      className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
-                    >
-                      {buyerId
-                        ? isEmailVerified
-                          ? "Message creator"
-                          : "Verify email to message creator"
-                        : "Log in to message creator"}
-                    </Link>
-                  ) : null}
-                </>
-              ) : (
-                <div className="rounded-3xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-                  This resource cannot be purchased until the creator attaches the downloadable file.
-                </div>
-              )}
-            </div>
-
-            {!resource.isFree && hasMainFile ? (
-              <div className="mt-6 rounded-2xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--text)]">
-                <div className="font-semibold text-[var(--text)]">
-                  {paidCheckoutUnavailable ? "Payment activation in progress" : "Secure purchase"}
-                </div>
-                <p className="mt-2">
-                  {paidCheckoutUnavailable
-                    ? "This listing is ready for sale, but paid checkout is temporarily paused while live payments are being finalised."
-                    : "Stripe checkout protects the transaction and grants instant access once payment clears."}
-                </p>
-                <p className="mt-3 text-xs text-[var(--text-muted)]">
-                  By purchasing, you agree to the{" "}
-                  <Link href={policyLinks.terms} className="font-medium underline">
-                    Terms of Service
-                  </Link>
-                  {" "}and{" "}
-                  <Link href={policyLinks.refunds} className="font-medium underline">
-                    Refund Policy
-                  </Link>
-                  .
-                </p>
-              </div>
-            ) : null}
-
-            <div className="mt-6 border-t border-[var(--border)] pt-6">
-              {canReportResource ? (
-                isEmailVerified ? (
-                  <ReportResourceForm
-                    resourceId={resource.id}
-                    resourceSlug={resource.slug}
-                    csrfToken={actionCsrfToken}
-                  />
-                ) : (
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
-                    <Link
-                      href={`/verify-email?redirectTo=${encodeURIComponent(`/resources/${resource.slug}`)}`}
-                      className="font-medium text-[var(--text)] underline"
-                    >
-                      Verify your email
-                    </Link>{" "}
-                    to report this resource.
-                  </div>
-                )
-              ) : sessionUserId ? (
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
-                  You cannot report your own resource.
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
-                  <Link
-                    href={`/login?redirectTo=/resources/${resource.slug}`}
-                    className="font-medium text-[var(--text)] underline"
-                  >
-                    Log in
-                  </Link>{" "}
-                  to report this resource.
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6 border-t border-[var(--border)] pt-6">
-              <div className="text-sm font-semibold text-[var(--text)]">Creator</div>
-
-              {resource.store ? (
-                <div className="mt-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link
-                      href={`/stores/${resource.store.slug}`}
-                      className="font-medium text-[var(--text)] hover:text-[var(--accent)]"
-                    >
-                      {resource.store.name}
-                    </Link>
-
-                    {resource.store.isVerified ? <VerifiedBadge size="sm" /> : null}
-                  </div>
-
-                  {resource.store.bio ? (
-                    <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-                      {resource.store.bio}
-                    </p>
-                  ) : null}
-
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
-                      <div className="font-medium text-[var(--text)]">Delivery</div>
-                      <div className="mt-1">
-                        {resource.isFree ? "Instant library access" : "Digital delivery after checkout"}
-                      </div>
-                    </div>
-                    <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
-                      <div className="font-medium text-[var(--text)]">Usage</div>
-                      <div className="mt-1">Single-buyer digital license unless the listing says otherwise.</div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-3 text-sm text-[var(--text-muted)]">
-                  Creator details coming soon.
-                </p>
-              )}
-            </div>
-          </div>
-        </aside>
+        {renderPurchasePanel("hidden lg:block lg:sticky lg:top-24 lg:self-start")}
       </div>
 
       <section className="defer-section mt-16">
