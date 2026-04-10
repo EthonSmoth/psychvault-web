@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getAppBaseUrl();
 
-  const [resources, stores, categories] = await Promise.all([
+  const [resources, stores] = await Promise.all([
     db.resource.findMany({
       where: { status: "PUBLISHED" },
       select: {
@@ -22,15 +22,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: {
         slug: true,
         updatedAt: true,
-      },
-    }),
-
-    db.category.findMany({
-      select: {
-        slug: true,
-      },
-      orderBy: {
-        name: "asc",
       },
     }),
   ]);
@@ -53,12 +44,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/creator`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.6,
     },
     {
       url: `${baseUrl}/about`,
@@ -90,13 +75,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.4,
     },
-
-    ...categories.map((category) => ({
-      url: `${baseUrl}/resources?category=${encodeURIComponent(category.slug)}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
 
     ...resources.map((resource) => ({
       url: `${baseUrl}/resources/${resource.slug}`,

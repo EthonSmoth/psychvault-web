@@ -18,13 +18,47 @@ const SORT_OPTIONS = [
   { value: "alphabetical", label: "A to Z" },
 ] as const;
 
-export const metadata: Metadata = {
-  title: "Browse Stores | PsychVault",
-  description: "Explore creator stores on PsychVault and browse resources by store.",
-  alternates: {
-    canonical: `${getAppBaseUrl()}/stores`,
-  },
-};
+export async function generateMetadata({
+  searchParams,
+}: StoresBrowsePageProps): Promise<Metadata> {
+  const resolvedSearchParams = await searchParams;
+  const query = resolvedSearchParams?.q?.trim() || "";
+  const sort = SORT_OPTIONS.some((option) => option.value === resolvedSearchParams?.sort)
+    ? (resolvedSearchParams?.sort as (typeof SORT_OPTIONS)[number]["value"])
+    : "newest";
+  const hasFilters = Boolean(query) || sort !== "newest";
+  const baseUrl = getAppBaseUrl();
+  const title = query ? `Search Creator Stores for "${query}"` : "Browse Stores";
+  const description = "Explore creator stores on PsychVault and browse resources by store.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${baseUrl}/stores`,
+    },
+    robots: hasFilters
+      ? {
+          index: false,
+          follow: true,
+        }
+      : {
+          index: true,
+          follow: true,
+        },
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/stores`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function StoresBrowsePage({ searchParams }: StoresBrowsePageProps) {
   const resolvedSearchParams = await searchParams;

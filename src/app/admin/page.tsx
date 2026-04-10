@@ -37,6 +37,107 @@ function formatModerationStatus(status: string) {
     .replace(/^\w/, (char) => char.toUpperCase());
 }
 
+function fetchQueuedResources() {
+  return db.resource.findMany({
+    where: { moderationStatus: "PENDING_REVIEW" },
+    orderBy: { updatedAt: "desc" },
+    take: 10,
+    include: {
+      store: true,
+      creator: true,
+      files: {
+        where: { kind: "MAIN_DOWNLOAD" },
+        select: { id: true },
+        take: 1,
+      },
+      reports: {
+        where: { status: "OPEN" },
+        select: { id: true },
+      },
+    },
+  });
+}
+
+function fetchOpenReports() {
+  return db.resourceReport.findMany({
+    where: { status: "OPEN" },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: {
+      reporter: true,
+      resource: {
+        include: {
+          store: true,
+        },
+      },
+    },
+  });
+}
+
+function fetchOpenStoreReports() {
+  return db.storeReport.findMany({
+    where: { status: "OPEN" },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: {
+      reporter: true,
+      store: {
+        include: {
+          owner: true,
+        },
+      },
+    },
+  });
+}
+
+function fetchRecentResources() {
+  return db.resource.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: {
+      store: true,
+      creator: true,
+      files: {
+        where: { kind: "MAIN_DOWNLOAD" },
+        select: { id: true },
+        take: 1,
+      },
+    },
+  });
+}
+
+function fetchRecentStores() {
+  return db.store.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: {
+      owner: true,
+      resources: {
+        where: { status: "PUBLISHED" },
+        select: { id: true },
+      },
+      followers: {
+        select: { followerId: true },
+      },
+    },
+  });
+}
+
+function fetchRecentModerationEvents() {
+  return db.moderationEvent.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 12,
+    include: {
+      actorUser: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+}
+
 type AdminPageProps = {
   searchParams?: Promise<{
     view?: string;
@@ -49,127 +150,53 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeView = resolvedSearchParams?.view || "overview";
 
-  const [
-    userCount,
-    storeCount,
-    resourceCount,
-    purchaseCount,
-    pendingReviewCount,
-    openReportCount,
-    openStoreReportCount,
-    revenueAgg,
-    queuedResources,
-    openReports,
-    openStoreReports,
-    recentResources,
-    recentStores,
-    recentModerationEvents,
-  ] = await Promise.all([
-    db.user.count(),
-    db.store.count(),
-    db.resource.count(),
-    db.purchase.count(),
-    db.resource.count({
-      where: { moderationStatus: "PENDING_REVIEW" },
-    }),
-    db.resourceReport.count({
-      where: { status: "OPEN" },
-    }),
-    db.storeReport.count({
-      where: { status: "OPEN" },
-    }),
-    db.purchase.aggregate({
-      _sum: { amountCents: true },
-    }),
-    db.resource.findMany({
-      where: { moderationStatus: "PENDING_REVIEW" },
-      orderBy: { updatedAt: "desc" },
-      take: 10,
-      include: {
-        store: true,
-        creator: true,
-        files: {
-          where: { kind: "MAIN_DOWNLOAD" },
-          select: { id: true },
-          take: 1,
-        },
-        reports: {
-          where: { status: "OPEN" },
-          select: { id: true },
-        },
-      },
-    }),
-    db.resourceReport.findMany({
-      where: { status: "OPEN" },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: {
-        reporter: true,
-        resource: {
-          include: {
-            store: true,
-          },
-        },
-      },
-    }),
-    db.storeReport.findMany({
-      where: { status: "OPEN" },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: {
-        reporter: true,
-        store: {
-          include: {
-            owner: true,
-          },
-        },
-      },
-    }),
-    db.resource.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: {
-        store: true,
-        creator: true,
-        files: {
-          where: { kind: "MAIN_DOWNLOAD" },
-          select: { id: true },
-          take: 1,
-        },
-      },
-    }),
-    db.store.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: {
-        owner: true,
-        resources: {
-          where: { status: "PUBLISHED" },
-          select: { id: true },
-        },
-        followers: {
-          select: { followerId: true },
-        },
-      },
-    }),
-    db.moderationEvent.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 12,
-      include: {
-        actorUser: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    }),
-  ]);
+  const userCount = await db.user.count();
+  const storeCount = await db.store.count();
+  const resourceCount = await db.resource.count();
+  const purchaseCount = await db.purchase.count();
+  const pendingReviewCount = await db.resource.count({
+    where: { moderationStatus: "PENDING_REVIEW" },
+  });
+  const openReportCount = await db.resourceReport.count({
+    where: { status: "OPEN" },
+  });
+  const openStoreReportCount = await db.storeReport.count({
+    where: { status: "OPEN" },
+  });
+  const revenueAgg = await db.purchase.aggregate({
+    _sum: { amountCents: true },
+  });
+
+  let queuedResources: Awaited<ReturnType<typeof fetchQueuedResources>> = [];
+  let openReports: Awaited<ReturnType<typeof fetchOpenReports>> = [];
+  let openStoreReports: Awaited<ReturnType<typeof fetchOpenStoreReports>> = [];
+  let recentResources: Awaited<ReturnType<typeof fetchRecentResources>> = [];
+  let recentStores: Awaited<ReturnType<typeof fetchRecentStores>> = [];
+  let recentModerationEvents: Awaited<ReturnType<typeof fetchRecentModerationEvents>> = [];
+
+  if (activeView === "overview" || activeView === "queue" || activeView === "resource-reports") {
+    queuedResources = await fetchQueuedResources();
+    openReports = await fetchOpenReports();
+  }
+
+  if (activeView === "overview" || activeView === "store-reports") {
+    openStoreReports = await fetchOpenStoreReports();
+  }
+
+  if (activeView === "overview" || activeView === "stores") {
+    recentResources = await fetchRecentResources();
+    recentStores = await fetchRecentStores();
+  }
+
+  if (activeView === "overview" || activeView === "audit") {
+    recentModerationEvents = await fetchRecentModerationEvents();
+  }
 
   const grossRevenue = revenueAgg._sum.amountCents ?? 0;
-  const queuedTrustProfiles = await Promise.all(
-    queuedResources.map((resource) => getCreatorTrustProfile(resource.creator.id))
-  );
+  const queuedTrustProfiles: Awaited<ReturnType<typeof getCreatorTrustProfile>>[] = [];
+  for (const resource of queuedResources) {
+    queuedTrustProfiles.push(await getCreatorTrustProfile(resource.creator.id));
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

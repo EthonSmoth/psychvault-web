@@ -10,7 +10,7 @@ const supportEmail = process.env.SUPPORT_EMAIL || "hello@psychvault.com.au";
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "PsychVault — Psychology Resources Marketplace",
+    default: "PsychVault - Psychology Resources Marketplace",
     template: "%s | PsychVault",
   },
   description:
@@ -32,9 +32,6 @@ export const metadata: Metadata = {
   other: {
     "contact:email": supportEmail,
   },
-  alternates: {
-    canonical: "/",
-  },
   icons: {
     icon: "/logo-PNG.png",
     shortcut: "/logo-PNG.png",
@@ -45,24 +42,24 @@ export const metadata: Metadata = {
     locale: "en_AU",
     url: baseUrl,
     siteName: "PsychVault",
-    title: "PsychVault — Psychology Resources Marketplace",
+    title: "PsychVault - Psychology Resources Marketplace",
     description:
       "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
     images: [
       {
-        url: "/logo-PNG.png",
-        width: 822,
-        height: 253,
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
         alt: "PsychVault",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "PsychVault — Psychology Resources Marketplace",
+    title: "PsychVault - Psychology Resources Marketplace",
     description:
       "Discover clinician-made psychology resources for real clinical work.",
-    images: ["/logo-PNG.png"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -85,9 +82,44 @@ export default function RootLayout({
 }>) {
   const organizationSchema = {
     "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "PsychVault",
+    description:
+      "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+    url: baseUrl,
+    logo: `${baseUrl}/logo-PNG.png`,
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      email: supportEmail,
+    },
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "PsychVault",
+    url: baseUrl,
+    description:
+      "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+    publisher: {
+      "@type": "Organization",
+      name: "PsychVault",
+      url: baseUrl,
+    },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${baseUrl}/resources?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const webApplicationSchema = {
+    "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "PsychVault",
-    description: "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+    description:
+      "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
     url: baseUrl,
     applicationCategory: "E-commerce",
     provider: {
@@ -126,6 +158,14 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webApplicationSchema) }}
         />
         <div className="flex min-h-screen flex-col">
           <Navbar />

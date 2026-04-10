@@ -1,11 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getAppBaseUrl } from "@/lib/env";
 import { getPaymentsAvailability } from "@/lib/payments";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "PsychVault - Psychology Resources Marketplace",
+  description:
+    "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+  alternates: {
+    canonical: getAppBaseUrl(),
+  },
+};
 
 const CATEGORY_ICONS: Record<string, string> = {
   "assessment-tools": "📋",

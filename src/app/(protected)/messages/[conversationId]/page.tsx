@@ -7,12 +7,13 @@ import MessageThread from "@/components/messages/message-thread";
 import MessageComposer from "@/components/messages/message-composer";
 
 type ConversationPageProps = {
-  params: {
+  params: Promise<{
     conversationId: string;
-  };
+  }>;
 };
 
 export default async function ConversationPage({ params }: ConversationPageProps) {
+  const { conversationId } = await params;
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -20,9 +21,9 @@ export default async function ConversationPage({ params }: ConversationPageProps
     return notFound();
   }
 
-  await requireVerifiedEmailOrRedirect(userId, `/messages/${params.conversationId}`);
+  await requireVerifiedEmailOrRedirect(userId, `/messages/${conversationId}`);
 
-  const conversation = await findConversationForUser(params.conversationId, userId);
+  const conversation = await findConversationForUser(conversationId, userId);
   if (!conversation) {
     return notFound();
   }

@@ -1,21 +1,25 @@
 # PsychVault
 
-PsychVault is a clinician-focused marketplace for psychology resources. Buyers can browse, claim free downloads, purchase digital resources, save them to a library, message creators, and leave reviews. Creators can build stores, upload resources, manage listings, and track store performance.
+PsychVault is a clinician-focused marketplace for psychology resources. Buyers can browse resources and stores, claim free downloads, purchase digital products, save them to a library, message creators, follow stores, and leave reviews. Creators can build branded stores, upload resources, manage listings, and track store performance.
 
 The project now goes well beyond a starter. It includes moderation workflows, creator trust scoring, store and resource reporting, email verification, legal and policy pages, and production-facing marketplace trust features.
 
 ## Current state
 
 - Public marketplace with homepage, browse, resource pages, creator stores, about, contact, and legal pages
+- Public `/stores` browse page with search, sorting, and links into creator storefronts
 - Buyer library, protected downloads, reviews, and creator messaging
 - Creator dashboards for store setup, resources, analytics, sales, and payouts
 - Stripe Checkout plus Stripe webhook purchase recording
 - Supabase Storage uploads with public asset storage plus signed private download delivery
+- Upload-time optimization for preview and thumbnail images before they are stored
 - Email verification for creator actions, uploads, purchases, messaging, reporting, and follows
 - Auth.js credentials auth with bcrypt password hashes
 - CSRF protection on server-action forms
 - Stripe webhook signature verification
 - Shared database-backed rate limiting for login and abuse-prone routes
+- Public-page caching and query trimming for resource and store browse/detail pages
+- Admin dashboard button pending states and improved global interactive feedback
 - Moderation system for resources and stores:
   - text moderation
   - PDF inspection
@@ -43,6 +47,7 @@ The project now goes well beyond a starter. It includes moderation workflows, cr
 
 ### Public
 - Browse published resources
+- Browse published stores
 - Product-style resource detail pages with previews, reviews, tags, creator trust cues, and reporting
 - Public creator store pages with follow, message, and report actions
 - About, contact, privacy policy, terms of service, and refund policy pages
@@ -54,10 +59,11 @@ The project now goes well beyond a starter. It includes moderation workflows, cr
 - Personal library with protected downloads
 - Leave reviews after purchase
 - Message creators
+- Follow stores and browse store-specific listings
 
 ### Creators
 - Store setup with logo, banner, bio, moderation state, and go-live checklist
-- Resource creation and editing with uploads, pricing, previews, and moderation feedback
+- Resource creation and editing with uploads, pricing, previews, moderation feedback, and upload progress/status messaging
 - Creator dashboard, analytics, sales, and payouts views
 
 ### Moderation and trust
@@ -154,6 +160,8 @@ Ensure your service role key has permission to upload and sign URLs for both buc
 npm run dev
 ```
 
+If you are using a local Supabase/Postgres connection with a very small pool, the admin page is now careful to avoid large parallel query bursts, but a connection limit greater than `1` will still give you a much better local experience.
+
 ### 5. Local Stripe webhook testing
 
 ```bash
@@ -206,6 +214,7 @@ Security controls currently in place:
 - Server-action forms use signed CSRF tokens.
 - Stripe webhooks are verified with the webhook signing secret.
 - Uploads are validated by field type, extension, MIME, and size before they are stored.
+- Preview and thumbnail image uploads are resized and converted to lighter formats when supported by the runtime.
 - Main download files are stored as private Supabase references and delivered through short-lived signed URLs.
 - Login, checkout, upload, registration, contact, and reporting routes use shared database-backed rate limiting.
 - Legacy JSON write endpoints for stores/resources have been retired so creator changes must go through the moderated UI flow.
@@ -217,6 +226,7 @@ Current security limitations to be aware of:
 - Rate limiting currently uses the primary database for shared limits, with an in-memory fallback if the database is temporarily unavailable.
 - Existing old download files uploaded before private-bucket rollout may need to be re-uploaded or migrated if you want every asset to live in the private downloads bucket.
 - Private downloads depend on the `SUPABASE_DOWNLOADS_BUCKET` remaining private and available for signed URL generation.
+- Some local development environments may still hit Prisma pool pressure if the database connection limit is set extremely low.
 
 ## Scripts
 
@@ -267,6 +277,8 @@ psychvault/
 - Paid checkout can be intentionally disabled with `PAYMENTS_AVAILABLE=false`.
 - Email verification now affects creator tools, uploads, purchases, messaging, reporting, and follows.
 - Main download files should be uploaded into the private downloads bucket and accessed only through `/api/downloads/[resourceId]`.
+- Public resource and store pages use short-lived server caching to reduce repeated database work.
+- The admin dashboard now loads data by active tab to avoid exhausting low local Prisma connection pools.
 
 ## Production hardening checklist
 

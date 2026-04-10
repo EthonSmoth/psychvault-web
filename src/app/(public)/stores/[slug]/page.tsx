@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getAppBaseUrl } from "@/lib/env";
 import { getMarketplacePolicyLinks } from "@/lib/payments";
 import {
   getPublishedStoreMetadata,
@@ -39,7 +40,7 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
   const description =
     store.bio?.slice(0, 160) ||
     `Browse resources from ${store.name} on PsychVault.`;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = getAppBaseUrl();
   const url = `${baseUrl}/stores/${store.slug}`;
 
   return {
@@ -95,7 +96,7 @@ export default async function StorePage({ params }: StorePageProps) {
   const policyLinks = getMarketplacePolicyLinks();
 
   // JSON-LD Structured Data for Organization/Store
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = getAppBaseUrl();
   const storeUrl = `${baseUrl}/stores/${store.slug}`;
   
   const organizationSchema = {

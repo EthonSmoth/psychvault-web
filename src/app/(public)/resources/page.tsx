@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { getAppBaseUrl } from "@/lib/env";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { getResourceBrowseFilters } from "@/server/queries/public-content";
 
@@ -15,6 +17,58 @@ type ResourcesPageProps = {
 
 function normaliseSingle(value?: string) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+export async function generateMetadata({
+  searchParams,
+}: ResourcesPageProps): Promise<Metadata> {
+  const params = (await searchParams) ?? {};
+  const q = normaliseSingle(params.q);
+  const category = normaliseSingle(params.category);
+  const tag = normaliseSingle(params.tag);
+  const price = normaliseSingle(params.price);
+  const store = normaliseSingle(params.store);
+  const sort = normaliseSingle(params.sort) || "newest";
+  const hasFilters = [q, category, tag, price, store].some(Boolean) || sort !== "newest";
+  const baseUrl = getAppBaseUrl();
+
+  let title = "Browse Psychology Resources";
+  let description =
+    "Browse clinician-made psychology resources including worksheets, handouts, templates, and psychoeducation tools.";
+
+  if (category && !q && !tag && !price && !store) {
+    title = `Browse ${category.replaceAll("-", " ")} Resources`;
+  } else if (q) {
+    title = `Search Resources for "${q}"`;
+  }
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${baseUrl}/resources`,
+    },
+    robots: hasFilters
+      ? {
+          index: false,
+          follow: true,
+        }
+      : {
+          index: true,
+          follow: true,
+        },
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/resources`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
 }
 
 export default async function Page({ searchParams }: ResourcesPageProps) {

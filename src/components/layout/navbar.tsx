@@ -120,12 +120,15 @@ export async function Navbar() {
             </Link>
           )}
 
-          <details className="relative">
-            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-2xl border border-soft bg-[var(--surface-alt)] px-4 py-2 text-sm font-medium text-[var(--text)] shadow-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)]">
+          <div className="group relative">
+            <button
+              type="button"
+              className="flex cursor-pointer list-none items-center gap-2 rounded-2xl border border-soft bg-[var(--surface-alt)] px-4 py-2 text-sm font-medium text-[var(--text)] shadow-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
+            >
               More
-            </summary>
+            </button>
 
-            <div className="absolute left-0 z-20 mt-3 w-56 overflow-hidden rounded-3xl border border-soft bg-[var(--card)] shadow-lg">
+            <div className="pointer-events-none absolute left-0 z-20 mt-3 w-56 overflow-hidden rounded-3xl border border-soft bg-[var(--card)] opacity-0 shadow-lg transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
               <div className="flex flex-col px-3 py-3">
                 <Link
                   href="/about"
@@ -157,7 +160,7 @@ export async function Navbar() {
                 ) : null}
               </div>
             </div>
-          </details>
+          </div>
         </nav>
 
         {user ? (
@@ -295,8 +298,11 @@ export async function Navbar() {
             </div>
 
             <div className="hidden items-center gap-3 md:flex">
-              <details className="relative">
-              <summary className="flex cursor-pointer list-none items-center gap-3 rounded-2xl border border-soft bg-[var(--surface-alt)] px-3 py-2 shadow-sm hover:bg-[var(--surface)]">
+              <div className="group relative">
+              <button
+                type="button"
+                className="flex cursor-pointer list-none items-center gap-3 rounded-2xl border border-soft bg-[var(--surface-alt)] px-3 py-2 shadow-sm transition hover:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
+              >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-semibold text-white">
                   {initials}
                 </div>
@@ -307,9 +313,9 @@ export async function Navbar() {
                   </div>
                   <div className="text-xs text-[var(--muted)]">{user.email}</div>
                 </div>
-              </summary>
+              </button>
 
-              <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-soft bg-[var(--card)] shadow-lg">
+              <div className="pointer-events-none absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-soft bg-[var(--card)] opacity-0 shadow-lg transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
                 <div className="border-b border-soft px-4 py-3">
                   <div className="text-sm font-semibold text-[var(--text)]">
                     {user.name || "Account"}
@@ -382,7 +388,7 @@ export async function Navbar() {
                   </form>
                 </div>
               </div>
-              </details>
+              </div>
             </div>
           </>
         ) : (

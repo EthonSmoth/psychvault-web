@@ -102,6 +102,13 @@ textarea {
   font: inherit;
 }
 
+button,
+a[class*="inline-flex"],
+a[class*="rounded"],
+summary {
+  cursor: pointer;
+}
+
 button {
   border-radius: var(--radius);
   transition:
@@ -113,11 +120,41 @@ button {
     opacity 0.2s ease;
 }
 
+button:not(:disabled),
+a[class*="inline-flex"],
+a[class*="rounded"],
+summary {
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease,
+    filter 0.2s ease;
+}
+
 button:not(:disabled):hover {
   box-shadow: 0 10px 24px rgba(112, 79, 52, 0.14);
 }
 
+button:not(:disabled):hover,
+a[class*="inline-flex"]:hover,
+a[class*="rounded"]:hover,
+summary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(112, 79, 52, 0.16);
+  filter: saturate(1.05);
+}
+
 button:not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
+}
+
+button:not(:disabled):active,
+a[class*="inline-flex"]:active,
+a[class*="rounded"]:active,
+summary:active {
   transform: translateY(1px) scale(0.985);
 }
 
