@@ -7,6 +7,8 @@ const PUBLIC_ASSETS_BUCKET =
   process.env.SUPABASE_PUBLIC_BUCKET?.trim() || "psychvault-resources";
 const PRIVATE_DOWNLOADS_BUCKET =
   process.env.SUPABASE_DOWNLOADS_BUCKET?.trim() || "psychvault-downloads";
+const DEFAULT_PRIVATE_DOWNLOADS_BUCKET = "psychvault-downloads";
+const COMMON_TYPO_PRIVATE_DOWNLOADS_BUCKET = "psychvault-dowloads";
 const LEGACY_PRIVATE_DOWNLOADS_BUCKET = "psychvault-resources-private";
 const SUPABASE_HOST = new URL(
   getRequiredServerEnv("NEXT_PUBLIC_SUPABASE_URL")
@@ -106,7 +108,14 @@ export function getBucketCandidatesForUploadKind(kind: UploadKind) {
     return [PUBLIC_ASSETS_BUCKET];
   }
 
-  return [...new Set([PRIVATE_DOWNLOADS_BUCKET, LEGACY_PRIVATE_DOWNLOADS_BUCKET])];
+  return [
+    ...new Set([
+      PRIVATE_DOWNLOADS_BUCKET,
+      DEFAULT_PRIVATE_DOWNLOADS_BUCKET,
+      COMMON_TYPO_PRIVATE_DOWNLOADS_BUCKET,
+      LEGACY_PRIVATE_DOWNLOADS_BUCKET,
+    ]),
+  ];
 }
 
 // Generates a public URL for image assets that must render directly in the browser.
