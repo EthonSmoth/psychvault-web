@@ -79,7 +79,7 @@ export async function Navbar() {
               width={100}
               height={100}
               priority
-              className="h-[100px] w-[100px] object-contain"
+              className="h-16 w-16 object-contain sm:h-[100px] sm:w-[100px]"
             />
           </span>
         </Link>
@@ -158,12 +158,12 @@ export async function Navbar() {
         </nav>
 
         <div className="md:hidden">
-          <details className="relative">
-            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-2xl border border-soft bg-[var(--surface-alt)] px-4 py-2 text-sm font-medium text-[var(--text)] shadow-sm hover:bg-[var(--surface)]">
+          <details className="static">
+            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-2xl border border-soft bg-[var(--surface-alt)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-sm hover:bg-[var(--surface)]">
               Menu
             </summary>
 
-            <div className="absolute right-0 z-20 mt-3 w-64 overflow-hidden rounded-3xl border border-soft bg-[var(--card)] shadow-lg">
+            <div className="absolute left-1/2 top-full z-20 mt-3 w-[min(20rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-3xl border border-soft bg-[var(--card)] shadow-lg">
               <div className="flex flex-col px-3 py-3">
                 <Link
                   href="/"
@@ -315,16 +315,16 @@ export async function Navbar() {
             </details>
           </div>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="hidden rounded-xl border border-soft bg-[var(--surface-strong)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--card)] sm:inline-flex"
+              className="inline-flex rounded-xl border border-soft bg-[var(--surface-strong)] px-3 py-2 text-xs font-medium text-[var(--text)] hover:bg-[var(--card)] sm:px-4 sm:text-sm"
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="inline-flex rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[var(--primary-dark)] hover:text-white"
+              className="inline-flex rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-[var(--primary-dark)] hover:text-white sm:px-4 sm:text-sm"
             >
               Sign up
             </Link>

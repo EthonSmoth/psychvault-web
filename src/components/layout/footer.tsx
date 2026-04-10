@@ -6,10 +6,10 @@ export function Footer() {
   return (
     <footer className="border-t border-soft bg-[var(--frame)]">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
+        <div className="grid gap-10 text-center lg:grid-cols-[1.3fr_1fr_1fr_1fr] lg:text-left">
           
           {/* BRAND */}
-          <div>
+          <div className="flex flex-col items-center lg:items-start">
             <Link
               href="/"
               className="text-xl font-semibold tracking-tight text-[var(--text)] transition-colors hover:text-[var(--accent)]"
@@ -23,7 +23,7 @@ export function Footer() {
             </p>
 
             {/* SOCIAL LINKS */}
-            <div className="mt-5 flex items-center gap-4 text-sm text-[var(--text-muted)]">
+            <div className="mt-5 flex items-center justify-center gap-4 text-sm text-[var(--text-muted)] lg:justify-start">
               <a
                 href="https://twitter.com"
                 target="_blank"
@@ -117,7 +117,7 @@ export function Footer() {
         </div>
 
         {/* BOTTOM BAR */}
-        <div className="mt-10 flex flex-col gap-3 border-t border-soft pt-6 text-sm text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-3 border-t border-soft pt-6 text-center text-sm text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <p>© {currentYear} PsychVault</p>
           <p>Built for clinicians and creators.</p>
         </div>
