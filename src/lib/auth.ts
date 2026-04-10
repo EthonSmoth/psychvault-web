@@ -1,6 +1,7 @@
 import NextAuth, { AuthError } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { getRequiredServerEnv } from "@/lib/env";
@@ -14,6 +15,7 @@ function logAuthError(error: Error) {
   console.error(`[auth][error] ${name}: ${error.message}`);
 
   if (
+    "cause" in error &&
     error.cause &&
     typeof error.cause === "object" &&
     "err" in error.cause &&
@@ -65,16 +67,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             return null;
           }
 
-          const user =
-            (await db.user.findUnique({ where: { email } })) ??
-            (await db.user.findFirst({
-              where: {
-                email: {
-                  equals: email,
-                  mode: "insensitive",
-                },
-              },
-            }));
+          const user = await db.user.findUnique({
+            where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              passwordHash: true,
+              role: true,
+            },
+          });
 
           if (!user) {
             console.log("[auth] user not found");
@@ -102,6 +104,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             role: user.role,
           } as any;
         } catch (error) {
+          if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === "P2024"
+          ) {
+            console.error("[auth] prisma connection pool timeout:", error);
+            throw error;
+          }
+
           console.error("[auth] authorize crash:", error);
           return null;
         }
