@@ -71,31 +71,31 @@ enum ResourceFileKind {
 }
 
 model User {
-  id            String         @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String
-  email         String         @unique
+  email         String    @unique
   emailVerified DateTime?
   image         String?
   passwordHash  String?
-  role          UserRole       @default(BUYER)
+  role          UserRole  @default(BUYER)
   avatarUrl     String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  store         Store?
-  purchases     Purchase[]     @relation("BuyerPurchases")
-  reviews       Review[]
-  follows       Follow[]       @relation("UserFollows")
-  payoutAccount PayoutAccount?
-  resources     Resource[]     @relation("CreatorResources")
-  submittedResourceReports ResourceReport[] @relation("SubmittedResourceReports")
-  submittedStoreReports    StoreReport[]    @relation("SubmittedStoreReports")
-  reviewedResourceReports  ResourceReport[] @relation("ReviewedResourceReports")
-  reviewedStoreReports     StoreReport[]    @relation("ReviewedStoreReports")
-  moderatedResources       Resource[]       @relation("ResourceModerator")
-  moderatedStores          Store[]          @relation("StoreModerator")
+  accounts                 Account[]
+  sessions                 Session[]
+  store                    Store?
+  purchases                Purchase[]                @relation("BuyerPurchases")
+  reviews                  Review[]
+  follows                  Follow[]                  @relation("UserFollows")
+  payoutAccount            PayoutAccount?
+  resources                Resource[]                @relation("CreatorResources")
+  submittedResourceReports ResourceReport[]          @relation("SubmittedResourceReports")
+  submittedStoreReports    StoreReport[]             @relation("SubmittedStoreReports")
+  reviewedResourceReports  ResourceReport[]          @relation("ReviewedResourceReports")
+  reviewedStoreReports     StoreReport[]             @relation("ReviewedStoreReports")
+  moderatedResources       Resource[]                @relation("ResourceModerator")
+  moderatedStores          Store[]                   @relation("StoreModerator")
   moderationEvents         ModerationEvent[]
   conversationParticipants ConversationParticipant[]
   sentMessages             Message[]
@@ -112,30 +112,31 @@ model Conversation {
 }
 
 model ConversationParticipant {
-  id             String       @id @default(cuid())
+  id             String    @id @default(cuid())
   conversationId String
   userId         String
   lastReadAt     DateTime?
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime  @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@index([userId])
 }
 
 model Message {
-  id             String       @id @default(cuid())
+  id             String   @id @default(cuid())
   conversationId String
   senderId       String
   body           String
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
+  @@index([conversationId, senderId, createdAt])
   @@index([senderId])
 }
 
@@ -174,66 +175,69 @@ model VerificationToken {
 }
 
 model Store {
-  id          String     @id @default(cuid())
-  ownerId     String     @unique
-  name        String
-  slug        String     @unique
-  bio         String?
-  bannerUrl   String?
-  logoUrl     String?
-  location    String?
-  isPublished Boolean    @default(false)
-  isVerified  Boolean    @default(false)
+  id               String           @id @default(cuid())
+  ownerId          String           @unique
+  name             String
+  slug             String           @unique
+  bio              String?
+  bannerUrl        String?
+  logoUrl          String?
+  location         String?
+  isPublished      Boolean          @default(false)
+  isVerified       Boolean          @default(false)
   moderationStatus ModerationStatus @default(APPROVED)
   moderationReason String?
   moderatedAt      DateTime?
   moderatedById    String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
-  owner       User       @relation(fields: [ownerId], references: [id])
+  owner       User          @relation(fields: [ownerId], references: [id])
   resources   Resource[]
-  followers   Follow[]   @relation("StoreFollowers")
+  followers   Follow[]      @relation("StoreFollowers")
   reports     StoreReport[]
-  moderatedBy User?      @relation("StoreModerator", fields: [moderatedById], references: [id])
+  moderatedBy User?         @relation("StoreModerator", fields: [moderatedById], references: [id])
 
   @@index([moderationStatus])
+  @@index([isPublished, updatedAt])
+  @@index([isPublished, name])
+  @@index([isPublished, isVerified])
 }
 
 model Resource {
-  id               String             @id @default(cuid())
+  id               String           @id @default(cuid())
   storeId          String
   creatorId        String
   title            String
-  slug             String             @unique
+  slug             String           @unique
   description      String
   shortDescription String?
   priceCents       Int
-  currency         String             @default("AUD")
-  status           ResourceStatus     @default(DRAFT)
-  isFree           Boolean            @default(false)
-  moderationStatus ModerationStatus   @default(APPROVED)
+  currency         String           @default("AUD")
+  status           ResourceStatus   @default(DRAFT)
+  isFree           Boolean          @default(false)
+  moderationStatus ModerationStatus @default(APPROVED)
   moderationReason String?
   moderatedAt      DateTime?
   moderatedById    String?
   thumbnailUrl     String?
   imageUrl         String?
   previewType      PreviewType?
-  averageRating    Float              @default(0)
-  reviewCount      Int                @default(0)
-  salesCount       Int                @default(0)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  averageRating    Float            @default(0)
+  reviewCount      Int              @default(0)
+  salesCount       Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
-  store            Store              @relation(fields: [storeId], references: [id])
-  creator          User               @relation("CreatorResources", fields: [creatorId], references: [id])
-  files            ResourceFile[]
-  purchases        Purchase[]
-  reviews          Review[]
-  categories       ResourceCategory[]
-  tags             ResourceTag[]
-  reports          ResourceReport[]
-  moderatedBy      User?              @relation("ResourceModerator", fields: [moderatedById], references: [id])
+  store       Store              @relation(fields: [storeId], references: [id])
+  creator     User               @relation("CreatorResources", fields: [creatorId], references: [id])
+  files       ResourceFile[]
+  purchases   Purchase[]
+  reviews     Review[]
+  categories  ResourceCategory[]
+  tags        ResourceTag[]
+  reports     ResourceReport[]
+  moderatedBy User?              @relation("ResourceModerator", fields: [moderatedById], references: [id])
 
   @@index([storeId])
   @@index([creatorId])
@@ -241,6 +245,13 @@ model Resource {
   @@index([moderationStatus])
   @@index([createdAt])
   @@index([salesCount])
+  @@index([status, createdAt])
+  @@index([status, salesCount])
+  @@index([status, averageRating, reviewCount])
+  @@index([status, priceCents])
+  @@index([status, isFree, createdAt])
+  @@index([storeId, status, createdAt])
+  @@index([storeId, status, salesCount])
 }
 
 model ResourceReport {
@@ -255,9 +266,9 @@ model ResourceReport {
   updatedAt    DateTime             @updatedAt
   reviewedAt   DateTime?
 
-  resource     Resource             @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  reporter     User                 @relation("SubmittedResourceReports", fields: [reporterId], references: [id], onDelete: Cascade)
-  reviewedBy   User?                @relation("ReviewedResourceReports", fields: [reviewedById], references: [id])
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  reporter   User     @relation("SubmittedResourceReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy User?    @relation("ReviewedResourceReports", fields: [reviewedById], references: [id])
 
   @@unique([resourceId, reporterId])
   @@index([resourceId, status])
@@ -267,19 +278,19 @@ model ResourceReport {
 
 model StoreReport {
   id           String               @id @default(cuid())
-  storeId       String
-  reporterId    String
-  reviewedById  String?
-  reason        ResourceReportReason
-  details       String?
-  status        ResourceReportStatus @default(OPEN)
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  reviewedAt    DateTime?
+  storeId      String
+  reporterId   String
+  reviewedById String?
+  reason       ResourceReportReason
+  details      String?
+  status       ResourceReportStatus @default(OPEN)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  reviewedAt   DateTime?
 
-  store         Store                @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  reporter      User                 @relation("SubmittedStoreReports", fields: [reporterId], references: [id], onDelete: Cascade)
-  reviewedBy    User?                @relation("ReviewedStoreReports", fields: [reviewedById], references: [id])
+  store      Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  reporter   User  @relation("SubmittedStoreReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("ReviewedStoreReports", fields: [reviewedById], references: [id])
 
   @@unique([storeId, reporterId])
   @@index([storeId, status])
@@ -296,7 +307,7 @@ model ModerationEvent {
   actorUserId String?
   createdAt   DateTime             @default(now())
 
-  actorUser   User?                @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorUser User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@index([targetType, targetId, createdAt])
   @@index([createdAt])
@@ -314,58 +325,60 @@ model ResourceFile {
   sortOrder     Int              @default(0)
   createdAt     DateTime         @default(now())
 
-  resource      Resource         @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   @@index([resourceId, kind])
 }
 
 model Category {
-  id          String             @id @default(cuid())
-  name        String             @unique
-  slug        String             @unique
-  resources   ResourceCategory[]
+  id        String             @id @default(cuid())
+  name      String             @unique
+  slug      String             @unique
+  resources ResourceCategory[]
 }
 
 model ResourceCategory {
-  resourceId  String
-  categoryId  String
+  resourceId String
+  categoryId String
 
-  resource    Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  category    Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([resourceId, categoryId])
+  @@index([categoryId, resourceId])
 }
 
 model Tag {
-  id          String             @id @default(cuid())
-  name        String             @unique
-  slug        String             @unique
-  resources   ResourceTag[]
+  id        String        @id @default(cuid())
+  name      String        @unique
+  slug      String        @unique
+  resources ResourceTag[]
 }
 
 model ResourceTag {
-  resourceId  String
-  tagId       String
+  resourceId String
+  tagId      String
 
-  resource    Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  tag         Tag                @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([resourceId, tagId])
+  @@index([tagId, resourceId])
 }
 
 model Purchase {
-  id                String    @id @default(cuid())
+  id                String   @id @default(cuid())
   buyerId           String
   resourceId        String
   amountCents       Int
   platformFeeCents  Int
   creatorShareCents Int
-  currency          String    @default("AUD")
-  stripePaymentId   String?   @unique
-  createdAt         DateTime  @default(now())
+  currency          String   @default("AUD")
+  stripePaymentId   String?  @unique
+  createdAt         DateTime @default(now())
 
-  buyer             User      @relation("BuyerPurchases", fields: [buyerId], references: [id])
-  resource          Resource  @relation(fields: [resourceId], references: [id])
+  buyer    User     @relation("BuyerPurchases", fields: [buyerId], references: [id])
+  resource Resource @relation(fields: [resourceId], references: [id])
 
   @@unique([buyerId, resourceId])
   @@index([buyerId])
@@ -373,43 +386,45 @@ model Purchase {
 }
 
 model Review {
-  id          String    @id @default(cuid())
-  buyerId     String
-  resourceId  String
-  rating      Int
-  body        String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  buyerId    String
+  resourceId String
+  rating     Int
+  body       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  buyer       User      @relation(fields: [buyerId], references: [id])
-  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  buyer    User     @relation(fields: [buyerId], references: [id])
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   @@unique([buyerId, resourceId])
   @@index([resourceId])
+  @@index([resourceId, createdAt])
 }
 
 model Follow {
-  followerId  String
-  storeId     String
-  createdAt   DateTime  @default(now())
+  followerId String
+  storeId    String
+  createdAt  DateTime @default(now())
 
-  follower    User      @relation("UserFollows", fields: [followerId], references: [id])
-  store       Store     @relation("StoreFollowers", fields: [storeId], references: [id], onDelete: Cascade)
+  follower User  @relation("UserFollows", fields: [followerId], references: [id])
+  store    Store @relation("StoreFollowers", fields: [storeId], references: [id], onDelete: Cascade)
 
   @@id([followerId, storeId])
+  @@index([storeId, createdAt])
 }
 
 model PayoutAccount {
-  id               String    @id @default(cuid())
-  userId           String    @unique
-  stripeAccountId  String    @unique
-  chargesEnabled   Boolean   @default(false)
-  payoutsEnabled   Boolean   @default(false)
-  detailsSubmitted Boolean   @default(false)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  stripeAccountId  String   @unique
+  chargesEnabled   Boolean  @default(false)
+  payoutsEnabled   Boolean  @default(false)
+  detailsSubmitted Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  user             User      @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model RateLimitState {

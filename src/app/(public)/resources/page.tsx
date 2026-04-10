@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
-import { db } from "@/lib/db";
 import { ResourceGrid } from "@/components/resources/resource-grid";
+import { getResourceBrowseFilters } from "@/server/queries/public-content";
 
 type ResourcesPageProps = {
   searchParams?: Promise<{
@@ -18,24 +17,6 @@ function normaliseSingle(value?: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function getSortOrder(sort: string): Prisma.ResourceOrderByWithRelationInput[] {
-  switch (sort) {
-    case "popular":
-      return [{ salesCount: "desc" }, { createdAt: "desc" }];
-    case "rating":
-      return [{ averageRating: "desc" }, { reviewCount: "desc" }, { createdAt: "desc" }];
-    case "price-asc":
-      return [{ priceCents: "asc" }, { createdAt: "desc" }];
-    case "price-desc":
-      return [{ priceCents: "desc" }, { createdAt: "desc" }];
-    case "oldest":
-      return [{ createdAt: "asc" }];
-    case "newest":
-    default:
-      return [{ createdAt: "desc" }];
-  }
-}
-
 export default async function Page({ searchParams }: ResourcesPageProps) {
   const params = (await searchParams) ?? {};
 
@@ -46,144 +27,14 @@ export default async function Page({ searchParams }: ResourcesPageProps) {
   const store = normaliseSingle(params.store);
   const sort = normaliseSingle(params.sort) || "newest";
 
-  const [categories, tags, resources] = await Promise.all([
-    db.category.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-      },
-    }),
-    db.tag.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-      },
-      take: 100,
-    }),
-    db.resource.findMany({
-      where: {
-        status: "PUBLISHED",
-        ...(category
-          ? {
-              categories: {
-                some: {
-                  category: {
-                    slug: category,
-                  },
-                },
-              },
-            }
-          : {}),
-        ...(tag
-          ? {
-              tags: {
-                some: {
-                  tag: {
-                    slug: tag,
-                  },
-                },
-              },
-            }
-          : {}),
-        ...(price === "free"
-          ? {
-              isFree: true,
-            }
-          : {}),
-        ...(price === "paid"
-          ? {
-              isFree: false,
-            }
-          : {}),
-        ...(store
-          ? {
-              store: {
-                slug: store,
-              },
-            }
-          : {}),
-        ...(q
-          ? {
-              OR: [
-                {
-                  title: {
-                    contains: q,
-                    mode: "insensitive",
-                  },
-                },
-                {
-                  shortDescription: {
-                    contains: q,
-                    mode: "insensitive",
-                  },
-                },
-                {
-                  description: {
-                    contains: q,
-                    mode: "insensitive",
-                  },
-                },
-                {
-                  slug: {
-                    contains: q.toLowerCase(),
-                  },
-                },
-                {
-                  store: {
-                    name: {
-                      contains: q,
-                      mode: "insensitive",
-                    },
-                  },
-                },
-                {
-                  categories: {
-                    some: {
-                      category: {
-                        name: {
-                          contains: q,
-                          mode: "insensitive",
-                        },
-                      },
-                    },
-                  },
-                },
-                {
-                  tags: {
-                    some: {
-                      tag: {
-                        name: {
-                          contains: q,
-                          mode: "insensitive",
-                        },
-                      },
-                    },
-                  },
-                },
-              ],
-            }
-          : {}),
-      },
-      include: {
-        store: true,
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-      },
-      orderBy: getSortOrder(sort),
-    }),
-  ]);
+  const { categories, tags, resources } = await getResourceBrowseFilters({
+    q,
+    category,
+    tag,
+    price,
+    store,
+    sort,
+  });
 
   const activeFiltersCount = [q, category, tag, price, store].filter(Boolean).length;
 

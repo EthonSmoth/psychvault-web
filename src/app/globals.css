@@ -104,6 +104,26 @@ textarea {
 
 button {
   border-radius: var(--radius);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+button:not(:disabled):hover {
+  box-shadow: 0 10px 24px rgba(112, 79, 52, 0.14);
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
+}
+
+button:disabled,
+button[aria-busy="true"] {
+  cursor: progress;
 }
 
 .card {

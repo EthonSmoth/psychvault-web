@@ -48,6 +48,44 @@ function getFileExtension(name: string) {
   return name.split(".").pop()?.toLowerCase() ?? "";
 }
 
+function withExtension(name: string, extension: string) {
+  return name.replace(/\.[^.]+$/, "") + extension;
+}
+
+async function optimizeImageUpload(file: File, uploadKind: UploadKind) {
+  if (uploadKind === "main") {
+    return null;
+  }
+
+  try {
+    const sharpModule = await import("sharp");
+    const sharp = sharpModule.default;
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const maxDimension = uploadKind === "thumbnail" ? 1200 : 1600;
+
+    const optimizedBuffer = await sharp(buffer)
+      .rotate()
+      .resize(maxDimension, maxDimension, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({
+        quality: uploadKind === "thumbnail" ? 82 : 84,
+        effort: 4,
+      })
+      .toBuffer();
+
+    return {
+      body: optimizedBuffer,
+      contentType: "image/webp",
+      fileName: withExtension(file.name, ".webp"),
+      size: optimizedBuffer.byteLength,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const clientIP = getClientIP(req);
   const rateLimitKey = `upload:${clientIP}`;
@@ -118,7 +156,11 @@ export async function POST(req: NextRequest) {
   }
 
   const timestamp = Date.now();
-  const safeName = getSafeFileName(file.name);
+  const optimizedImage = await optimizeImageUpload(file, uploadKind);
+  const uploadBody = optimizedImage?.body ?? file;
+  const contentType = optimizedImage?.contentType ?? file.type;
+  const safeName = getSafeFileName(optimizedImage?.fileName ?? file.name);
+  const fileSize = optimizedImage?.size ?? file.size;
   const path = `uploads/${session.user.id}/${timestamp}-${safeName}`;
   const bucketCandidates = getBucketCandidatesForUploadKind(uploadKind);
   let uploadedPath: string | null = null;
@@ -128,8 +170,8 @@ export async function POST(req: NextRequest) {
   for (const bucket of bucketCandidates) {
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(path, file, {
-        contentType: file.type,
+      .upload(path, uploadBody, {
+        contentType,
         upsert: false,
       });
 
@@ -158,7 +200,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     url: getStoredUploadValue(uploadKind, uploadedBucket, uploadedPath),
     name: safeName,
-    mime: file.type,
-    size: file.size,
+    mime: contentType,
+    size: fileSize,
   });
 }

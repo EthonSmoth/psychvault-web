@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppBaseUrl } from "@/lib/env";
-import { getPublishedStores } from "@/server/queries/stores";
+import { getPublishedStoresBrowseData } from "@/server/queries/public-content";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 
 type StoresBrowsePageProps = {
@@ -33,7 +33,7 @@ export default async function StoresBrowsePage({ searchParams }: StoresBrowsePag
     ? (resolvedSearchParams?.sort as (typeof SORT_OPTIONS)[number]["value"])
     : "newest";
 
-  const stores = await getPublishedStores({
+  const stores = await getPublishedStoresBrowseData({
     query,
     sort,
   });
@@ -135,7 +135,7 @@ export default async function StoresBrowsePage({ searchParams }: StoresBrowsePag
                         src={store.bannerUrl}
                         alt={`${store.name} banner`}
                         fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 400px"
                         className="object-cover"
                       />
                     ) : (
@@ -155,7 +155,7 @@ export default async function StoresBrowsePage({ searchParams }: StoresBrowsePag
                           src={store.logoUrl}
                           alt={`${store.name} logo`}
                           fill
-                          sizes="72px"
+                          sizes="64px"
                           className="object-cover"
                         />
                       ) : (

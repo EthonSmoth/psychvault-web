@@ -38,7 +38,7 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
             src={previewImage}
             alt={resource.title}
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
             className="object-cover transition group-hover:scale-[1.02]"
           />
         ) : (

@@ -16,6 +16,7 @@ import {
   adminToggleStoreVerificationAction,
   adminUnpublishResourceAction,
 } from "@/server/actions/admin-actions";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 
 function formatMoney(cents: number) {
   return new Intl.NumberFormat("en-AU", {
@@ -314,12 +315,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           <div className="flex flex-wrap gap-2">
                             <form action={adminApproveQueuedResourceAction}>
                               <input type="hidden" name="resourceId" value={resource.id} />
-                              <button
-                                type="submit"
+                              <FormSubmitButton
+                                pendingText="Publishing..."
                                 className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
                               >
                                 Approve and publish
-                              </button>
+                              </FormSubmitButton>
                             </form>
 
                             <form
@@ -333,12 +334,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                 placeholder="Optional rejection note shown to the creator."
                                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500"
                               />
-                              <button
-                                type="submit"
+                              <FormSubmitButton
+                                pendingText="Rejecting..."
                                 className="rounded-xl border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50"
                               >
                                 Reject to draft
-                              </button>
+                              </FormSubmitButton>
                             </form>
                           </div>
                         </div>
@@ -398,23 +399,23 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       <form action={adminResolveResourceReportAction}>
                         <input type="hidden" name="reportId" value={report.id} />
                         <input type="hidden" name="resourceSlug" value={report.resource.slug} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Resolving..."
                           className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
                         >
                           Mark resolved
-                        </button>
+                        </FormSubmitButton>
                       </form>
 
                       <form action={adminDismissResourceReportAction}>
                         <input type="hidden" name="reportId" value={report.id} />
                         <input type="hidden" name="resourceSlug" value={report.resource.slug} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Dismissing..."
                           className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                         >
                           Dismiss
-                        </button>
+                        </FormSubmitButton>
                       </form>
                     </div>
                   </div>
@@ -475,23 +476,23 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       <form action={adminResolveStoreReportAction}>
                         <input type="hidden" name="reportId" value={report.id} />
                         <input type="hidden" name="storeSlug" value={report.store.slug} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Resolving..."
                           className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
                         >
                           Mark resolved
-                        </button>
+                        </FormSubmitButton>
                       </form>
 
                       <form action={adminDismissStoreReportAction}>
                         <input type="hidden" name="reportId" value={report.id} />
                         <input type="hidden" name="storeSlug" value={report.store.slug} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Dismissing..."
                           className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                         >
                           Dismiss
-                        </button>
+                        </FormSubmitButton>
                       </form>
                     </div>
                   </div>
@@ -552,32 +553,32 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <div className="flex flex-wrap gap-2">
                       <form action={adminPublishResourceAction}>
                         <input type="hidden" name="resourceId" value={resource.id} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Publishing..."
                           className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
                         >
                           Publish
-                        </button>
+                        </FormSubmitButton>
                       </form>
 
                       <form action={adminUnpublishResourceAction}>
                         <input type="hidden" name="resourceId" value={resource.id} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Unpublishing..."
                           className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                         >
                           Unpublish
-                        </button>
+                        </FormSubmitButton>
                       </form>
 
                       <form action={adminArchiveResourceAction}>
                         <input type="hidden" name="resourceId" value={resource.id} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Archiving..."
                           className="rounded-xl border border-amber-200 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-50"
                         >
                           Archive
-                        </button>
+                        </FormSubmitButton>
                       </form>
                     </div>
                   </div>
@@ -640,32 +641,32 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <div className="flex flex-wrap gap-2">
                       <form action={adminPublishStoreAction}>
                         <input type="hidden" name="storeId" value={store.id} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Publishing..."
                           className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
                         >
                           Publish
-                        </button>
+                        </FormSubmitButton>
                       </form>
 
                       <form action={adminArchiveStoreAction}>
                         <input type="hidden" name="storeId" value={store.id} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText="Hiding..."
                           className="rounded-xl border border-amber-200 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-50"
                         >
                           Hide
-                        </button>
+                        </FormSubmitButton>
                       </form>
 
                       <form action={adminToggleStoreVerificationAction}>
                         <input type="hidden" name="storeId" value={store.id} />
-                        <button
-                          type="submit"
+                        <FormSubmitButton
+                          pendingText={store.isVerified ? "Removing..." : "Verifying..."}
                           className="rounded-xl border border-sky-200 px-3 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-50"
                         >
                           {store.isVerified ? "Remove verification" : "Verify store"}
-                        </button>
+                        </FormSubmitButton>
                       </form>
                     </div>
                   </div>

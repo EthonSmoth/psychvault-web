@@ -5,6 +5,10 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getMarketplacePolicyLinks } from "@/lib/payments";
+import {
+  getPublishedStoreMetadata,
+  getPublishedStorePageData,
+} from "@/server/queries/public-content";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { ReportStoreForm } from "@/components/stores/report-store-form";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
@@ -19,16 +23,7 @@ type StorePageProps = {
 
 export async function generateMetadata({ params }: StorePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const store = await db.store.findUnique({
-    where: { slug },
-    select: {
-      name: true,
-      bio: true,
-      logoUrl: true,
-      isPublished: true,
-      slug: true,
-    },
-  });
+  const store = await getPublishedStoreMetadata(slug);
 
   if (!store || !store.isPublished) {
     return {
@@ -86,34 +81,9 @@ export default async function StorePage({ params }: StorePageProps) {
 
   const csrfToken = currentUser ? generateCSRFToken(currentUser.id) : "";
 
-  const store = await db.store.findUnique({
-    where: { slug },
-    include: {
-      owner: true,
-      followers: {
-        select: {
-          followerId: true,
-          storeId: true,
-        },
-      },
-      resources: {
-        where: {
-          status: "PUBLISHED",
-        },
-        include: {
-          store: true,
-          tags: {
-            include: {
-              tag: true,
-            },
-          },
-        },
-        orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
-      },
-    },
-  });
+  const store = await getPublishedStorePageData(slug);
 
-  if (!store || !store.isPublished) {
+  if (!store) {
     notFound();
   }
 
@@ -158,8 +128,7 @@ export default async function StorePage({ params }: StorePageProps) {
                 src={store.bannerUrl}
                 alt={`${store.name} banner`}
                 fill
-                priority
-                sizes="100vw"
+                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1280px"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/20" />

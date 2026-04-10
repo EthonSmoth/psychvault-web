@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -170,11 +171,15 @@ export default async function LibraryPage() {
                   <div className="flex min-w-0 gap-4">
                     <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-[var(--surface-alt)]">
                       {resource.thumbnailUrl ? (
-                        <img
-                          src={resource.thumbnailUrl}
-                          alt={resource.title}
-                          className="h-full w-full object-cover"
-                        />
+                        <div className="relative h-full w-full">
+                          <Image
+                            src={resource.thumbnailUrl}
+                            alt={resource.title}
+                            fill
+                            sizes="96px"
+                            className="object-cover"
+                          />
+                        </div>
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-2xl text-[var(--text-light)]">
                           📘

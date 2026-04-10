@@ -36,8 +36,7 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
           src={activeImage.url}
           alt={activeImage.alt}
           fill
-          priority
-          sizes="(max-width: 1024px) 100vw, 66vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) calc(100vw - 2rem), 66vw"
           className="object-cover"
         />
       </div>

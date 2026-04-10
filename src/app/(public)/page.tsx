@@ -413,7 +413,7 @@ export default async function HomePage() {
                     src={resource.thumbnailUrl}
                     alt={resource.title}
                     fill
-                    sizes="(max-width: 1024px) 100vw, 33vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 380px"
                     className="object-cover transition group-hover:scale-[1.02]"
                   />
                 ) : (

@@ -7,40 +7,20 @@ import { generateCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
 import { getAppBaseUrl } from "@/lib/env";
 import { getMarketplacePolicyLinks, getPaymentsAvailability } from "@/lib/payments";
+import {
+  getPublishedResourceMetadata,
+  getPublishedResourcePageData,
+} from "@/server/queries/public-content";
 import { ResourceGallery } from "@/components/resources/resource-gallery";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { ReportResourceForm } from "@/components/resources/report-resource-form";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import ReviewForm from "@/components/resources/review-form";
 
-export const dynamic = "force-dynamic";
-
 // Builds SEO metadata for published resource pages and suppresses indexing for missing listings.
 export async function generateMetadata({ params }: ResourcePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const resource = await db.resource.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      title: true,
-      shortDescription: true,
-      description: true,
-      thumbnailUrl: true,
-      slug: true,
-      status: true,
-      priceCents: true,
-      isFree: true,
-      averageRating: true,
-      reviewCount: true,
-      store: {
-        select: {
-          id: true,
-          name: true,
-          isVerified: true,
-        },
-      },
-    },
-  });
+  const resource = await getPublishedResourceMetadata(slug);
 
   if (!resource || resource.status !== "PUBLISHED") {
     return {
@@ -140,42 +120,13 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
         })
       : null;
 
-  const resource = await db.resource.findUnique({
-    where: { slug },
-    include: {
-      store: true,
-      creator: true,
-      tags: {
-        include: {
-          tag: true,
-        },
-      },
-      categories: {
-        include: {
-          category: true,
-        },
-      },
-      files: true,
-      reviews: {
-        include: {
-          buyer: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: 20,
-      },
-    },
-  });
+  const publicData = await getPublishedResourcePageData(slug);
 
-  if (!resource) {
+  if (!publicData) {
     notFound();
   }
 
-  if (resource.status !== "PUBLISHED") {
-    notFound();
-  }
-
+  const { resource, relatedResources } = publicData;
   const resourceData = resource as NonNullable<typeof resource>;
 
   const sessionUserId = sessionUser?.id ?? null;
@@ -215,46 +166,6 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
     hasPurchased = !!purchase;
     existingReview = review;
   }
-
-  const relatedResources = await db.resource.findMany({
-    where: {
-      status: "PUBLISHED",
-      id: {
-        not: resource.id,
-      },
-      OR: [
-        {
-          storeId: resource.storeId,
-        },
-        {
-          tags: {
-            some: {
-              tagId: {
-                in: resource.tags?.map((t) => t.tagId) ?? [],
-              },
-            },
-          },
-        },
-      ],
-    },
-    include: {
-      store: true,
-      creator: true,
-      files: true,
-      tags: {
-        include: {
-          tag: true,
-        },
-      },
-      categories: {
-        include: {
-          category: true,
-        },
-      },
-    },
-    orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
-    take: 3,
-  });
 
   const imagePattern = /\.(jpg|jpeg|png|webp|gif)$/i;
   const previewFiles = resource.files.filter((file) => file.kind === "PREVIEW");
@@ -750,8 +661,8 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
                 Explore more resources for the same client group, theme, or workflow.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                {resource.tags.length > 0 ? (
-                  resource.tags.map((item) => (
+                {resourceData.tags.length > 0 ? (
+                  resourceData.tags.map((item) => (
                     <Link
                       key={item.tag.id}
                       href={`/resources?tag=${item.tag.slug}`}
@@ -772,11 +683,11 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
           <div className="mt-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-[var(--text)]">Recent reviews</h2>
 
-            {resource.reviews.length === 0 ? (
+            {resourceData.reviews.length === 0 ? (
               <p className="mt-4 text-sm leading-6 text-[var(--text-muted)]">No reviews yet.</p>
             ) : (
               <div className="mt-6 space-y-4">
-                {resource.reviews.map((review) => (
+                {resourceData.reviews.map((review) => (
                   <div
                     key={review.id}
                     className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4"
@@ -815,8 +726,8 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
           {hasPurchased ? (
             <div className="mt-10">
               <ReviewForm
-                resourceId={resource.id}
-                resourceSlug={resource.slug}
+                resourceId={resourceData.id}
+                resourceSlug={resourceData.slug}
                 existingReview={existingReview}
                 csrfToken={reviewCsrfToken}
               />
@@ -828,7 +739,7 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
           ) : (
             <div className="mt-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--text-muted)] shadow-sm">
               <Link
-                href={`/login?redirectTo=/resources/${resource.slug}`}
+                href={`/login?redirectTo=/resources/${resourceData.slug}`}
                 className="font-medium text-[var(--text)] underline"
               >
                 Log in
