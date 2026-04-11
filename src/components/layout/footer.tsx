@@ -157,7 +157,7 @@ export function Footer() {
               aria-label="AHPRA - Australian Health Practitioner Regulation Authority"
               className="inline-flex items-center gap-1 rounded-xl border border-[#b7cce5] bg-[#edf5ff] px-3 py-2 text-xs font-medium text-[#1f5f99] transition hover:bg-[#dfeeff] hover:shadow-sm"
             >
-              AHPRA Regulated
+              AHPRA
               <span className="text-[10px]">↗</span>
             </a>
 

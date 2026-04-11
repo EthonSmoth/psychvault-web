@@ -356,7 +356,10 @@ async function HomeFeaturedResourcesSection() {
           Browse all
         </Link>
       </div>
-      <ResourceGrid resources={featuredResources} />
+      <ResourceGrid
+        resources={featuredResources}
+        className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+      />
     </section>
   );
 }
@@ -383,7 +386,7 @@ async function HomeRecentResourcesSection() {
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {recentResources.map((resource) => (
           <Link
             key={resource.id}

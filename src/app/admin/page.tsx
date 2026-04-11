@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCreatorTrustProfile } from "@/lib/creator-trust";
+import { getCreatorTrustProfiles } from "@/lib/creator-trust";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/require-admin";
 import {
@@ -150,22 +150,33 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeView = resolvedSearchParams?.view || "overview";
 
-  const userCount = await db.user.count();
-  const storeCount = await db.store.count();
-  const resourceCount = await db.resource.count();
-  const purchaseCount = await db.purchase.count();
-  const pendingReviewCount = await db.resource.count({
-    where: { moderationStatus: "PENDING_REVIEW" },
-  });
-  const openReportCount = await db.resourceReport.count({
-    where: { status: "OPEN" },
-  });
-  const openStoreReportCount = await db.storeReport.count({
-    where: { status: "OPEN" },
-  });
-  const revenueAgg = await db.purchase.aggregate({
-    _sum: { amountCents: true },
-  });
+  const [
+    userCount,
+    storeCount,
+    resourceCount,
+    purchaseCount,
+    pendingReviewCount,
+    openReportCount,
+    openStoreReportCount,
+    revenueAgg,
+  ] = await db.$transaction([
+    db.user.count(),
+    db.store.count(),
+    db.resource.count(),
+    db.purchase.count(),
+    db.resource.count({
+      where: { moderationStatus: "PENDING_REVIEW" },
+    }),
+    db.resourceReport.count({
+      where: { status: "OPEN" },
+    }),
+    db.storeReport.count({
+      where: { status: "OPEN" },
+    }),
+    db.purchase.aggregate({
+      _sum: { amountCents: true },
+    }),
+  ]);
 
   let queuedResources: Awaited<ReturnType<typeof fetchQueuedResources>> = [];
   let openReports: Awaited<ReturnType<typeof fetchOpenReports>> = [];
@@ -175,8 +186,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   let recentModerationEvents: Awaited<ReturnType<typeof fetchRecentModerationEvents>> = [];
 
   if (activeView === "overview" || activeView === "queue" || activeView === "resource-reports") {
-    queuedResources = await fetchQueuedResources();
-    openReports = await fetchOpenReports();
+    [queuedResources, openReports] = await db.$transaction([
+      fetchQueuedResources(),
+      fetchOpenReports(),
+    ]);
   }
 
   if (activeView === "overview" || activeView === "store-reports") {
@@ -184,8 +197,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   if (activeView === "overview" || activeView === "stores") {
-    recentResources = await fetchRecentResources();
-    recentStores = await fetchRecentStores();
+    [recentResources, recentStores] = await db.$transaction([
+      fetchRecentResources(),
+      fetchRecentStores(),
+    ]);
   }
 
   if (activeView === "overview" || activeView === "audit") {
@@ -193,10 +208,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const grossRevenue = revenueAgg._sum.amountCents ?? 0;
-  const queuedTrustProfiles: Awaited<ReturnType<typeof getCreatorTrustProfile>>[] = [];
-  for (const resource of queuedResources) {
-    queuedTrustProfiles.push(await getCreatorTrustProfile(resource.creator.id));
-  }
+  const queuedTrustProfiles = await getCreatorTrustProfiles(
+    queuedResources.map((resource) => resource.creator.id)
+  );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -300,10 +314,20 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                 >
                   {(() => {
-                    const trustProfile =
-                      queuedTrustProfiles[
-                        queuedResources.findIndex((queued) => queued.id === resource.id)
-                      ];
+                    const trustProfile = queuedTrustProfiles.get(resource.creator.id) ?? {
+                      score: 0,
+                      tier: "new" as const,
+                      reasons: [],
+                      stats: {
+                        accountAgeDays: 0,
+                        approvedResources: 0,
+                        rejectedResources: 0,
+                        pendingResources: 0,
+                        openReports: 0,
+                        resolvedReports: 0,
+                        salesCount: 0,
+                      },
+                    };
 
                     return (
                       <>

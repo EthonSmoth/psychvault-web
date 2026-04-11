@@ -3,9 +3,13 @@ import ResourceCard from "./resource-card";
 
 type ResourceGridProps = {
   resources: any[];
+  className?: string;
 };
 
-export function ResourceGrid({ resources }: ResourceGridProps) {
+export function ResourceGrid({
+  resources,
+  className = "grid gap-6 sm:grid-cols-2 xl:grid-cols-3",
+}: ResourceGridProps) {
   if (!resources.length) {
     return (
       <div className="rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-10 text-center shadow-sm">
@@ -26,7 +30,7 @@ export function ResourceGrid({ resources }: ResourceGridProps) {
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+    <div className={className}>
       {resources.map((resource) => (
         <ResourceCard key={resource.id} resource={resource} />
       ))}
