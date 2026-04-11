@@ -7,8 +7,6 @@ export function Footer() {
     <footer className="border-t border-soft bg-[var(--frame)]">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 text-center lg:grid-cols-[1.3fr_1fr_1fr_1fr] lg:text-left">
-          
-          {/* BRAND */}
           <div className="flex flex-col items-center lg:items-start">
             <Link
               href="/"
@@ -18,111 +16,177 @@ export function Footer() {
             </Link>
 
             <p className="mt-3 max-w-md text-sm leading-6 text-[var(--text-muted)]">
-              Discover and sell psychology resources that save time in real
-              clinical work.
+              Discover and sell psychology resources that save time in real clinical work.
             </p>
 
-            {/* SOCIAL LINKS */}
             <div className="mt-5 flex items-center justify-center gap-4 text-sm text-[var(--text-muted)] lg:justify-start">
               <a
                 href="https://twitter.com"
                 target="_blank"
-                className="hover:text-[var(--accent)] transition-colors"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-[var(--accent)]"
               >
                 Twitter
               </a>
               <a
                 href="https://instagram.com"
                 target="_blank"
-                className="hover:text-[var(--accent)] transition-colors"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-[var(--accent)]"
               >
                 Instagram
               </a>
               <a
                 href="https://youtube.com"
                 target="_blank"
-                className="hover:text-[var(--accent)] transition-colors"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-[var(--accent)]"
               >
                 YouTube
               </a>
             </div>
-
           </div>
 
-          {/* BROWSE */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--text)]">
               Browse
             </h3>
 
             <div className="mt-4 space-y-2 text-sm text-[var(--text-muted)]">
-              <Link href="/resources" className="block hover:text-[var(--accent)] transition-colors">
+              <Link href="/resources" className="block transition-colors hover:text-[var(--accent)]">
                 All resources
               </Link>
-              <Link href="/stores" className="block hover:text-[var(--accent)] transition-colors">
+              <Link href="/stores" className="block transition-colors hover:text-[var(--accent)]">
                 Creator stores
               </Link>
-              <Link href="/resources?price=free" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/resources?price=free"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Free resources
               </Link>
-              <Link href="/resources?sort=popular" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/resources?sort=popular"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Best sellers
               </Link>
-              <Link href="/resources?sort=rating" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/resources?sort=rating"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Top rated
               </Link>
             </div>
           </div>
 
-          {/* CREATORS */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--text)]">
               Creators
             </h3>
 
             <div className="mt-4 space-y-2 text-sm text-[var(--text-muted)]">
-              <Link href="/creator" className="block hover:text-[var(--accent)] transition-colors">
+              <Link href="/creator" className="block transition-colors hover:text-[var(--accent)]">
                 Dashboard
               </Link>
-              <Link href="/creator/resources/new" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/creator/resources/new"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Upload
               </Link>
-              <Link href="/creator/store" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/creator/store"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Store
               </Link>
             </div>
           </div>
 
-          {/* LEGAL */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--text)]">
               Legal
             </h3>
 
             <div className="mt-4 space-y-2 text-sm text-[var(--text-muted)]">
-              <Link href="/privacy-policy" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/privacy-policy"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Privacy policy
               </Link>
-              <Link href="/terms-of-service" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/terms-of-service"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Terms of service
               </Link>
-              <Link href="/refund-policy" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/refund-policy"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Refund policy
               </Link>
-              <Link href="/contact" className="block hover:text-[var(--accent)] transition-colors">
+              <Link href="/contact" className="block transition-colors hover:text-[var(--accent)]">
                 Contact
               </Link>
-              <Link href="/sitemap.xml" className="block hover:text-[var(--accent)] transition-colors">
+              <Link
+                href="/sitemap.xml"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
                 Sitemap
               </Link>
             </div>
           </div>
         </div>
 
-        {/* BOTTOM BAR */}
-        <div className="mt-10 flex flex-col gap-3 border-t border-soft pt-6 text-center text-sm text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between sm:text-left">
-          <p>© {currentYear} PsychVault</p>
-          <p>Built for clinicians and creators.</p>
+        <div className="mt-12 border-t border-soft pt-8 text-center">
+          <div className="mb-6 flex flex-col gap-2">
+            <p className="text-xs text-[var(--text-muted)]">© {currentYear} PsychVault</p>
+            <p className="text-sm font-medium text-[var(--text)]">
+              Handcrafted resources by practicing clinicians for your practice.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-2">
+            <a
+              href="https://www.ahpra.gov.au/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="AHPRA - Australian Health Practitioner Regulation Authority"
+              className="inline-flex items-center gap-1 rounded-xl border border-[#b7cce5] bg-[#edf5ff] px-3 py-2 text-xs font-medium text-[#1f5f99] transition hover:bg-[#dfeeff] hover:shadow-sm"
+            >
+              AHPRA Regulated
+              <span className="text-[10px]">↗</span>
+            </a>
+
+            <a
+              href="https://www.psychology.org.au/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="APS - Australian Psychological Society"
+              className="inline-flex items-center gap-1 rounded-xl border border-[#c7d7bb] bg-[#eff7e7] px-3 py-2 text-xs font-medium text-[#4d6f2d] transition hover:bg-[#e3f0d6] hover:shadow-sm"
+            >
+              APS Aligned
+              <span className="text-[10px]">↗</span>
+            </a>
+
+            <a
+              href="https://www.aapi.org.au/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="AAPI - Australian Association for Psychology Inc"
+              className="inline-flex items-center gap-1 rounded-xl border border-[#d7c8e6] bg-[#f5edfb] px-3 py-2 text-xs font-medium text-[#76549b] transition hover:bg-[#ebdef7] hover:shadow-sm"
+            >
+              AAPI Member
+              <span className="text-[10px]">↗</span>
+            </a>
+
+            <div className="inline-flex items-center gap-1 rounded-xl border border-soft bg-[var(--surface-alt)] px-3 py-2 text-xs font-medium text-[var(--text-muted)]">
+              Free Resources
+            </div>
+          </div>
         </div>
       </div>
     </footer>
