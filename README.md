@@ -2,7 +2,7 @@
 
 PsychVault is a clinician-focused marketplace for psychology resources. Buyers can browse resources and stores, claim free downloads, purchase digital products, save them to a library, message creators, follow stores, and leave reviews. Creators can build branded stores, upload resources, manage listings, and track store performance.
 
-The project now goes well beyond a starter. It includes moderation workflows, creator trust scoring, store and resource reporting, email verification, legal and policy pages, and production-facing marketplace trust features.
+The project now goes well beyond a starter. It includes moderation workflows, creator trust scoring, store and resource reporting, private download delivery, email verification, creator messaging, public SEO metadata, Google Analytics base tracking, and production-facing marketplace trust features.
 
 ## Current state
 
@@ -13,13 +13,17 @@ The project now goes well beyond a starter. It includes moderation workflows, cr
 - Stripe Checkout plus Stripe webhook purchase recording
 - Supabase Storage uploads with public asset storage plus signed private download delivery
 - Upload-time optimization for preview and thumbnail images before they are stored
+- Homepage streaming and cached public query helpers to reduce LCP-blocking work
 - Email verification for creator actions, uploads, purchases, messaging, reporting, and follows
 - Auth.js credentials auth with bcrypt password hashes
 - CSRF protection on server-action forms
 - Stripe webhook signature verification
 - Shared database-backed rate limiting for login and abuse-prone routes
 - Public-page caching and query trimming for resource and store browse/detail pages
+- SEO improvements including canonical handling, sitemap cleanup, structured data, and Open Graph image generation
+- Built-in GA4 base tracking through `NEXT_PUBLIC_GA_MEASUREMENT_ID`
 - Admin dashboard button pending states and improved global interactive feedback
+- Footer trust strip with external professional-organization links
 - Moderation system for resources and stores:
   - text moderation
   - PDF inspection
@@ -50,6 +54,7 @@ The project now goes well beyond a starter. It includes moderation workflows, cr
 - Browse published stores
 - Product-style resource detail pages with previews, reviews, tags, creator trust cues, and reporting
 - Public creator store pages with follow, message, and report actions
+- Search/filter browse pages with controlled indexing behavior and canonicalization
 - About, contact, privacy policy, terms of service, and refund policy pages
 
 ### Buyers
@@ -60,6 +65,7 @@ The project now goes well beyond a starter. It includes moderation workflows, cr
 - Leave reviews after purchase
 - Message creators
 - Follow stores and browse store-specific listings
+- Contact form and trust/reporting flows for public listings
 
 ### Creators
 - Store setup with logo, banner, bio, moderation state, and go-live checklist
@@ -73,6 +79,7 @@ The project now goes well beyond a starter. It includes moderation workflows, cr
 - Moderation event audit log
 - Creator trust scoring
 - Auto-hide after repeated reports
+- Batched creator trust lookups on the admin queue
 
 ## Requirements
 
@@ -125,6 +132,7 @@ Notes:
 - App-generated email is sent through Resend using `EMAIL_FROM`.
 - Support enquiries from the contact form are sent via Resend to `SUPPORT_EMAIL` with the submitter's address set as `replyTo`.
 - For local development, `NEXTAUTH_URL` can remain `http://localhost:3000`.
+- Set `NEXT_PUBLIC_APP_URL` to the real production domain so SEO metadata, sitemap entries, and Open Graph URLs resolve correctly.
 
 ## Getting started
 
@@ -207,6 +215,12 @@ Use any future expiry date and any CVC.
 3. Content is approved, held for review, or blocked
 4. Admin can review and resolve from `/admin`
 
+### Analytics
+1. Set `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+2. The root layout loads `gtag.js` once
+3. App Router page changes trigger GA4 pageview events
+4. Additional marketplace-specific events can be layered on top of the shared helper in `src/lib/analytics.ts`
+
 ## Security overview
 
 Security controls currently in place:
@@ -222,6 +236,7 @@ Security controls currently in place:
 - Legacy JSON write endpoints for stores/resources have been retired so creator changes must go through the moderated UI flow.
 - Public resource and store API responses are sanitized to avoid leaking owner secrets or main download links.
 - Resources and stores go through moderation and reporting workflows, including admin review and audit logging.
+- Analytics tracking is wired to avoid sending personal content such as email addresses, names, private URLs, or message bodies.
 
 Current security limitations to be aware of:
 
@@ -229,6 +244,7 @@ Current security limitations to be aware of:
 - Existing old download files uploaded before private-bucket rollout may need to be re-uploaded or migrated if you want every asset to live in the private downloads bucket.
 - Private downloads depend on the `SUPABASE_DOWNLOADS_BUCKET` remaining private and available for signed URL generation.
 - Some local development environments may still hit Prisma pool pressure if the database connection limit is set extremely low.
+- The homepage still contains multiple rich sections and images, so Lighthouse-style performance tuning should be validated against real production builds rather than dev mode.
 
 ## Scripts
 
@@ -281,6 +297,9 @@ psychvault/
 - Main download files should be uploaded into the private downloads bucket and accessed only through `/api/downloads/[resourceId]`.
 - Public resource and store pages use short-lived server caching to reduce repeated database work.
 - The admin dashboard now loads data by active tab to avoid exhausting low local Prisma connection pools.
+- The homepage now streams non-critical sections separately so the hero can render sooner.
+- Public SEO now prioritizes published resource and store detail pages while filtered browse URLs are canonically controlled and generally not indexed.
+- The navbar uses an optimized logo asset, and the app ships a generated Open Graph image route.
 
 ## Production hardening checklist
 
