@@ -106,6 +106,7 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_APP_URL=https://www.psychvault.com.au
+NEXT_PUBLIC_GA_MEASUREMENT_ID=
 PAYMENTS_AVAILABLE=false
 PLATFORM_FEE_BPS=2000
 
@@ -119,6 +120,7 @@ Notes:
 - `NEXTAUTH_SECRET` is the correct auth secret variable used by the current codebase.
 - `CSRF_SECRET` should be set explicitly in every non-local environment.
 - `SUPABASE_DOWNLOADS_BUCKET` should point at a private bucket used only for main download files.
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID` enables the built-in GA4 base tracking when set.
 - `PAYMENTS_AVAILABLE=false` is useful while Stripe live charges are still being activated.
 - App-generated email is sent through Resend using `EMAIL_FROM`.
 - Support enquiries from the contact form are sent via Resend to `SUPPORT_EMAIL` with the submitter's address set as `replyTo`.
