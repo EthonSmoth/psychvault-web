@@ -148,7 +148,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   ];
 
   const mainFile = resource.files.find((file) => file.kind === "MAIN_DOWNLOAD");
-  const hasMainFile = Boolean(mainFile);
+  const hasMainFile = resource.hasMainFile || Boolean(mainFile);
   const fileFormat = getFileExtension(mainFile?.fileName);
   const primaryCategory = resource.categories[0]?.category;
   const paymentAvailability = getPaymentsAvailability();

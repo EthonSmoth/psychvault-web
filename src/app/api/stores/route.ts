@@ -11,10 +11,11 @@ export async function GET(request: Request) {
       sort === "alphabetical" || sort === "resources" || sort === "newest"
         ? sort
         : undefined,
+    page: searchParams.get("page") || undefined,
   });
 
   return NextResponse.json(
-    { stores },
+    stores,
     {
       headers: {
         "Cache-Control": getPublicCacheControl(),

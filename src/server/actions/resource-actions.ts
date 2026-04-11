@@ -20,6 +20,7 @@ import {
   moderateResourceText,
   validateUpload,
 } from "@/lib/resource-moderation";
+import { getPublicResourceFileState } from "@/lib/resource-file-state";
 import { resolveStorageLocation } from "@/lib/storage";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
@@ -396,7 +397,16 @@ export async function saveResourceAction(
         mainFileUrl ||
         existing.files.find((file) => file.kind === "MAIN_DOWNLOAD")?.fileUrl ||
         "";
-
+      const effectivePreviewUrls = previewUrls.length
+        ? previewUrls
+        : existing.files
+            .filter((file) => file.kind === "PREVIEW")
+            .map((file) => file.fileUrl);
+      const resourceFileState = getPublicResourceFileState({
+        thumbnailUrl,
+        previewUrls: effectivePreviewUrls,
+        mainDownloadUrl: effectiveMainFileUrl,
+      });
       if (isPublished && !effectiveMainFileUrl) {
         return { error: "A published resource needs a main download file attached." };
       }
@@ -426,6 +436,9 @@ export async function saveResourceAction(
             shortDescription: shortDescription || null,
             thumbnailUrl: thumbnailUrl || null,
             imageUrl: thumbnailUrl || null,
+            previewImageUrl: resourceFileState.previewImageUrl,
+            mainDownloadUrl: resourceFileState.mainDownloadUrl,
+            hasMainFile: resourceFileState.hasMainFile,
             priceCents,
             currency: "AUD",
             isFree,
@@ -580,6 +593,11 @@ export async function saveResourceAction(
       isPublished && combinedModerationDecision !== "warn";
     const status = shouldPublish ? ResourceStatus.PUBLISHED : ResourceStatus.DRAFT;
     const isFree = priceCents === 0;
+    const resourceFileState = getPublicResourceFileState({
+      thumbnailUrl,
+      previewUrls,
+      mainDownloadUrl: mainFileUrl,
+    });
     const moderationState = getModerationState(
       combinedModerationDecision,
       combinedModerationReason
@@ -594,6 +612,9 @@ export async function saveResourceAction(
           shortDescription: shortDescription || null,
           thumbnailUrl: thumbnailUrl || null,
           imageUrl: thumbnailUrl || null,
+          previewImageUrl: resourceFileState.previewImageUrl,
+          mainDownloadUrl: resourceFileState.mainDownloadUrl,
+          hasMainFile: resourceFileState.hasMainFile,
           priceCents,
           currency: "AUD",
           isFree,

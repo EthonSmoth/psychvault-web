@@ -388,7 +388,7 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
 
           <div>
             <span className="mb-2 block text-sm font-medium text-[var(--text)]">Tags</span>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
               {tags.map((tag) => (
                 <label
                   key={tag.id}

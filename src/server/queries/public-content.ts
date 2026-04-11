@@ -1,14 +1,21 @@
 import { unstable_cache } from "next/cache";
-import { Prisma } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import {
   PUBLIC_CACHE_TAGS,
   PUBLIC_CONTENT_REVALIDATE_SECONDS,
 } from "@/server/cache/public-cache";
-import type { PublicResourceCard, PublicStoreCard } from "@/types/public";
+import type {
+  PublicBrowsePageInfo,
+  PublicResourceCard,
+  PublicStoreCard,
+} from "@/types/public";
 
 const MAX_PUBLIC_QUERY_LENGTH = 80;
 const MAX_PUBLIC_FILTER_SLUG_LENGTH = 64;
+const MAX_PUBLIC_BROWSE_PAGE = 50;
+export const PUBLIC_RESOURCE_BROWSE_PAGE_SIZE = 24;
+export const PUBLIC_STORE_BROWSE_PAGE_SIZE = 18;
 const RESOURCE_BROWSE_SORT_OPTIONS = new Set([
   "newest",
   "popular",
@@ -26,6 +33,7 @@ type ResourceBrowseOptions = {
   price?: string;
   store?: string;
   sort?: string;
+  page?: string | number;
 };
 
 type StoreBrowseSort = "newest" | "alphabetical" | "resources";
@@ -53,14 +61,41 @@ function normaliseStoreBrowseSort(value?: string): StoreBrowseSort {
   return STORE_BROWSE_SORT_OPTIONS.has(sort) ? (sort as StoreBrowseSort) : "newest";
 }
 
+function normaliseBrowsePage(value?: string | number) {
+  const page = Number(value);
+
+  if (!Number.isFinite(page) || page < 1) {
+    return 1;
+  }
+
+  return Math.min(Math.floor(page), MAX_PUBLIC_BROWSE_PAGE);
+}
+
+function createPublicBrowsePageInfo(
+  page: number,
+  pageSize: number,
+  hasNextPage: boolean
+): PublicBrowsePageInfo {
+  return {
+    page,
+    pageSize,
+    hasNextPage,
+    hasPreviousPage: page > 1,
+    nextPage: hasNextPage ? page + 1 : null,
+    previousPage: page > 1 ? page - 1 : null,
+  };
+}
+
 const resourceCardSelect = {
   id: true,
   slug: true,
   title: true,
   shortDescription: true,
   thumbnailUrl: true,
+  previewImageUrl: true,
   priceCents: true,
   isFree: true,
+  hasMainFile: true,
   averageRating: true,
   reviewCount: true,
   store: {
@@ -86,26 +121,6 @@ const resourceCardSelect = {
       },
     },
   },
-  files: {
-    where: {
-      kind: {
-        in: ["THUMBNAIL", "PREVIEW", "MAIN_DOWNLOAD"],
-      },
-    },
-    select: {
-      kind: true,
-      fileUrl: true,
-    },
-    take: 3,
-    orderBy: [
-      {
-        sortOrder: "asc",
-      },
-      {
-        createdAt: "asc",
-      },
-    ],
-  },
 } satisfies Prisma.ResourceSelect;
 
 type ResourceCardRecord = Prisma.ResourceGetPayload<{
@@ -113,24 +128,18 @@ type ResourceCardRecord = Prisma.ResourceGetPayload<{
 }>;
 
 function toPublicResourceCard(resource: ResourceCardRecord): PublicResourceCard {
-  const previewImageUrl =
-    resource.thumbnailUrl ||
-    resource.files.find((file) => file.kind === "THUMBNAIL")?.fileUrl ||
-    resource.files.find((file) => file.kind === "PREVIEW")?.fileUrl ||
-    null;
-
   return {
     id: resource.id,
     slug: resource.slug,
     title: resource.title,
     shortDescription: resource.shortDescription,
     thumbnailUrl: resource.thumbnailUrl,
-    previewImageUrl,
+    previewImageUrl: resource.previewImageUrl || resource.thumbnailUrl,
     priceCents: resource.priceCents,
     isFree: resource.isFree,
     averageRating: resource.averageRating,
     reviewCount: resource.reviewCount,
-    downloadReady: resource.files.some((file) => file.kind === "MAIN_DOWNLOAD"),
+    downloadReady: resource.hasMainFile,
     store: resource.store
       ? {
           name: resource.store.name,
@@ -183,6 +192,9 @@ export function getPublishedResourcePageData(slug: string) {
           description: true,
           shortDescription: true,
           thumbnailUrl: true,
+          previewImageUrl: true,
+          mainDownloadUrl: true,
+          hasMainFile: true,
           priceCents: true,
           isFree: true,
           averageRating: true,
@@ -424,8 +436,24 @@ export function getHomepageCategoryData() {
   return unstable_cache(
     async () =>
       db.category.findMany({
-        orderBy: { name: "asc" },
-        take: 8,
+        where: {
+          resources: {
+            some: {
+              resource: {
+                status: "PUBLISHED",
+              },
+            },
+          },
+        },
+        orderBy: [
+          {
+            resources: {
+              _count: "desc",
+            },
+          },
+          { name: "asc" },
+        ],
+        take: 12,
         include: {
           _count: {
             select: {
@@ -445,16 +473,20 @@ export function getHomepageCategoryData() {
 export function getHomepageStatsData() {
   return unstable_cache(
     async () => {
-      const [totalResources, totalCreators, totalCategories] = await Promise.all([
+      const [totalResources, totalCreators, totalStores] = await Promise.all([
         db.resource.count({ where: { status: "PUBLISHED" } }),
+        db.user.count({
+          where: {
+            role: UserRole.CREATOR,
+          },
+        }),
         db.store.count({ where: { isPublished: true } }),
-        db.category.count(),
       ]);
 
       return {
         totalResources,
         totalCreators,
-        totalCategories,
+        totalStores,
       };
     },
     ["homepage-stats"],
@@ -508,9 +540,14 @@ export function getPublishedResourcesBrowseData(options: ResourceBrowseOptions) 
   const price = normaliseResourceBrowsePrice(options.price);
   const store = normaliseBrowseSlug(options.store);
   const sort = normaliseResourceBrowseSort(options.sort);
+  const page = normaliseBrowsePage(options.page);
 
   return unstable_cache(
-    async (): Promise<PublicResourceCard[]> => {
+    async (): Promise<{
+      resources: PublicResourceCard[];
+      pageInfo: PublicBrowsePageInfo;
+    }> => {
+      const skip = (page - 1) * PUBLIC_RESOURCE_BROWSE_PAGE_SIZE;
       const resources = await db.resource.findMany({
         where: {
           status: "PUBLISHED",
@@ -617,11 +654,24 @@ export function getPublishedResourcesBrowseData(options: ResourceBrowseOptions) 
         },
         select: resourceCardSelect,
         orderBy: getResourceBrowseSortOrder(sort),
+        skip,
+        take: PUBLIC_RESOURCE_BROWSE_PAGE_SIZE + 1,
       });
 
-      return resources.map(toPublicResourceCard);
+      const hasNextPage = resources.length > PUBLIC_RESOURCE_BROWSE_PAGE_SIZE;
+
+      return {
+        resources: resources
+          .slice(0, PUBLIC_RESOURCE_BROWSE_PAGE_SIZE)
+          .map(toPublicResourceCard),
+        pageInfo: createPublicBrowsePageInfo(
+          page,
+          PUBLIC_RESOURCE_BROWSE_PAGE_SIZE,
+          hasNextPage
+        ),
+      };
     },
-    ["public-resource-browse-data", q, category, tag, price, store, sort],
+    ["public-resource-browse-data", q, category, tag, price, store, sort, String(page)],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourceBrowse],
@@ -644,12 +694,18 @@ export async function getResourceBrowseFilters(options: ResourceBrowseOptions) {
 export function getPublishedStoresBrowseData(options: {
   query?: string;
   sort?: StoreBrowseSort;
+  page?: string | number;
 }) {
   const query = normaliseBrowseText(options.query);
   const sort = normaliseStoreBrowseSort(options.sort);
+  const page = normaliseBrowsePage(options.page);
 
   return unstable_cache(
-    async (): Promise<PublicStoreCard[]> => {
+    async (): Promise<{
+      stores: PublicStoreCard[];
+      pageInfo: PublicBrowsePageInfo;
+    }> => {
+      const skip = (page - 1) * PUBLIC_STORE_BROWSE_PAGE_SIZE;
       const stores = await db.store.findMany({
         where: {
           isPublished: true,
@@ -706,22 +762,33 @@ export function getPublishedStoresBrowseData(options: {
             : sort === "resources"
             ? [{ resources: { _count: "desc" } }, { name: "asc" }]
             : [{ updatedAt: "desc" }],
+        skip,
+        take: PUBLIC_STORE_BROWSE_PAGE_SIZE + 1,
       });
 
-      return stores.map((store) => ({
-        id: store.id,
-        name: store.name,
-        slug: store.slug,
-        bio: store.bio,
-        logoUrl: store.logoUrl,
-        bannerUrl: store.bannerUrl,
-        location: store.location,
-        isVerified: store.isVerified,
-        followerCount: store._count.followers,
-        resourceCount: store._count.resources,
-      }));
+      const hasNextPage = stores.length > PUBLIC_STORE_BROWSE_PAGE_SIZE;
+
+      return {
+        stores: stores.slice(0, PUBLIC_STORE_BROWSE_PAGE_SIZE).map((store) => ({
+          id: store.id,
+          name: store.name,
+          slug: store.slug,
+          bio: store.bio,
+          logoUrl: store.logoUrl,
+          bannerUrl: store.bannerUrl,
+          location: store.location,
+          isVerified: store.isVerified,
+          followerCount: store._count.followers,
+          resourceCount: store._count.resources,
+        })),
+        pageInfo: createPublicBrowsePageInfo(
+          page,
+          PUBLIC_STORE_BROWSE_PAGE_SIZE,
+          hasNextPage
+        ),
+      };
     },
-    ["public-stores-browse", query, sort],
+    ["public-stores-browse", query, sort, String(page)],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storeBrowse],

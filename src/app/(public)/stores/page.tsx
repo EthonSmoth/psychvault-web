@@ -31,9 +31,14 @@ export const metadata: Metadata = {
 };
 
 export default async function StoresBrowsePage() {
-  const stores = await getPublishedStoresBrowseData({
+  const browseData = await getPublishedStoresBrowseData({
     sort: "newest",
   });
 
-  return <StoresBrowseClient initialStores={stores} />;
+  return (
+    <StoresBrowseClient
+      initialStores={browseData.stores}
+      initialPageInfo={browseData.pageInfo}
+    />
+  );
 }

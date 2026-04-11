@@ -86,7 +86,7 @@ function HomeHero() {
 }
 
 async function HomeStats() {
-  const { totalResources, totalCreators, totalCategories } = await getHomepageStatsData();
+  const { totalResources, totalCreators, totalStores } = await getHomepageStatsData();
 
   return (
     <div className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--border)] pt-8">
@@ -99,8 +99,8 @@ async function HomeStats() {
         <div className="mt-1 text-sm text-[var(--text-muted)]">Creators</div>
       </div>
       <div className="rounded-2xl bg-[var(--surface-alt)] p-4">
-        <div className="text-2xl font-bold text-[var(--text)]">{totalCategories}</div>
-        <div className="mt-1 text-sm text-[var(--text-muted)]">Categories</div>
+        <div className="text-2xl font-bold text-[var(--text)]">{totalStores}</div>
+        <div className="mt-1 text-sm text-[var(--text-muted)]">Stores</div>
       </div>
     </div>
   );

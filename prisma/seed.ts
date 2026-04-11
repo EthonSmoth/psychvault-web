@@ -1,4 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import {
+  DEFAULT_RESOURCE_CATEGORIES,
+  DEFAULT_RESOURCE_TAGS,
+} from "../src/lib/resource-taxonomy";
 
 const prisma = new PrismaClient();
 
@@ -16,14 +20,7 @@ async function main() {
   await prisma.user.deleteMany();
 
   const categories = await Promise.all(
-    [
-      ["Assessment Tools", "assessment-tools"],
-      ["Report Templates", "report-templates"],
-      ["Psychoeducation", "psychoeducation"],
-      ["Parent Handouts", "parent-handouts"],
-      ["NDIS Resources", "ndis-resources"],
-      ["Therapy Worksheets", "therapy-worksheets"],
-    ].map(([name, slug]) =>
+    DEFAULT_RESOURCE_CATEGORIES.map(({ name, slug }) =>
       prisma.category.create({
         data: { name, slug },
       })
@@ -31,20 +28,7 @@ async function main() {
   );
 
   const tags = await Promise.all(
-    [
-      ["ADHD", "adhd"],
-      ["Autism", "autism"],
-      ["Alexithymia", "alexithymia"],
-      ["Trauma", "trauma"],
-      ["Anxiety", "anxiety"],
-      ["NDIS", "ndis"],
-      ["Child", "child"],
-      ["Adolescent", "adolescent"],
-      ["Parent", "parent"],
-      ["CBT", "cbt"],
-      ["DBT", "dbt"],
-      ["Emotional Regulation", "emotional-regulation"],
-    ].map(([name, slug]) =>
+    DEFAULT_RESOURCE_TAGS.map(({ name, slug }) =>
       prisma.tag.create({
         data: { name, slug },
       })

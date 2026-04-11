@@ -3,16 +3,22 @@
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ResourceGrid } from "@/components/resources/resource-grid";
-import type { PublicCategorySummary, PublicResourceCard } from "@/types/public";
+import type {
+  PublicBrowsePageInfo,
+  PublicCategorySummary,
+  PublicResourceCard,
+} from "@/types/public";
 
 type BrowsePayload = {
   resources: PublicResourceCard[];
+  pageInfo: PublicBrowsePageInfo;
 };
 
 type BrowseClientProps = {
   categories: PublicCategorySummary[];
   tags: PublicCategorySummary[];
   initialResources: PublicResourceCard[];
+  initialPageInfo: PublicBrowsePageInfo;
 };
 
 type ResourceBrowseFilters = {
@@ -22,7 +28,13 @@ type ResourceBrowseFilters = {
   price: string;
   store: string;
   sort: string;
+  page: number;
 };
+
+function normalisePage(value: string | null) {
+  const page = Number(value);
+  return Number.isFinite(page) && page > 1 ? Math.floor(page) : 1;
+}
 
 function getFiltersFromSearchParams(searchParams: URLSearchParams): ResourceBrowseFilters {
   return {
@@ -32,10 +44,15 @@ function getFiltersFromSearchParams(searchParams: URLSearchParams): ResourceBrow
     price: searchParams.get("price")?.trim() || "",
     store: searchParams.get("store")?.trim() || "",
     sort: searchParams.get("sort")?.trim() || "newest",
+    page: normalisePage(searchParams.get("page")),
   };
 }
 
-function buildSearchUrl(pathname: string, filters: ResourceBrowseFilters) {
+function getResourceBrowsePath(filters: ResourceBrowseFilters) {
+  return filters.q ? "/search" : "/resources";
+}
+
+function buildSearchUrl(filters: ResourceBrowseFilters) {
   const params = new URLSearchParams();
 
   if (filters.q) params.set("q", filters.q);
@@ -44,47 +61,76 @@ function buildSearchUrl(pathname: string, filters: ResourceBrowseFilters) {
   if (filters.price) params.set("price", filters.price);
   if (filters.store) params.set("store", filters.store);
   if (filters.sort && filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.page > 1) params.set("page", String(filters.page));
 
+  const pathname = getResourceBrowsePath(filters);
   const queryString = params.toString();
   return queryString ? `${pathname}?${queryString}` : pathname;
+}
+
+function hasActiveFilters(filters: ResourceBrowseFilters) {
+  return Boolean(
+    filters.q ||
+      filters.category ||
+      filters.tag ||
+      filters.price ||
+      filters.store ||
+      filters.sort !== "newest" ||
+      filters.page > 1
+  );
+}
+
+function buildRequestParams(filters: ResourceBrowseFilters) {
+  const params = new URLSearchParams();
+
+  if (filters.q) params.set("q", filters.q);
+  if (filters.category) params.set("category", filters.category);
+  if (filters.tag) params.set("tag", filters.tag);
+  if (filters.price) params.set("price", filters.price);
+  if (filters.store) params.set("store", filters.store);
+  if (filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.page > 1) params.set("page", String(filters.page));
+
+  return params;
 }
 
 export function ResourcesBrowseClient({
   categories,
   tags,
   initialResources,
+  initialPageInfo,
 }: BrowseClientProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const filters = useMemo(
-    () => getFiltersFromSearchParams(searchParams),
-    [searchParams]
-  );
-  const formKey = useMemo(() => buildSearchUrl(pathname, filters), [filters, pathname]);
+  const filters = useMemo(() => getFiltersFromSearchParams(searchParams), [searchParams]);
+  const isSearchSurface = pathname === "/search";
+  const formKey = useMemo(() => buildSearchUrl(filters), [filters]);
 
   const [resources, setResources] = useState(initialResources);
+  const [pageInfo, setPageInfo] = useState(initialPageInfo);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const hasActiveFilters =
-      Boolean(filters.q || filters.category || filters.tag || filters.price || filters.store) ||
-      filters.sort !== "newest";
-
-    if (!hasActiveFilters) {
+    if (isSearchSurface && !filters.q) {
       setResources(initialResources);
+      setPageInfo(initialPageInfo);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
+    if (!hasActiveFilters(filters)) {
+      setResources(initialResources);
+      setPageInfo(initialPageInfo);
       setError(null);
       setLoading(false);
       return;
     }
 
     const controller = new AbortController();
-    const requestUrl = `/api/resources?${new URLSearchParams(
-      Object.entries(filters).filter(
-        ([key, value]) => Boolean(value) && !(key === "sort" && value === "newest")
-      )
-    ).toString()}`;
+    const requestUrl = `/api/resources?${buildRequestParams(filters).toString()}`;
 
     setLoading(true);
     setError(null);
@@ -102,6 +148,7 @@ export function ResourcesBrowseClient({
       })
       .then((payload) => {
         setResources(payload.resources);
+        setPageInfo(payload.pageInfo);
       })
       .catch((fetchError) => {
         if (controller.signal.aborted) {
@@ -121,7 +168,7 @@ export function ResourcesBrowseClient({
     return () => {
       controller.abort();
     };
-  }, [filters, initialResources]);
+  }, [filters, initialPageInfo, initialResources, isSearchSurface]);
 
   const activeFiltersCount = [
     filters.q,
@@ -139,16 +186,28 @@ export function ResourcesBrowseClient({
       price: String(formData.get("price") || "").trim(),
       store: String(formData.get("store") || "").trim(),
       sort: String(formData.get("sort") || "").trim() || "newest",
+      page: 1,
     };
 
     startTransition(() => {
-      router.replace(buildSearchUrl(pathname, nextFilters));
+      router.replace(buildSearchUrl(nextFilters));
     });
   }
 
   function clearFilters() {
     startTransition(() => {
-      router.replace(pathname);
+      router.replace("/resources");
+    });
+  }
+
+  function goToPage(page: number) {
+    startTransition(() => {
+      router.replace(
+        buildSearchUrl({
+          ...filters,
+          page,
+        })
+      );
     });
   }
 
@@ -157,16 +216,21 @@ export function ResourcesBrowseClient({
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
-            Browse Resources
+            {isSearchSurface ? "Search Resources" : "Browse Resources"}
           </h1>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
-            Discover worksheets, handouts, templates, psychoeducation packs, and more.
+            {isSearchSurface
+              ? "Search psychology resources by keyword, topic, creator, store, or tag."
+              : "Discover worksheets, handouts, templates, psychoeducation packs, and more."}
           </p>
         </div>
 
         <div className="text-sm text-[var(--text-light)]">
-          {loading ? "Updating results..." : `${resources.length} resource${resources.length === 1 ? "" : "s"}`}
+          {loading
+            ? "Updating results..."
+            : `${resources.length} resource${resources.length === 1 ? "" : "s"}`}
           {activeFiltersCount > 0 ? " matched your filters" : ""}
+          {pageInfo.page > 1 ? ` on page ${pageInfo.page}` : ""}
         </div>
       </div>
 
@@ -324,9 +388,46 @@ export function ResourcesBrowseClient({
         </div>
       ) : null}
 
-      <div className="defer-section">
-        <ResourceGrid resources={resources} />
-      </div>
+      {isSearchSurface && !filters.q ? (
+        <div className="rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-10 text-center shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text)]">Start with a keyword</h2>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
+            Search by resource title, creator, store, topic, or tag to see matching results.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="defer-section">
+            <ResourceGrid resources={resources} />
+          </div>
+
+          {resources.length > 0 && (pageInfo.hasPreviousPage || pageInfo.hasNextPage) ? (
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 shadow-sm">
+              <button
+                type="button"
+                onClick={() => pageInfo.previousPage && goToPage(pageInfo.previousPage)}
+                disabled={!pageInfo.hasPreviousPage}
+                className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Previous page
+              </button>
+
+              <div className="text-sm text-[var(--text-muted)]">
+                Page {pageInfo.page}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => pageInfo.nextPage && goToPage(pageInfo.nextPage)}
+                disabled={!pageInfo.hasNextPage}
+                className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next page
+              </button>
+            </div>
+          ) : null}
+        </>
+      )}
     </main>
   );
 }

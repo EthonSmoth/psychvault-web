@@ -15,21 +15,16 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 
   const resource = await db.resource.findUnique({
     where: { id: resourceId },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      hasMainFile: true,
+      mainDownloadUrl: true,
       store: {
         select: {
           ownerId: true,
           slug: true,
         },
-      },
-      files: {
-        where: {
-          kind: "MAIN_DOWNLOAD",
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
-        take: 1,
       },
     },
   });
@@ -79,9 +74,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     );
   }
 
-  const mainFile = resource.files[0];
-
-  if (!mainFile?.fileUrl) {
+  if (!resource.hasMainFile || !resource.mainDownloadUrl) {
     return NextResponse.json(
       { error: "No downloadable file is attached to this resource yet." },
       {
@@ -93,7 +86,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     );
   }
 
-  const signedUrl = await createSignedDownloadUrl(mainFile.fileUrl);
+  const signedUrl = await createSignedDownloadUrl(resource.mainDownloadUrl);
 
   if (!signedUrl) {
     return NextResponse.json(

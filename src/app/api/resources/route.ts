@@ -12,10 +12,11 @@ export async function GET(request: Request) {
     price: searchParams.get("price") || undefined,
     store: searchParams.get("store") || undefined,
     sort: searchParams.get("sort") || undefined,
+    page: searchParams.get("page") || undefined,
   });
 
   return NextResponse.json(
-    { resources },
+    resources,
     {
       headers: {
         "Cache-Control": getPublicCacheControl(),

@@ -46,80 +46,63 @@ export default async function FollowingFeedPage() {
     followedStoreIds.length > 0
       ? (
           await db.resource.findMany({
-          where: {
-            status: "PUBLISHED",
-            storeId: {
-              in: followedStoreIds,
+            where: {
+              status: "PUBLISHED",
+              storeId: {
+                in: followedStoreIds,
+              },
             },
-          },
           select: {
             id: true,
             slug: true,
             title: true,
             shortDescription: true,
             thumbnailUrl: true,
+            previewImageUrl: true,
             priceCents: true,
             isFree: true,
+            hasMainFile: true,
             averageRating: true,
             reviewCount: true,
             store: {
-              select: {
-                name: true,
-                slug: true,
-                isVerified: true,
+                select: {
+                  name: true,
+                  slug: true,
+                  isVerified: true,
+                },
               },
-            },
-            creator: {
-              select: {
-                name: true,
+              creator: {
+                select: {
+                  name: true,
+                },
               },
-            },
-            categories: {
-              select: {
-                category: {
-                  select: {
-                    id: true,
-                    name: true,
-                    slug: true,
+              categories: {
+                select: {
+                  category: {
+                    select: {
+                      id: true,
+                      name: true,
+                      slug: true,
+                    },
                   },
                 },
               },
             },
-            files: {
-              where: {
-                kind: {
-                  in: ["THUMBNAIL", "PREVIEW", "MAIN_DOWNLOAD"],
-                },
-              },
-              select: {
-                kind: true,
-                fileUrl: true,
-              },
-              take: 3,
-              orderBy: {
-                sortOrder: "asc",
-              },
-            },
-          },
-          orderBy: [{ createdAt: "desc" }, { salesCount: "desc" }],
-          take: 24,
-        })
+            orderBy: [{ createdAt: "desc" }, { salesCount: "desc" }],
+            take: 24,
+          })
         ).map((resource) => ({
           id: resource.id,
           slug: resource.slug,
           title: resource.title,
           shortDescription: resource.shortDescription,
           thumbnailUrl: resource.thumbnailUrl,
-          previewImageUrl:
-            resource.thumbnailUrl ||
-            resource.files.find((file) => file.kind === "THUMBNAIL")?.fileUrl ||
-            resource.files.find((file) => file.kind === "PREVIEW")?.fileUrl ||
-            null,
+          previewImageUrl: resource.previewImageUrl || resource.thumbnailUrl,
           priceCents: resource.priceCents,
           isFree: resource.isFree,
           averageRating: resource.averageRating,
           reviewCount: resource.reviewCount,
-          downloadReady: resource.files.some((file) => file.kind === "MAIN_DOWNLOAD"),
+          downloadReady: resource.hasMainFile,
           store: resource.store
             ? {
                 name: resource.store.name,

@@ -31,6 +31,15 @@ export type PublicResourceCard = {
   categories: PublicCategorySummary[];
 };
 
+export type PublicBrowsePageInfo = {
+  page: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  nextPage: number | null;
+  previousPage: number | null;
+};
+
 export type PublicStoreCard = {
   id: string;
   name: string;

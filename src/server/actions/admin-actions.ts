@@ -76,17 +76,13 @@ export async function adminPublishResourceAction(formData: FormData) {
     select: {
       id: true,
       slug: true,
-      files: {
-        where: { kind: "MAIN_DOWNLOAD" },
-        select: { id: true },
-        take: 1,
-      },
+      hasMainFile: true,
       store: { select: { slug: true } },
     },
   });
 
   if (!resource) throw new Error("Resource not found.");
-  if (resource.files.length === 0) {
+  if (!resource.hasMainFile) {
     throw new Error("Cannot publish a resource without a main download file.");
   }
 
@@ -261,16 +257,12 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
       id: true,
       slug: true,
       store: { select: { slug: true } },
-      files: {
-        where: { kind: "MAIN_DOWNLOAD" },
-        select: { id: true },
-        take: 1,
-      },
+      hasMainFile: true,
     },
   });
 
   if (!resource) throw new Error("Resource not found.");
-  if (resource.files.length === 0) {
+  if (!resource.hasMainFile) {
     throw new Error("Cannot approve and publish a resource without a main download file.");
   }
 

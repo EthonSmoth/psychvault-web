@@ -143,11 +143,7 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
       slug: true,
       creatorId: true,
       storeId: true,
-      files: {
-        where: { kind: "MAIN_DOWNLOAD" },
-        select: { id: true },
-        take: 1,
-      },
+      hasMainFile: true,
     },
   });
 
@@ -157,7 +153,7 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
     throw new Error("Not authorised.");
   }
 
-  if (resource.files.length === 0) {
+  if (!resource.hasMainFile) {
     throw new Error("This resource cannot be published because it has no main download file.");
   }
 

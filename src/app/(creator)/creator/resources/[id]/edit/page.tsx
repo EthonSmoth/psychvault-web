@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCSRFToken } from "@/lib/csrf";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
+import {
+  DEFAULT_RESOURCE_CATEGORIES,
+  DEFAULT_RESOURCE_TAGS,
+} from "@/lib/resource-taxonomy";
 import ResourceForm from "@/components/forms/resource-form";
 
 type EditResourcePageProps = {
@@ -30,6 +34,17 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
   }
 
   await requireVerifiedEmailOrRedirect(user.id, `/creator/resources/${id}/edit`);
+
+  await Promise.all([
+    db.category.createMany({
+      data: DEFAULT_RESOURCE_CATEGORIES,
+      skipDuplicates: true,
+    }),
+    db.tag.createMany({
+      data: DEFAULT_RESOURCE_TAGS,
+      skipDuplicates: true,
+    }),
+  ]);
 
   const [categories, tags, resource] = await Promise.all([
     db.category.findMany({

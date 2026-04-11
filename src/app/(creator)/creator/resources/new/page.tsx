@@ -2,32 +2,12 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCSRFToken } from "@/lib/csrf";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
+import {
+  DEFAULT_RESOURCE_CATEGORIES,
+  DEFAULT_RESOURCE_TAGS,
+} from "@/lib/resource-taxonomy";
 import { redirect } from "next/navigation";
 import ResourceForm from "@/components/forms/resource-form";
-
-const defaultCategories = [
-  { name: "Assessment Tools", slug: "assessment-tools" },
-  { name: "Report Templates", slug: "report-templates" },
-  { name: "Psychoeducation", slug: "psychoeducation" },
-  { name: "Parent Handouts", slug: "parent-handouts" },
-  { name: "NDIS Resources", slug: "ndis-resources" },
-  { name: "Therapy Worksheets", slug: "therapy-worksheets" },
-];
-
-const defaultTags = [
-  { name: "ADHD", slug: "adhd" },
-  { name: "Autism", slug: "autism" },
-  { name: "Alexithymia", slug: "alexithymia" },
-  { name: "Trauma", slug: "trauma" },
-  { name: "Anxiety", slug: "anxiety" },
-  { name: "NDIS", slug: "ndis" },
-  { name: "Child", slug: "child" },
-  { name: "Adolescent", slug: "adolescent" },
-  { name: "Parent", slug: "parent" },
-  { name: "CBT", slug: "cbt" },
-  { name: "DBT", slug: "dbt" },
-  { name: "Emotional Regulation", slug: "emotional-regulation" },
-];
 
 export default async function NewCreatorResourcePage() {
   const session = await auth();
@@ -53,21 +33,16 @@ export default async function NewCreatorResourcePage() {
     redirect("/creator/store");
   }
 
-  const existingCategoryCount = await db.category.count();
-  if (existingCategoryCount === 0) {
-    await db.category.createMany({
-      data: defaultCategories,
+  await Promise.all([
+    db.category.createMany({
+      data: DEFAULT_RESOURCE_CATEGORIES,
       skipDuplicates: true,
-    });
-  }
-
-  const existingTagCount = await db.tag.count();
-  if (existingTagCount === 0) {
-    await db.tag.createMany({
-      data: defaultTags,
+    }),
+    db.tag.createMany({
+      data: DEFAULT_RESOURCE_TAGS,
       skipDuplicates: true,
-    });
-  }
+    }),
+  ]);
 
   const categories = await db.category.findMany({
     orderBy: { name: "asc" },

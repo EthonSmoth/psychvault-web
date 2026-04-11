@@ -66,15 +66,6 @@ export async function POST(request: Request) {
           },
         },
       },
-      files: {
-        where: {
-          kind: "MAIN_DOWNLOAD",
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
-        take: 1,
-      },
     },
   });
 
@@ -91,9 +82,7 @@ export async function POST(request: Request) {
   }
 
   const isOwner = resource.store?.ownerId === userId;
-  const hasMainFile = resource.files.some(
-    (file) => file.kind === "MAIN_DOWNLOAD"
-  );
+  const hasMainFile = resource.hasMainFile;
 
   if (!hasMainFile) {
     const errorUrl = new URL(`/resources/${resource.slug}`, request.url);

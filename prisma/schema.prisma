@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -222,6 +223,9 @@ model Resource {
   moderatedById    String?
   thumbnailUrl     String?
   imageUrl         String?
+  previewImageUrl  String?
+  mainDownloadUrl  String?
+  hasMainFile      Boolean          @default(false)
   previewType      PreviewType?
   averageRating    Float            @default(0)
   reviewCount      Int              @default(0)

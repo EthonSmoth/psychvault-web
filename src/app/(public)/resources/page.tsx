@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ResourcesPage() {
-  const [{ categories, tags }, resources] = await Promise.all([
+  const [{ categories, tags }, browseData] = await Promise.all([
     getResourceBrowseFacets(),
     getPublishedResourcesBrowseData({ sort: "newest" }),
   ]);
@@ -46,7 +46,8 @@ export default async function ResourcesPage() {
     <ResourcesBrowseClient
       categories={categories}
       tags={tags}
-      initialResources={resources}
+      initialResources={browseData.resources}
+      initialPageInfo={browseData.pageInfo}
     />
   );
 }
