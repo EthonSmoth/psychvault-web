@@ -278,6 +278,73 @@ export function getPublishedStorePageData(slug: string) {
   )();
 }
 
+export function getHomepageResourceShowcaseData() {
+  return unstable_cache(
+    async () => {
+      const [featuredResources, recentResources] = await Promise.all([
+        db.resource.findMany({
+          where: { status: "PUBLISHED" },
+          orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
+          take: 6,
+          select: resourceCardSelect,
+        }),
+        db.resource.findMany({
+          where: { status: "PUBLISHED" },
+          orderBy: { createdAt: "desc" },
+          take: 3,
+          select: resourceCardSelect,
+        }),
+      ]);
+
+      return {
+        featuredResources,
+        recentResources,
+      };
+    },
+    ["homepage-resource-showcase"],
+    { revalidate: 300 }
+  )();
+}
+
+export function getHomepageCategoryData() {
+  return unstable_cache(
+    async () =>
+      db.category.findMany({
+        orderBy: { name: "asc" },
+        take: 8,
+        include: {
+          _count: {
+            select: {
+              resources: true,
+            },
+          },
+        },
+      }),
+    ["homepage-categories"],
+    { revalidate: 300 }
+  )();
+}
+
+export function getHomepageStatsData() {
+  return unstable_cache(
+    async () => {
+      const [totalResources, totalCreators, totalCategories] = await Promise.all([
+        db.resource.count({ where: { status: "PUBLISHED" } }),
+        db.store.count({ where: { isPublished: true } }),
+        db.category.count(),
+      ]);
+
+      return {
+        totalResources,
+        totalCreators,
+        totalCategories,
+      };
+    },
+    ["homepage-stats"],
+    { revalidate: 300 }
+  )();
+}
+
 function getResourceBrowseSortOrder(sort: string): Prisma.ResourceOrderByWithRelationInput[] {
   switch (sort) {
     case "popular":

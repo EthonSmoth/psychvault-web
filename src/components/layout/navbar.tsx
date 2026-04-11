@@ -70,11 +70,13 @@ export async function Navbar() {
         <Link href="/" className="group flex items-center gap-3 transition">
           <span className="inline-flex items-center justify-center transition">
             <Image
-              src="/logo-PNG.png"
+              src="/logo-optimized.webp"
               alt="PsychVault"
               width={100}
               height={100}
               priority
+              loading="eager"
+              sizes="(max-width: 640px) 64px, 100px"
               className="h-16 w-16 object-contain sm:h-[100px] sm:w-[100px]"
             />
           </span>
