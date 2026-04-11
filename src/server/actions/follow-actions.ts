@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
 import { revalidatePath } from "next/cache";
 import { verifyCSRFToken } from "@/lib/csrf";
+import { revalidatePublicStores } from "@/server/cache/public-cache";
 
 export async function toggleFollowStoreAction(formData: FormData) {
   const session = await auth();
@@ -59,6 +60,6 @@ export async function toggleFollowStoreAction(formData: FormData) {
     });
   }
 
-  revalidatePath(`/stores/${storeSlug}`);
+  revalidatePublicStores(storeSlug);
   revalidatePath("/following");
 }

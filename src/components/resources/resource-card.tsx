@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
+import type { PublicResourceCard } from "@/types/public";
 
 type ResourceCardProps = {
-  resource: any;
+  resource: PublicResourceCard;
 };
 
 function formatPrice(priceCents: number, isFree?: boolean) {
@@ -16,15 +17,7 @@ function formatPrice(priceCents: number, isFree?: boolean) {
 }
 
 export default function ResourceCard({ resource }: ResourceCardProps) {
-  const previewImage =
-    resource.thumbnailUrl ||
-    resource.files?.find(
-      (file: any) => file.kind === "THUMBNAIL" || file.kind === "PREVIEW"
-    )?.fileUrl;
-
-  const hasDownload = resource.files?.some(
-    (file: any) => file.kind === "MAIN_DOWNLOAD"
-  );
+  const previewImage = resource.previewImageUrl || resource.thumbnailUrl;
   const isFree = resource.isFree || resource.priceCents === 0;
 
   return (
@@ -50,12 +43,12 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
 
       <div className="p-5">
         <div className="mb-2 flex flex-wrap gap-2">
-          {resource.categories?.slice(0, 2).map((item: any) => (
+          {resource.categories.slice(0, 2).map((category) => (
             <span
-              key={item.category.id}
+              key={category.id}
               className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-[11px] font-semibold text-white"
             >
-              {item.category.name}
+              {category.name}
             </span>
           ))}
         </div>
@@ -65,12 +58,12 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
 
           <span
             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
-              hasDownload
+              resource.downloadReady
                 ? "bg-[var(--primary)] border-[var(--primary)] text-white"
                 : "bg-[var(--surface)] border-[var(--border)] text-[var(--text-muted)]"
             }`}
           >
-            {hasDownload ? "Download ready" : "No download attached"}
+            {resource.downloadReady ? "Download ready" : "No download attached"}
           </span>
 
           <span

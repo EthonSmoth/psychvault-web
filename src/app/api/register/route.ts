@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { db } from "@/lib/db";
 import { trySendVerificationEmail } from "@/lib/email";
+import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 function normalizeEmail(value: string | undefined) {
   return value?.trim().toLowerCase() ?? "";
@@ -22,6 +23,28 @@ function getBaseUrl() {
 
 export async function POST(req: Request) {
   try {
+    const clientIP = getClientIP(req);
+    const rateLimitResult = await checkRateLimit(
+      `registration:${clientIP}`,
+      RATE_LIMITS.registration.max,
+      RATE_LIMITS.registration.window
+    );
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Too many signup attempts. Please try again later.",
+          retryAfter: rateLimitResult.resetInSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.resetInSeconds),
+          },
+        }
+      );
+    }
+
     const body = await req.json().catch(() => null);
 
     const name = typeof body?.name === "string" ? body.name.trim() : "";
@@ -57,7 +80,7 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "An account with that email already exists." },
+        { error: "We couldn't create that account. Try logging in instead." },
         { status: 409 }
       );
     }

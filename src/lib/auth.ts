@@ -57,13 +57,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           const email = normalizeEmail(credentials?.email as string | undefined);
           const password = credentials?.password as string | undefined;
 
-          console.log("[auth] login attempt:", {
-            email,
-            hasPassword: Boolean(password),
-          });
-
           if (!email || !password) {
-            console.log("[auth] missing email or password");
             return null;
           }
 
@@ -79,23 +73,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           });
 
           if (!user) {
-            console.log("[auth] user not found");
             return null;
           }
 
           if (!user.passwordHash) {
-            console.log("[auth] user found but missing passwordHash");
             return null;
           }
 
           const matches = await bcrypt.compare(password, user.passwordHash);
 
           if (!matches) {
-            console.log("[auth] invalid password");
             return null;
           }
-
-          console.log("[auth] login success:", user.email);
 
           return {
             id: user.id,

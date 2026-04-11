@@ -2,8 +2,9 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
 import { verifyCSRFToken } from "@/lib/csrf";
+import { revalidatePublicResources } from "@/server/cache/public-cache";
+import { refreshResourceRating } from "@/server/services/reviews";
 
 export type ReviewFormState = {
   error?: string;
@@ -73,28 +74,9 @@ export async function saveReviewAction(
     },
   });
 
-  const reviews = await db.review.findMany({
-    where: { resourceId },
-    select: { rating: true },
-  });
+  await refreshResourceRating(resourceId);
 
-  const reviewCount = reviews.length;
-  const averageRating =
-    reviewCount > 0
-      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
-      : 0;
-
-  await db.resource.update({
-    where: { id: resourceId },
-    data: {
-      averageRating,
-      reviewCount,
-    },
-  });
-
-  revalidatePath(`/resources/${resourceSlug}`);
-  revalidatePath("/resources");
-  revalidatePath("/library");
+  revalidatePublicResources(resourceSlug);
 
   return { success: "Review saved successfully." };
 }

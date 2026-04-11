@@ -1,6 +1,57 @@
 import { unstable_cache } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import {
+  PUBLIC_CACHE_TAGS,
+  PUBLIC_CONTENT_REVALIDATE_SECONDS,
+} from "@/server/cache/public-cache";
+import type { PublicResourceCard, PublicStoreCard } from "@/types/public";
+
+const MAX_PUBLIC_QUERY_LENGTH = 80;
+const MAX_PUBLIC_FILTER_SLUG_LENGTH = 64;
+const RESOURCE_BROWSE_SORT_OPTIONS = new Set([
+  "newest",
+  "popular",
+  "rating",
+  "price-asc",
+  "price-desc",
+  "oldest",
+]);
+const STORE_BROWSE_SORT_OPTIONS = new Set(["newest", "alphabetical", "resources"]);
+
+type ResourceBrowseOptions = {
+  q?: string;
+  category?: string;
+  tag?: string;
+  price?: string;
+  store?: string;
+  sort?: string;
+};
+
+type StoreBrowseSort = "newest" | "alphabetical" | "resources";
+
+function normaliseBrowseText(value?: string, maxLength = MAX_PUBLIC_QUERY_LENGTH) {
+  return value?.trim().slice(0, maxLength) || "";
+}
+
+function normaliseBrowseSlug(value?: string) {
+  return normaliseBrowseText(value, MAX_PUBLIC_FILTER_SLUG_LENGTH).toLowerCase();
+}
+
+function normaliseResourceBrowsePrice(value?: string) {
+  const price = normaliseBrowseText(value, 10).toLowerCase();
+  return price === "free" || price === "paid" ? price : "";
+}
+
+function normaliseResourceBrowseSort(value?: string) {
+  const sort = normaliseBrowseText(value, 20).toLowerCase();
+  return RESOURCE_BROWSE_SORT_OPTIONS.has(sort) ? sort : "newest";
+}
+
+function normaliseStoreBrowseSort(value?: string): StoreBrowseSort {
+  const sort = normaliseBrowseText(value, 20).toLowerCase();
+  return STORE_BROWSE_SORT_OPTIONS.has(sort) ? (sort as StoreBrowseSort) : "newest";
+}
 
 const resourceCardSelect = {
   id: true,
@@ -46,41 +97,77 @@ const resourceCardSelect = {
       fileUrl: true,
     },
     take: 3,
-    orderBy: {
-      sortOrder: "asc",
-    },
+    orderBy: [
+      {
+        sortOrder: "asc",
+      },
+      {
+        createdAt: "asc",
+      },
+    ],
   },
 } satisfies Prisma.ResourceSelect;
 
-export function getPublishedResourceMetadata(slug: string) {
-  return unstable_cache(
-    async () =>
-      db.resource.findUnique({
-        where: { slug },
-        select: {
-          id: true,
-          title: true,
-          shortDescription: true,
-          description: true,
-          thumbnailUrl: true,
-          slug: true,
-          status: true,
-          priceCents: true,
-          isFree: true,
-          averageRating: true,
-          reviewCount: true,
-          store: {
-            select: {
-              id: true,
-              name: true,
-              isVerified: true,
-            },
-          },
-        },
-      }),
-    ["public-resource-metadata", slug],
-    { revalidate: 300 }
-  )();
+type ResourceCardRecord = Prisma.ResourceGetPayload<{
+  select: typeof resourceCardSelect;
+}>;
+
+function toPublicResourceCard(resource: ResourceCardRecord): PublicResourceCard {
+  const previewImageUrl =
+    resource.thumbnailUrl ||
+    resource.files.find((file) => file.kind === "THUMBNAIL")?.fileUrl ||
+    resource.files.find((file) => file.kind === "PREVIEW")?.fileUrl ||
+    null;
+
+  return {
+    id: resource.id,
+    slug: resource.slug,
+    title: resource.title,
+    shortDescription: resource.shortDescription,
+    thumbnailUrl: resource.thumbnailUrl,
+    previewImageUrl,
+    priceCents: resource.priceCents,
+    isFree: resource.isFree,
+    averageRating: resource.averageRating,
+    reviewCount: resource.reviewCount,
+    downloadReady: resource.files.some((file) => file.kind === "MAIN_DOWNLOAD"),
+    store: resource.store
+      ? {
+          name: resource.store.name,
+          slug: resource.store.slug,
+          isVerified: resource.store.isVerified,
+        }
+      : null,
+    creator: resource.creator
+      ? {
+          name: resource.creator.name,
+        }
+      : null,
+    categories: resource.categories.map((item) => item.category),
+  };
+}
+
+function getResourceBrowseSortOrder(sort: string): Prisma.ResourceOrderByWithRelationInput[] {
+  switch (sort) {
+    case "popular":
+      return [{ salesCount: "desc" }, { createdAt: "desc" }];
+    case "rating":
+      return [{ averageRating: "desc" }, { reviewCount: "desc" }, { createdAt: "desc" }];
+    case "price-asc":
+      return [{ priceCents: "asc" }, { createdAt: "desc" }];
+    case "price-desc":
+      return [{ priceCents: "desc" }, { createdAt: "desc" }];
+    case "oldest":
+      return [{ createdAt: "asc" }];
+    case "newest":
+    default:
+      return [{ createdAt: "desc" }];
+  }
+}
+
+export async function getPublishedResourceMetadata(slug: string) {
+  const pageData = await getPublishedResourcePageData(slug);
+  return pageData?.resource ?? null;
 }
 
 export function getPublishedResourcePageData(slug: string) {
@@ -133,6 +220,7 @@ export function getPublishedResourcePageData(slug: string) {
           },
           categories: {
             select: {
+              categoryId: true,
               category: {
                 select: {
                   id: true,
@@ -148,6 +236,7 @@ export function getPublishedResourcePageData(slug: string) {
               kind: true,
               fileUrl: true,
               fileName: true,
+              mimeType: true,
             },
             orderBy: {
               sortOrder: "asc",
@@ -157,7 +246,7 @@ export function getPublishedResourcePageData(slug: string) {
             orderBy: {
               createdAt: "desc",
             },
-            take: 20,
+            take: 10,
             select: {
               id: true,
               rating: true,
@@ -177,6 +266,10 @@ export function getPublishedResourcePageData(slug: string) {
         return null;
       }
 
+      const relatedCategoryIds = resource.categories
+        .map((item) => item.categoryId)
+        .slice(0, 2);
+
       const relatedResources = await db.resource.findMany({
         where: {
           status: "PUBLISHED",
@@ -187,15 +280,19 @@ export function getPublishedResourcePageData(slug: string) {
             {
               storeId: resource.storeId,
             },
-            {
-              tags: {
-                some: {
-                  tagId: {
-                    in: resource.tags?.map((t) => t.tagId) ?? [],
+            ...(relatedCategoryIds.length > 0
+              ? [
+                  {
+                    categories: {
+                      some: {
+                        categoryId: {
+                          in: relatedCategoryIds,
+                        },
+                      },
+                    },
                   },
-                },
-              },
-            },
+                ]
+              : []),
           ],
         },
         select: resourceCardSelect,
@@ -205,30 +302,31 @@ export function getPublishedResourcePageData(slug: string) {
 
       return {
         resource,
-        relatedResources,
+        relatedResources: relatedResources.map(toPublicResourceCard),
       };
     },
     ["public-resource-page", slug],
-    { revalidate: 300 }
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourcePage(slug)],
+    }
   )();
 }
 
-export function getPublishedStoreMetadata(slug: string) {
-  return unstable_cache(
-    async () =>
-      db.store.findUnique({
-        where: { slug },
-        select: {
-          name: true,
-          bio: true,
-          logoUrl: true,
-          isPublished: true,
-          slug: true,
-        },
-      }),
-    ["public-store-metadata", slug],
-    { revalidate: 300 }
-  )();
+export async function getPublishedStoreMetadata(slug: string) {
+  const pageData = await getPublishedStorePageData(slug);
+
+  if (!pageData) {
+    return null;
+  }
+
+  return {
+    name: pageData.name,
+    bio: pageData.bio,
+    logoUrl: pageData.logoUrl,
+    isPublished: pageData.isPublished,
+    slug: pageData.slug,
+  };
 }
 
 export function getPublishedStorePageData(slug: string) {
@@ -252,9 +350,14 @@ export function getPublishedStorePageData(slug: string) {
               name: true,
             },
           },
-          followers: {
+          _count: {
             select: {
-              followerId: true,
+              followers: true,
+              resources: {
+                where: {
+                  status: "PUBLISHED",
+                },
+              },
             },
           },
           resources: {
@@ -271,10 +374,18 @@ export function getPublishedStorePageData(slug: string) {
         return null;
       }
 
-      return store;
+      return {
+        ...store,
+        followerCount: store._count.followers,
+        resourceCount: store._count.resources,
+        resources: store.resources.map(toPublicResourceCard),
+      };
     },
     ["public-store-page", slug],
-    { revalidate: 300 }
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storePage(slug)],
+    }
   )();
 }
 
@@ -297,12 +408,15 @@ export function getHomepageResourceShowcaseData() {
       ]);
 
       return {
-        featuredResources,
-        recentResources,
+        featuredResources: featuredResources.map(toPublicResourceCard),
+        recentResources: recentResources.map(toPublicResourceCard),
       };
     },
     ["homepage-resource-showcase"],
-    { revalidate: 300 }
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.home, PUBLIC_CACHE_TAGS.resources],
+    }
   )();
 }
 
@@ -321,7 +435,10 @@ export function getHomepageCategoryData() {
         },
       }),
     ["homepage-categories"],
-    { revalidate: 300 }
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.home, PUBLIC_CACHE_TAGS.resources],
+    }
   )();
 }
 
@@ -341,46 +458,17 @@ export function getHomepageStatsData() {
       };
     },
     ["homepage-stats"],
-    { revalidate: 300 }
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.home, PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.stores],
+    }
   )();
 }
 
-function getResourceBrowseSortOrder(sort: string): Prisma.ResourceOrderByWithRelationInput[] {
-  switch (sort) {
-    case "popular":
-      return [{ salesCount: "desc" }, { createdAt: "desc" }];
-    case "rating":
-      return [{ averageRating: "desc" }, { reviewCount: "desc" }, { createdAt: "desc" }];
-    case "price-asc":
-      return [{ priceCents: "asc" }, { createdAt: "desc" }];
-    case "price-desc":
-      return [{ priceCents: "desc" }, { createdAt: "desc" }];
-    case "oldest":
-      return [{ createdAt: "asc" }];
-    case "newest":
-    default:
-      return [{ createdAt: "desc" }];
-  }
-}
-
-export function getResourceBrowseFilters(options: {
-  q?: string;
-  category?: string;
-  tag?: string;
-  price?: string;
-  store?: string;
-  sort?: string;
-}) {
-  const q = options.q?.trim() || "";
-  const category = options.category?.trim() || "";
-  const tag = options.tag?.trim() || "";
-  const price = options.price?.trim() || "";
-  const store = options.store?.trim() || "";
-  const sort = options.sort?.trim() || "newest";
-
+export function getResourceBrowseFacets() {
   return unstable_cache(
     async () => {
-      const [categories, tags, resources] = await Promise.all([
+      const [categories, tags] = await Promise.all([
         db.category.findMany({
           orderBy: { name: "asc" },
           select: {
@@ -398,136 +486,171 @@ export function getResourceBrowseFilters(options: {
           },
           take: 100,
         }),
-        db.resource.findMany({
-          where: {
-            status: "PUBLISHED",
-            ...(category
-              ? {
-                  categories: {
-                    some: {
-                      category: {
-                        slug: category,
-                      },
-                    },
-                  },
-                }
-              : {}),
-            ...(tag
-              ? {
-                  tags: {
-                    some: {
-                      tag: {
-                        slug: tag,
-                      },
-                    },
-                  },
-                }
-              : {}),
-            ...(price === "free"
-              ? {
-                  isFree: true,
-                }
-              : {}),
-            ...(price === "paid"
-              ? {
-                  isFree: false,
-                }
-              : {}),
-            ...(store
-              ? {
-                  store: {
-                    slug: store,
-                  },
-                }
-              : {}),
-            ...(q
-              ? {
-                  OR: [
-                    {
-                      title: {
-                        contains: q,
-                        mode: "insensitive",
-                      },
-                    },
-                    {
-                      shortDescription: {
-                        contains: q,
-                        mode: "insensitive",
-                      },
-                    },
-                    {
-                      description: {
-                        contains: q,
-                        mode: "insensitive",
-                      },
-                    },
-                    {
-                      slug: {
-                        contains: q.toLowerCase(),
-                      },
-                    },
-                    {
-                      store: {
-                        name: {
-                          contains: q,
-                          mode: "insensitive",
-                        },
-                      },
-                    },
-                    {
-                      categories: {
-                        some: {
-                          category: {
-                            name: {
-                              contains: q,
-                              mode: "insensitive",
-                            },
-                          },
-                        },
-                      },
-                    },
-                    {
-                      tags: {
-                        some: {
-                          tag: {
-                            name: {
-                              contains: q,
-                              mode: "insensitive",
-                            },
-                          },
-                        },
-                      },
-                    },
-                  ],
-                }
-              : {}),
-          },
-          select: resourceCardSelect,
-          orderBy: getResourceBrowseSortOrder(sort),
-        }),
       ]);
 
       return {
         categories,
         tags,
-        resources,
       };
     },
-    ["public-resource-browse", q, category, tag, price, store, sort],
-    { revalidate: 180 }
+    ["public-resource-browse-facets"],
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourceBrowse],
+    }
   )();
+}
+
+export function getPublishedResourcesBrowseData(options: ResourceBrowseOptions) {
+  const q = normaliseBrowseText(options.q);
+  const category = normaliseBrowseSlug(options.category);
+  const tag = normaliseBrowseSlug(options.tag);
+  const price = normaliseResourceBrowsePrice(options.price);
+  const store = normaliseBrowseSlug(options.store);
+  const sort = normaliseResourceBrowseSort(options.sort);
+
+  return unstable_cache(
+    async (): Promise<PublicResourceCard[]> => {
+      const resources = await db.resource.findMany({
+        where: {
+          status: "PUBLISHED",
+          ...(category
+            ? {
+                categories: {
+                  some: {
+                    category: {
+                      slug: category,
+                    },
+                  },
+                },
+              }
+            : {}),
+          ...(tag
+            ? {
+                tags: {
+                  some: {
+                    tag: {
+                      slug: tag,
+                    },
+                  },
+                },
+              }
+            : {}),
+          ...(price === "free"
+            ? {
+                isFree: true,
+              }
+            : {}),
+          ...(price === "paid"
+            ? {
+                isFree: false,
+              }
+            : {}),
+          ...(store
+            ? {
+                store: {
+                  slug: store,
+                },
+              }
+            : {}),
+          ...(q
+            ? {
+                OR: [
+                  {
+                    title: {
+                      contains: q,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    shortDescription: {
+                      contains: q,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    description: {
+                      contains: q,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    slug: {
+                      contains: q.toLowerCase(),
+                    },
+                  },
+                  {
+                    store: {
+                      name: {
+                        contains: q,
+                        mode: "insensitive",
+                      },
+                    },
+                  },
+                  {
+                    categories: {
+                      some: {
+                        category: {
+                          name: {
+                            contains: q,
+                            mode: "insensitive",
+                          },
+                        },
+                      },
+                    },
+                  },
+                  {
+                    tags: {
+                      some: {
+                        tag: {
+                          name: {
+                            contains: q,
+                            mode: "insensitive",
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              }
+            : {}),
+        },
+        select: resourceCardSelect,
+        orderBy: getResourceBrowseSortOrder(sort),
+      });
+
+      return resources.map(toPublicResourceCard);
+    },
+    ["public-resource-browse-data", q, category, tag, price, store, sort],
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourceBrowse],
+    }
+  )();
+}
+
+export async function getResourceBrowseFilters(options: ResourceBrowseOptions) {
+  const [facets, resources] = await Promise.all([
+    getResourceBrowseFacets(),
+    getPublishedResourcesBrowseData(options),
+  ]);
+
+  return {
+    ...facets,
+    resources,
+  };
 }
 
 export function getPublishedStoresBrowseData(options: {
   query?: string;
-  sort?: "newest" | "alphabetical" | "resources";
+  sort?: StoreBrowseSort;
 }) {
-  const query = options.query?.trim() || "";
-  const sort = options.sort || "newest";
+  const query = normaliseBrowseText(options.query);
+  const sort = normaliseStoreBrowseSort(options.sort);
 
   return unstable_cache(
-    async () =>
-      db.store.findMany({
+    async (): Promise<PublicStoreCard[]> => {
+      const stores = await db.store.findMany({
         where: {
           isPublished: true,
           ...(query
@@ -583,8 +706,25 @@ export function getPublishedStoresBrowseData(options: {
             : sort === "resources"
             ? [{ resources: { _count: "desc" } }, { name: "asc" }]
             : [{ updatedAt: "desc" }],
-      }),
+      });
+
+      return stores.map((store) => ({
+        id: store.id,
+        name: store.name,
+        slug: store.slug,
+        bio: store.bio,
+        logoUrl: store.logoUrl,
+        bannerUrl: store.bannerUrl,
+        location: store.location,
+        isVerified: store.isVerified,
+        followerCount: store._count.followers,
+        resourceCount: store._count.resources,
+      }));
+    },
     ["public-stores-browse", query, sort],
-    { revalidate: 180 }
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storeBrowse],
+    }
   )();
 }

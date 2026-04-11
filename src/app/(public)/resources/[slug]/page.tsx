@@ -2,9 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { generateCSRFToken } from "@/lib/csrf";
-import { db } from "@/lib/db";
 import { getAppBaseUrl } from "@/lib/env";
 import { getMarketplacePolicyLinks, getPaymentsAvailability } from "@/lib/payments";
 import {
@@ -13,9 +10,20 @@ import {
 } from "@/server/queries/public-content";
 import { ResourceGallery } from "@/components/resources/resource-gallery";
 import { ResourceGrid } from "@/components/resources/resource-grid";
-import { ReportResourceForm } from "@/components/resources/report-resource-form";
+import {
+  ResourcePageNotices,
+  ResourcePurchaseActions,
+  ResourceReportBox,
+  ResourceReviewGate,
+  ResourceViewerProvider,
+} from "@/components/resources/resource-viewer";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
-import ReviewForm from "@/components/resources/review-form";
+
+export const revalidate = 300;
+
+export function generateStaticParams() {
+  return [];
+}
 
 // Builds SEO metadata for published resource pages and suppresses indexing for missing listings.
 export async function generateMetadata({ params }: ResourcePageProps): Promise<Metadata> {
@@ -87,7 +95,7 @@ function formatDate(date: Date | string) {
 // Renders a simple five-star string from a numeric rating value.
 function renderStars(rating: number) {
   const rounded = Math.round(rating);
-  return "★".repeat(rounded) + "☆".repeat(5 - rounded);
+  return "\u2605".repeat(rounded) + "\u2606".repeat(5 - rounded);
 }
 
 // Extracts the uppercase file extension shown in the resource specs card.
@@ -102,23 +110,11 @@ type ResourcePageProps = {
   params: Promise<{
     slug: string;
   }>;
-  searchParams?: {
-    error?: string;
-  };
 };
 
 // Renders the public resource detail page, including gallery, commerce, reviews, and reporting.
-export default async function ResourceDetailPage({ params, searchParams }: ResourcePageProps) {
+export default async function ResourceDetailPage({ params }: ResourcePageProps) {
   const { slug } = await params;
-  const searchParamsResolved = await searchParams;
-  const session = await auth();
-  const sessionUser =
-    session?.user?.email
-      ? await db.user.findUnique({
-          where: { email: session.user.email },
-          select: { id: true, emailVerified: true },
-        })
-      : null;
 
   const publicData = await getPublishedResourcePageData(slug);
 
@@ -128,44 +124,6 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
 
   const { resource, relatedResources } = publicData;
   const resourceData = resource as NonNullable<typeof resource>;
-
-  const sessionUserId = sessionUser?.id ?? null;
-  const isEmailVerified = Boolean(sessionUser?.emailVerified);
-  const buyerId = sessionUserId;
-  const actionCsrfToken = sessionUserId ? generateCSRFToken(sessionUserId) : "";
-  const reviewCsrfToken = buyerId ? actionCsrfToken : "";
-
-  let hasPurchased = false;
-  let existingReview: { rating: number; body: string | null } | null = null;
-
-  if (buyerId) {
-    const [purchase, review] = await Promise.all([
-      db.purchase.findUnique({
-        where: {
-          buyerId_resourceId: {
-            buyerId,
-            resourceId: resource.id,
-          },
-        },
-        select: { id: true },
-      }),
-      db.review.findUnique({
-        where: {
-          buyerId_resourceId: {
-            buyerId,
-            resourceId: resource.id,
-          },
-        },
-        select: {
-          rating: true,
-          body: true,
-        },
-      }),
-    ]);
-
-    hasPurchased = !!purchase;
-    existingReview = review;
-  }
 
   const imagePattern = /\.(jpg|jpeg|png|webp|gif)$/i;
   const previewFiles = resource.files.filter((file) => file.kind === "PREVIEW");
@@ -193,23 +151,6 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
   const hasMainFile = Boolean(mainFile);
   const fileFormat = getFileExtension(mainFile?.fileName);
   const primaryCategory = resource.categories[0]?.category;
-  const canMessageCreator =
-    Boolean(resource.store) &&
-    Boolean(buyerId) &&
-    resource.store.ownerId !== buyerId;
-  const canReportResource = Boolean(sessionUserId) && resource.creatorId !== sessionUserId;
-  const messageLink = canMessageCreator
-    ? `/messages/start?creatorId=${resource.store?.ownerId}`
-    : undefined;
-  const loginMessageLink = resource.store?.ownerId
-    ? `/login?redirectTo=${encodeURIComponent(`/messages/start?creatorId=${resource.store.ownerId}`)}`
-    : "/login";
-  const errorMessage =
-    searchParamsResolved?.error === "download-missing"
-      ? "This resource cannot be purchased yet because it does not have a downloadable file attached."
-      : searchParamsResolved?.error === "payments-unavailable"
-      ? "Paid checkout is temporarily unavailable while payment activation is being finalised. Free resources are still available as normal."
-      : null;
   const paymentAvailability = getPaymentsAvailability();
   const policyLinks = getMarketplacePolicyLinks();
   const paidCheckoutUnavailable = !resource.isFree && !paymentAvailability.enabled;
@@ -302,82 +243,15 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
           </div>
 
           <div className="mt-6 flex flex-col gap-3">
-            {hasPurchased ? (
-              <>
-                <div className="inline-flex self-start rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  In your library
-                </div>
-
-                {mainFile ? (
-                  <a
-                    href={`/api/downloads/${resourceData.id}`}
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
-                  >
-                    Download resource
-                  </a>
-                ) : (
-                  <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                    This resource does not have a download attached yet.
-                  </div>
-                )}
-
-                <Link
-                  href="/library"
-                  className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border-strong)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
-                >
-                  View library
-                </Link>
-              </>
-            ) : hasMainFile ? (
-              <>
-                {paidCheckoutUnavailable ? (
-                  <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                    Paid checkout is temporarily unavailable. You can still message the
-                    creator or browse free resources while payment activation is completed.
-                  </div>
-                ) : (
-                  <form method="POST" action="/api/checkout">
-                    <input type="hidden" name="resourceId" value={resourceData.id} />
-                    <input
-                      type="hidden"
-                      name="redirectTo"
-                      value={`/resources/${resourceData.slug}`}
-                    />
-                    <button
-                      type="submit"
-                      className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
-                    >
-                      {resourceData.isFree
-                        ? "Get for free"
-                        : `Buy for ${formatPrice(resourceData.priceCents)}`}
-                    </button>
-                  </form>
-                )}
-
-                {resourceData.store && resourceData.store.ownerId !== buyerId ? (
-                  <Link
-                    href={
-                      buyerId
-                        ? isEmailVerified
-                          ? messageLink ?? "/messages"
-                          : `/verify-email?redirectTo=${encodeURIComponent(messageLink ?? "/messages")}`
-                        : loginMessageLink
-                    }
-                    className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
-                  >
-                    {buyerId
-                      ? isEmailVerified
-                        ? "Message creator"
-                        : "Verify email to message creator"
-                      : "Log in to message creator"}
-                  </Link>
-                ) : null}
-              </>
-            ) : (
-              <div className="rounded-3xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-                This resource cannot be purchased until the creator attaches the downloadable file.
-              </div>
-            )}
+            <ResourcePurchaseActions
+              resourceId={resourceData.id}
+              resourceSlug={resourceData.slug}
+              storeOwnerId={resourceData.store?.ownerId}
+              hasMainFile={hasMainFile}
+              isFree={resourceData.isFree}
+              priceCents={resourceData.priceCents}
+              paidCheckoutUnavailable={paidCheckoutUnavailable}
+            />
           </div>
 
           {!resourceData.isFree && hasMainFile ? (
@@ -405,39 +279,10 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
           ) : null}
 
           <div className="mt-6 border-t border-[var(--border)] pt-6">
-            {canReportResource ? (
-              isEmailVerified ? (
-                <ReportResourceForm
-                  resourceId={resourceData.id}
-                  resourceSlug={resourceData.slug}
-                  csrfToken={actionCsrfToken}
-                />
-              ) : (
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
-                  <Link
-                    href={`/verify-email?redirectTo=${encodeURIComponent(`/resources/${resourceData.slug}`)}`}
-                    className="font-medium text-[var(--text)] underline"
-                  >
-                    Verify your email
-                  </Link>{" "}
-                  to report this resource.
-                </div>
-              )
-            ) : sessionUserId ? (
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
-                You cannot report your own resource.
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
-                <Link
-                  href={`/login?redirectTo=/resources/${resourceData.slug}`}
-                  className="font-medium text-[var(--text)] underline"
-                >
-                  Log in
-                </Link>{" "}
-                to report this resource.
-              </div>
-            )}
+            <ResourceReportBox
+              resourceId={resourceData.id}
+              resourceSlug={resourceData.slug}
+            />
           </div>
 
           <div className="mt-6 border-t border-[var(--border)] pt-6">
@@ -487,19 +332,14 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
   }
 
   return (
-    <>
+    <ResourceViewerProvider resourceId={resourceData.id}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(cleanSchema) }}
       />
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <ResourcePageNotices />
       <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-        {errorMessage ? (
-          <div className="mb-6 rounded-3xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-            {errorMessage}
-          </div>
-        ) : null}
-
         <div>
           <div className="mb-6 flex flex-wrap gap-2">
             {resourceData.categories.map((item) => (
@@ -556,7 +396,7 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
 
             {resourceData.reviewCount > 0 ? (
               <>
-                <span>★ {resource.averageRating?.toFixed(1) || "0.0"}</span>
+                <span>{resource.averageRating?.toFixed(1) || "0.0"} rating</span>
                 <span>{resourceData.reviewCount} reviews</span>
               </>
             ) : (
@@ -723,30 +563,12 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
             )}
           </div>
 
-          {hasPurchased ? (
-            <div className="mt-10">
-              <ReviewForm
-                resourceId={resourceData.id}
-                resourceSlug={resourceData.slug}
-                existingReview={existingReview}
-                csrfToken={reviewCsrfToken}
-              />
-            </div>
-          ) : session?.user ? (
-            <div className="mt-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--text-muted)] shadow-sm">
-              Get this resource to leave a review.
-            </div>
-          ) : (
-            <div className="mt-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--text-muted)] shadow-sm">
-              <Link
-                href={`/login?redirectTo=/resources/${resourceData.slug}`}
-                className="font-medium text-[var(--text)] underline"
-              >
-                Log in
-              </Link>{" "}
-              and get this resource to leave a review.
-            </div>
-          )}
+          <div className="mt-10">
+            <ResourceReviewGate
+              resourceId={resourceData.id}
+              resourceSlug={resourceData.slug}
+            />
+          </div>
         </div>
 
         {renderPurchasePanel("hidden lg:block lg:sticky lg:top-24 lg:self-start")}
@@ -759,7 +581,7 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
               Related resources
             </h2>
             <p className="mt-2 text-sm text-[var(--text-muted)]">
-              Similar resources from this creator or overlapping tags.
+              Similar resources from this creator or the same category.
             </p>
           </div>
         </div>
@@ -767,6 +589,6 @@ export default async function ResourceDetailPage({ params, searchParams }: Resou
         <ResourceGrid resources={relatedResources} />
       </section>
       </div>
-    </>
+    </ResourceViewerProvider>
   );
 }

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { logModerationEvent } from "@/lib/moderation-events";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/require-admin";
+import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 import {
   ModerationActionType,
   ModerationStatus,
@@ -15,7 +16,7 @@ import {
 // Revalidates admin surfaces plus any related public pages after moderation changes.
 function revalidateAdminAndPublicPaths(extraPaths: string[] = []) {
   revalidatePath("/admin");
-  revalidatePath("/resources");
+  revalidateMarketplaceSurface({});
 
   for (const path of extraPaths) {
     revalidatePath(path);

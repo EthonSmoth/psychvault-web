@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
+import type { PublicResourceCard } from "@/types/public";
 
 export const dynamic = "force-dynamic";
 
@@ -41,26 +42,98 @@ export default async function FollowingFeedPage() {
 
   const followedStoreIds = user.follows.map((follow) => follow.storeId);
 
-  const resources =
+  const resources: PublicResourceCard[] =
     followedStoreIds.length > 0
-      ? await db.resource.findMany({
+      ? (
+          await db.resource.findMany({
           where: {
             status: "PUBLISHED",
             storeId: {
               in: followedStoreIds,
             },
           },
-          include: {
-            store: true,
-            tags: {
-              include: {
-                tag: true,
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            shortDescription: true,
+            thumbnailUrl: true,
+            priceCents: true,
+            isFree: true,
+            averageRating: true,
+            reviewCount: true,
+            store: {
+              select: {
+                name: true,
+                slug: true,
+                isVerified: true,
+              },
+            },
+            creator: {
+              select: {
+                name: true,
+              },
+            },
+            categories: {
+              select: {
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                  },
+                },
+              },
+            },
+            files: {
+              where: {
+                kind: {
+                  in: ["THUMBNAIL", "PREVIEW", "MAIN_DOWNLOAD"],
+                },
+              },
+              select: {
+                kind: true,
+                fileUrl: true,
+              },
+              take: 3,
+              orderBy: {
+                sortOrder: "asc",
               },
             },
           },
           orderBy: [{ createdAt: "desc" }, { salesCount: "desc" }],
           take: 24,
         })
+        ).map((resource) => ({
+          id: resource.id,
+          slug: resource.slug,
+          title: resource.title,
+          shortDescription: resource.shortDescription,
+          thumbnailUrl: resource.thumbnailUrl,
+          previewImageUrl:
+            resource.thumbnailUrl ||
+            resource.files.find((file) => file.kind === "THUMBNAIL")?.fileUrl ||
+            resource.files.find((file) => file.kind === "PREVIEW")?.fileUrl ||
+            null,
+          priceCents: resource.priceCents,
+          isFree: resource.isFree,
+          averageRating: resource.averageRating,
+          reviewCount: resource.reviewCount,
+          downloadReady: resource.files.some((file) => file.kind === "MAIN_DOWNLOAD"),
+          store: resource.store
+            ? {
+                name: resource.store.name,
+                slug: resource.store.slug,
+                isVerified: resource.store.isVerified,
+              }
+            : null,
+          creator: resource.creator
+            ? {
+                name: resource.creator.name,
+              }
+            : null,
+          categories: resource.categories.map((item) => item.category),
+        }))
       : [];
 
   return (

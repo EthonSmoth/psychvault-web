@@ -21,6 +21,7 @@ import {
   validateUpload,
 } from "@/lib/resource-moderation";
 import { resolveStorageLocation } from "@/lib/storage";
+import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 export type ResourceFormState = {
   error?: string;
@@ -538,12 +539,15 @@ export async function saveResourceAction(
         }
       });
 
-      revalidatePath("/");
-      revalidatePath("/resources");
       revalidatePath("/creator/resources");
-      revalidatePath(`/resources/${existing.slug}`);
-      revalidatePath(`/resources/${slug}`);
-      revalidatePath(`/stores/${user.store.slug}`);
+      revalidateMarketplaceSurface({
+        resourceSlug: slug,
+        storeSlug: user.store.slug,
+      });
+
+      if (existing.slug !== slug) {
+        revalidatePath(`/resources/${existing.slug}`);
+      }
 
       await logModerationEvent({
         targetType: ModerationTargetType.RESOURCE,
@@ -661,11 +665,11 @@ export async function saveResourceAction(
       return resource;
     });
 
-    revalidatePath("/");
-    revalidatePath("/resources");
     revalidatePath("/creator/resources");
-    revalidatePath(`/resources/${created.slug}`);
-    revalidatePath(`/stores/${user.store.slug}`);
+    revalidateMarketplaceSurface({
+      resourceSlug: created.slug,
+      storeSlug: user.store.slug,
+    });
 
     await logModerationEvent({
       targetType: ModerationTargetType.RESOURCE,
@@ -771,9 +775,9 @@ export async function deleteResourceAction(formData: FormData) {
     });
   });
 
-  revalidatePath("/");
-  revalidatePath("/resources");
   revalidatePath("/creator/resources");
-  revalidatePath(`/resources/${resource.slug}`);
-  revalidatePath(`/stores/${user.store.slug}`);
+  revalidateMarketplaceSurface({
+    resourceSlug: resource.slug,
+    storeSlug: user.store.slug,
+  });
 }

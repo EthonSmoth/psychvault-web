@@ -12,6 +12,7 @@ import {
 } from "@prisma/client";
 import { verifyCSRFToken } from "@/lib/csrf";
 import { moderateStoreText } from "@/lib/resource-moderation";
+import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 export type StoreFormState = {
   error?: string;
@@ -158,11 +159,9 @@ export async function saveStoreAction(
     }
   }
 
-  revalidatePath("/");
   revalidatePath("/creator");
   revalidatePath("/creator/store");
-  revalidatePath("/resources");
-  revalidatePath(`/stores/${finalStoreSlug}`);
+  revalidateMarketplaceSurface({ storeSlug: finalStoreSlug });
 
   await logModerationEvent({
     targetType: ModerationTargetType.STORE,

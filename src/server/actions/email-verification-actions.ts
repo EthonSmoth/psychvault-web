@@ -4,9 +4,9 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import {
   createAndSendEmailVerification,
-  EMAIL_VERIFICATION_REQUIRED_MESSAGE,
   getUserVerificationState,
 } from "@/lib/email-verification";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 export type EmailVerificationState = {
   error?: string;
@@ -29,6 +29,18 @@ async function resendVerificationEmailInternal(formData: FormData): Promise<Emai
 
   if (isVerified) {
     return { success: "Your email address is already verified." };
+  }
+
+  const rateLimitResult = await checkRateLimit(
+    `verification-email:${user.id}`,
+    RATE_LIMITS.verificationEmail.max,
+    RATE_LIMITS.verificationEmail.window
+  );
+
+  if (!rateLimitResult.success) {
+    return {
+      error: `Too many verification emails requested. Please wait ${rateLimitResult.resetInSeconds} seconds and try again.`,
+    };
   }
 
   await createAndSendEmailVerification({

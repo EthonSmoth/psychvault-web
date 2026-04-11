@@ -11,6 +11,8 @@ import {
 } from "@/server/queries/public-content";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "PsychVault - Psychology Resources Marketplace",
   description:
@@ -150,10 +152,10 @@ async function HomeHeroShowcase() {
         <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-light)]">
           Featured resource
         </div>
-        <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-[var(--surface)]">
-          {heroResource.thumbnailUrl ? (
+          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-[var(--surface)]">
+          {heroResource.previewImageUrl ? (
             <Image
-              src={heroResource.thumbnailUrl}
+              src={heroResource.previewImageUrl}
               alt={heroResource.title}
               fill
               priority
@@ -175,7 +177,7 @@ async function HomeHeroShowcase() {
           ) : null}
           <div className="mt-4 flex items-center justify-between gap-3">
             <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--text)]">
-              {heroResource.categories[0]?.category.name || "Featured"}
+              {heroResource.categories[0]?.name || "Featured"}
             </span>
             <span className="text-sm font-semibold text-[var(--text)]">
               {heroResource.isFree ? "Free" : `$${(heroResource.priceCents / 100).toFixed(2)}`}
@@ -394,9 +396,9 @@ async function HomeRecentResourcesSection() {
             className="group block rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
             <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-[var(--surface)]">
-              {resource.thumbnailUrl ? (
+              {resource.previewImageUrl ? (
                 <Image
-                  src={resource.thumbnailUrl}
+                  src={resource.previewImageUrl}
                   alt={resource.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 380px"

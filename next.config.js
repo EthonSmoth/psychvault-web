@@ -24,9 +24,6 @@ const nextConfig = {
     workerThreads: true,
     webpackBuildWorker: false,
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     remotePatterns,
     formats: ["image/avif", "image/webp"],

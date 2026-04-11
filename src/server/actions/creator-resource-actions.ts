@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { ResourceStatus } from "@prisma/client";
 import { verifyCSRFToken } from "@/lib/csrf";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
+import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 // Loads the signed-in creator and guarantees they have a store before continuing.
 async function getCurrentUserWithStore() {
@@ -34,13 +35,13 @@ async function getCurrentUserWithStore() {
 
 // Revalidates creator and public pages affected by resource archive/restore actions.
 function revalidateResourcePaths(resourceSlug: string, storeSlug: string) {
-  revalidatePath("/");
-  revalidatePath("/resources");
   revalidatePath("/creator");
   revalidatePath("/creator/resources");
   revalidatePath("/creator/resources/archived");
-  revalidatePath(`/resources/${resourceSlug}`);
-  revalidatePath(`/stores/${storeSlug}`);
+  revalidateMarketplaceSurface({
+    resourceSlug,
+    storeSlug,
+  });
 }
 
 // Soft-deletes a creator-owned listing by moving it into the archived state.

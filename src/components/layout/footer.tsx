@@ -143,7 +143,7 @@ export function Footer() {
 
         <div className="mt-12 border-t border-soft pt-8 text-center">
           <div className="mb-6 flex flex-col gap-2">
-            <p className="text-xs text-[var(--text-muted)]">© {currentYear} PsychVault</p>
+            <p className="text-xs text-[var(--text-muted)]">(c) {currentYear} PsychVault</p>
             <p className="text-sm font-medium text-[var(--text)]">
               Handcrafted resources by practicing clinicians for your practice.
             </p>
@@ -158,7 +158,7 @@ export function Footer() {
               className="inline-flex items-center gap-1 rounded-xl border border-[#b7cce5] bg-[#edf5ff] px-3 py-2 text-xs font-medium text-[#1f5f99] transition hover:bg-[#dfeeff] hover:shadow-sm"
             >
               AHPRA
-              <span className="text-[10px]">↗</span>
+              <span className="text-[10px]">External</span>
             </a>
 
             <a
@@ -169,7 +169,7 @@ export function Footer() {
               className="inline-flex items-center gap-1 rounded-xl border border-[#c7d7bb] bg-[#eff7e7] px-3 py-2 text-xs font-medium text-[#4d6f2d] transition hover:bg-[#e3f0d6] hover:shadow-sm"
             >
               APS Aligned
-              <span className="text-[10px]">↗</span>
+              <span className="text-[10px]">External</span>
             </a>
 
             <a
@@ -180,7 +180,7 @@ export function Footer() {
               className="inline-flex items-center gap-1 rounded-xl border border-[#d7c8e6] bg-[#f5edfb] px-3 py-2 text-xs font-medium text-[#76549b] transition hover:bg-[#ebdef7] hover:shadow-sm"
             >
               AAPI Member
-              <span className="text-[10px]">↗</span>
+              <span className="text-[10px]">External</span>
             </a>
 
             <div className="inline-flex items-center gap-1 rounded-xl border border-soft bg-[var(--surface-alt)] px-3 py-2 text-xs font-medium text-[var(--text-muted)]">

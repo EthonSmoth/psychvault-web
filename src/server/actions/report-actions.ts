@@ -15,6 +15,10 @@ import { verifyCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
 import { logModerationEvent } from "@/lib/moderation-events";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import {
+  revalidatePublicResources,
+  revalidatePublicStores,
+} from "@/server/cache/public-cache";
 
 export type ReportResourceFormState = {
   error?: string;
@@ -171,11 +175,7 @@ export async function submitResourceReportAction(
   }
 
   revalidatePath("/admin");
-  revalidatePath(`/resources/${resourceSlug}`);
-  revalidatePath("/resources");
-  if (resourceSlug) {
-    revalidatePath(`/resources/${resourceSlug}`);
-  }
+  revalidatePublicResources(resourceSlug);
 
   return {
     success:
@@ -302,7 +302,7 @@ export async function submitStoreReportAction(
   });
 
   revalidatePath("/admin");
-  revalidatePath(`/stores/${storeSlug}`);
+  revalidatePublicStores(storeSlug);
 
   const refreshedStore = await db.store.findUnique({
     where: { id: storeId },

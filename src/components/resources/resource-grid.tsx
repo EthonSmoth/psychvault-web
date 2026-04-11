@@ -1,8 +1,9 @@
 import Link from "next/link";
+import type { PublicResourceCard } from "@/types/public";
 import ResourceCard from "./resource-card";
 
 type ResourceGridProps = {
-  resources: any[];
+  resources: PublicResourceCard[];
   className?: string;
 };
 

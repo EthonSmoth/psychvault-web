@@ -1,30 +1,45 @@
 import { MetadataRoute } from "next";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import { getAppBaseUrl } from "@/lib/env";
+import {
+  PUBLIC_CACHE_TAGS,
+} from "@/server/cache/public-cache";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+const getSitemapEntries = unstable_cache(
+  async () => {
+    const [resources, stores] = await Promise.all([
+      db.resource.findMany({
+        where: { status: "PUBLISHED" },
+        select: {
+          slug: true,
+          updatedAt: true,
+        },
+      }),
+      db.store.findMany({
+        where: { isPublished: true },
+        select: {
+          slug: true,
+          updatedAt: true,
+        },
+      }),
+    ]);
+
+    return { resources, stores };
+  },
+  ["public-sitemap"],
+  {
+    revalidate: 3600,
+    tags: [PUBLIC_CACHE_TAGS.sitemap, PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.stores],
+  }
+);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getAppBaseUrl();
-
-  const [resources, stores] = await Promise.all([
-    db.resource.findMany({
-      where: { status: "PUBLISHED" },
-      select: {
-        slug: true,
-        updatedAt: true,
-      },
-    }),
-
-    db.store.findMany({
-      where: { isPublished: true },
-      select: {
-        slug: true,
-        updatedAt: true,
-      },
-    }),
-  ]);
+  const { resources, stores } = await getSitemapEntries();
 
   return [
     {
