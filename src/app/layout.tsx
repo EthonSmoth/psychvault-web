@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getAppBaseUrl } from "@/lib/env";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { Navbar } from "@/components/layout/navbar";
@@ -156,7 +157,9 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className="min-h-screen bg-[var(--background)] text-[var(--text)] antialiased">
-        <GoogleAnalytics />
+        <Suspense fallback={null}>
+          <GoogleAnalytics />
+        </Suspense>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
