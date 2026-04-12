@@ -1,8 +1,15 @@
 import ContactForm from "@/components/forms/contact-form";
+import { getBusinessAddress, getSupportEmail, getSupportPhone } from "@/lib/env";
+
+function toTelephoneHref(phone: string) {
+  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+}
 
 // Gives buyers, creators, and reviewers a clear way to contact the marketplace team.
 export default function ContactPage() {
-  const supportEmail = process.env.SUPPORT_EMAIL || "hello@psychvault.com.au";
+  const supportEmail = getSupportEmail();
+  const supportPhone = getSupportPhone();
+  const businessAddress = getBusinessAddress();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
@@ -21,8 +28,34 @@ export default function ContactPage() {
           <div className="mt-10 space-y-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
             <div>
               <p className="text-sm font-semibold text-[var(--text)]">General support</p>
-              <p className="mt-2 text-sm text-[var(--text-muted)]">{supportEmail}</p>
+              <a
+                href={`mailto:${supportEmail}`}
+                className="mt-2 block text-sm text-[var(--text-muted)] underline"
+              >
+                {supportEmail}
+              </a>
             </div>
+
+            {supportPhone ? (
+              <div>
+                <p className="text-sm font-semibold text-[var(--text)]">Support phone</p>
+                <a
+                  href={toTelephoneHref(supportPhone)}
+                  className="mt-2 block text-sm text-[var(--text-muted)] underline"
+                >
+                  {supportPhone}
+                </a>
+              </div>
+            ) : null}
+
+            {businessAddress ? (
+              <div>
+                <p className="text-sm font-semibold text-[var(--text)]">Business address</p>
+                <p className="mt-2 whitespace-pre-line text-sm text-[var(--text-muted)]">
+                  {businessAddress}
+                </p>
+              </div>
+            ) : null}
 
             <div>
               <p className="text-sm font-semibold text-[var(--text)]">Creator support</p>
@@ -35,17 +68,18 @@ export default function ContactPage() {
             <div>
               <p className="text-sm font-semibold text-[var(--text)]">Response times</p>
               <p className="mt-2 text-sm text-[var(--text-muted)]">
-                We aim to respond to genuine support enquiries as quickly as
-                possible. Including the purchase, store, or resource name helps us
-                investigate faster.
+                We aim to respond to genuine support enquiries as quickly as possible.
+                Including the purchase, store, or resource name helps us investigate
+                faster.
               </p>
             </div>
 
             <div>
-              <p className="text-sm font-semibold text-[var(--text)]">Marketplace policies</p>
+              <p className="text-sm font-semibold text-[var(--text)]">Billing and policy help</p>
               <p className="mt-2 text-sm text-[var(--text-muted)]">
-                Legal, privacy, and refund information is available on our public
-                policy pages linked in the footer.
+                For billing, refunds, privacy, or marketplace rules, please review the
+                public policy pages linked in the footer or message us with your purchase
+                email and order details.
               </p>
             </div>
           </div>

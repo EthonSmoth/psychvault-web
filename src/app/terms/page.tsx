@@ -1,5 +1,5 @@
-import { TermsOfServiceContent } from "@/components/legal/terms-of-service-content";
+import { redirect } from "next/navigation";
 
 export default function TermsPage() {
-  return <TermsOfServiceContent />;
+  redirect("/terms-of-service");
 }

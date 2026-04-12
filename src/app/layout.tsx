@@ -1,14 +1,16 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { getAppBaseUrl } from "@/lib/env";
+import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from "@/lib/env";
 import { serializeJsonLd } from "@/lib/input-safety";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
 const baseUrl = getAppBaseUrl();
-const supportEmail = process.env.SUPPORT_EMAIL || "hello@psychvault.com.au";
+const supportEmail = getSupportEmail();
+const supportPhone = getSupportPhone();
+const businessAddress = getBusinessAddress();
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -34,6 +36,7 @@ export const metadata: Metadata = {
   publisher: "PsychVault",
   other: {
     "contact:email": supportEmail,
+    ...(supportPhone ? { "contact:phone_number": supportPhone } : {}),
   },
   icons: {
     icon: "/logo-PNG.png",
@@ -95,7 +98,9 @@ export default function RootLayout({
       "@type": "ContactPoint",
       contactType: "customer support",
       email: supportEmail,
+      ...(supportPhone ? { telephone: supportPhone } : {}),
     },
+    ...(businessAddress ? { address: businessAddress } : {}),
   };
 
   const websiteSchema = {
@@ -133,6 +138,7 @@ export default function RootLayout({
         "@type": "ContactPoint",
         contactType: "customer support",
         email: supportEmail,
+        ...(supportPhone ? { telephone: supportPhone } : {}),
       },
     },
     offers: {

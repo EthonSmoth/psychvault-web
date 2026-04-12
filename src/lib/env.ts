@@ -33,6 +33,11 @@ export function parseBooleanEnv(key: string, defaultValue: boolean): boolean {
   return defaultValue;
 }
 
+function getOptionalTrimmedEnv(key: string) {
+  const value = process.env[key];
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
 // Resolves the canonical app URL so checkout and metadata can point at the right domain.
 export function getAppBaseUrl() {
   const configuredUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
@@ -60,4 +65,17 @@ export function isGoogleOAuthEnabled() {
   return Boolean(
     process.env.AUTH_GOOGLE_ID?.trim() && process.env.AUTH_GOOGLE_SECRET?.trim()
   );
+}
+
+export function getSupportEmail() {
+  return getOptionalTrimmedEnv("SUPPORT_EMAIL") || "hello@psychvault.com.au";
+}
+
+export function getSupportPhone() {
+  return getOptionalTrimmedEnv("SUPPORT_PHONE");
+}
+
+export function getBusinessAddress() {
+  const raw = getOptionalTrimmedEnv("BUSINESS_ADDRESS");
+  return raw ? raw.replace(/\\n/g, "\n") : null;
 }

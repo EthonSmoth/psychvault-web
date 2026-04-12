@@ -1,5 +1,5 @@
-import { PrivacyPolicyContent } from "@/components/legal/privacy-policy-content";
+import { redirect } from "next/navigation";
 
 export default function PrivacyPage() {
-  return <PrivacyPolicyContent />;
+  redirect("/privacy-policy");
 }

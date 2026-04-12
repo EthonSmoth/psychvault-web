@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { getSupportEmail, getSupportPhone } from "@/lib/env";
 
 const currentYear = new Date().getFullYear();
 
 export function Footer() {
+  const supportEmail = getSupportEmail();
+  const supportPhone = getSupportPhone();
+
   return (
     <footer className="border-t border-soft bg-[var(--frame)]">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -18,6 +22,20 @@ export function Footer() {
             <p className="mt-3 max-w-md text-sm leading-6 text-[var(--text-muted)]">
               Discover and sell psychology resources that save time in real clinical work.
             </p>
+
+            <div className="mt-4 space-y-1 text-sm text-[var(--text-muted)]">
+              <a href={`mailto:${supportEmail}`} className="block underline transition-colors hover:text-[var(--accent)]">
+                {supportEmail}
+              </a>
+              {supportPhone ? (
+                <a
+                  href={`tel:${supportPhone.replace(/[^\d+]/g, "")}`}
+                  className="block underline transition-colors hover:text-[var(--accent)]"
+                >
+                  {supportPhone}
+                </a>
+              ) : null}
+            </div>
 
             <div className="mt-5 flex items-center justify-center gap-4 text-sm text-[var(--text-muted)] lg:justify-start">
               <a
