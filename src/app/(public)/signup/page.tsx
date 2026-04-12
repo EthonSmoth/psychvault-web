@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { isGoogleOAuthEnabled } from "@/lib/env";
+import { getSafeRedirectTarget } from "@/lib/redirects";
 import { SignupForm } from "@/components/auth/signup-form";
 
 type SignupPageProps = {
@@ -10,17 +11,10 @@ type SignupPageProps = {
   }>;
 };
 
-function getSafeRedirect(redirectTo?: string) {
-  if (!redirectTo) return "/library";
-  if (!redirectTo.startsWith("/")) return "/library";
-  if (redirectTo.startsWith("//")) return "/library";
-  return redirectTo;
-}
-
 export default async function SignupPage({ searchParams }: SignupPageProps) {
   const session = await auth();
   const params = (await searchParams) ?? {};
-  const redirectTo = getSafeRedirect(params.redirectTo);
+  const redirectTo = getSafeRedirectTarget(params.redirectTo, "/library");
   const googleEnabled = isGoogleOAuthEnabled();
 
   if (session?.user) {

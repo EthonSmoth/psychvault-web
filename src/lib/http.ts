@@ -1,15 +1,23 @@
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 export function jsonError(
-  message = "Server error.",
+  message = "Something went wrong.",
   status = 500,
   details?: unknown
 ) {
-  const payload: { error: string; details?: unknown } = { error: message };
-
-  if (details !== undefined && process.env.NODE_ENV !== "production") {
-    payload.details = details;
+  if (details !== undefined) {
+    const log = status >= 500 ? logger.error : logger.warn;
+    log(message, details);
   }
 
-  return NextResponse.json(payload, { status });
+  return NextResponse.json(
+    { error: message },
+    {
+      status,
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    }
+  );
 }

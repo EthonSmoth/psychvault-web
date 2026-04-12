@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { verifyEmailAddress } from "@/lib/email-verification";
+import { getSafeRedirectTarget } from "@/lib/redirects";
 import { resendVerificationEmailFormAction } from "@/server/actions/email-verification-actions";
 
 type VerifyEmailPageProps = {
@@ -14,18 +15,11 @@ type VerifyEmailPageProps = {
   }>;
 };
 
-function getSafeRedirect(redirectTo?: string) {
-  if (!redirectTo) return "/library";
-  if (!redirectTo.startsWith("/")) return "/library";
-  if (redirectTo.startsWith("//")) return "/library";
-  return redirectTo;
-}
-
 // Handles verification links and provides resend instructions for unverified users.
 export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) {
   const params = (await searchParams) ?? {};
   const token = String(params.token ?? "").trim();
-  const redirectTo = getSafeRedirect(params.redirectTo);
+  const redirectTo = getSafeRedirectTarget(params.redirectTo, "/library");
   const session = await auth();
 
   const verificationResult = token ? await verifyEmailAddress(token) : null;

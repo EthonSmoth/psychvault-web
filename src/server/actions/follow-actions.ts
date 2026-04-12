@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
 import { revalidatePath } from "next/cache";
@@ -8,11 +8,10 @@ import { verifyCSRFToken } from "@/lib/csrf";
 import { revalidatePublicStores } from "@/server/cache/public-cache";
 
 export async function toggleFollowStoreAction(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.email) return;
+  const session = await requireAuth();
 
   const csrfToken = formData.get("_csrf") as string;
-  if (!csrfToken || !verifyCSRFToken(csrfToken, session.user.id)) {
+  if (!csrfToken || !verifyCSRFToken(csrfToken, session.id)) {
     throw new Error("Invalid CSRF token");
   }
 
@@ -22,7 +21,7 @@ export async function toggleFollowStoreAction(formData: FormData) {
   if (!storeId || !storeSlug) return;
 
   const user = await db.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: session.id },
     select: { id: true, emailVerified: true },
   });
 

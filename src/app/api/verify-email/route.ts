@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { jsonError } from "@/lib/http";
+import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   try {
+    const originError = ensureAllowedOrigin(req);
+
+    if (originError) {
+      return originError;
+    }
+
     const clientIP = getClientIP(req);
     const rateLimitResult = await checkRateLimit(
       `verify-email:${clientIP}`,
@@ -95,10 +103,6 @@ export async function POST(req: Request) {
       message: "Email verified successfully.",
     });
   } catch (error) {
-    console.error("[verify-email] failed:", error);
-    return NextResponse.json(
-      { error: "Unable to verify email right now." },
-      { status: 500 }
-    );
+    return jsonError("Unable to verify email right now.", 500, error);
   }
 }

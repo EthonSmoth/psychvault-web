@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { isGoogleOAuthEnabled } from "@/lib/env";
+import { getSafeRedirectTarget } from "@/lib/redirects";
 import { LoginForm } from "@/components/auth/login-form";
 
 type LoginPageProps = {
@@ -11,17 +12,10 @@ type LoginPageProps = {
   }>;
 };
 
-function getSafeRedirect(redirectTo?: string) {
-  if (!redirectTo) return "/library";
-  if (!redirectTo.startsWith("/")) return "/library";
-  if (redirectTo.startsWith("//")) return "/library";
-  return redirectTo;
-}
-
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await auth();
   const params = (await searchParams) ?? {};
-  const redirectTo = getSafeRedirect(params.redirectTo);
+  const redirectTo = getSafeRedirectTarget(params.redirectTo, "/library");
   const googleEnabled = isGoogleOAuthEnabled();
 
   const dbUser =

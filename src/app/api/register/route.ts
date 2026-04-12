@@ -3,7 +3,9 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { db } from "@/lib/db";
 import { trySendVerificationEmail } from "@/lib/email";
+import { jsonError } from "@/lib/http";
 import { sanitizeUserText } from "@/lib/input-safety";
+import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 function normalizeEmail(value: string | undefined) {
@@ -24,6 +26,12 @@ function getBaseUrl() {
 
 export async function POST(req: Request) {
   try {
+    const originError = ensureAllowedOrigin(req);
+
+    if (originError) {
+      return originError;
+    }
+
     const clientIP = getClientIP(req);
     const rateLimitResult = await checkRateLimit(
       `registration:${clientIP}`,
@@ -68,6 +76,27 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters long." },
         { status: 400 }
+      );
+    }
+
+    const emailRateLimit = await checkRateLimit(
+      `registration-email:${email}`,
+      RATE_LIMITS.registrationPerEmail.max,
+      RATE_LIMITS.registrationPerEmail.window
+    );
+
+    if (!emailRateLimit.success) {
+      return NextResponse.json(
+        {
+          error: "Too many signup attempts. Please try again later.",
+          retryAfter: emailRateLimit.resetInSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(emailRateLimit.resetInSeconds),
+          },
+        }
       );
     }
 
@@ -144,10 +173,6 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("[register] failed:", error);
-    return NextResponse.json(
-      { error: "Something went wrong while creating your account." },
-      { status: 500 }
-    );
+    return jsonError("Something went wrong while creating your account.", 500, error);
   }
 }

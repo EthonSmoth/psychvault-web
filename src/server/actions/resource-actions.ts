@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { getCreatorTrustProfile, shouldForceTrustReview } from "@/lib/creator-trust";
 import { db } from "@/lib/db";
 import { logModerationEvent } from "@/lib/moderation-events";
@@ -22,6 +22,7 @@ import {
 } from "@/lib/resource-moderation";
 import { sanitizeUserText } from "@/lib/input-safety";
 import { getPublicResourceFileState } from "@/lib/resource-file-state";
+import { logger } from "@/lib/logger";
 import { resolveStorageLocation } from "@/lib/storage";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
@@ -183,14 +184,15 @@ async function generateUniqueResourceSlug(title: string, excludeId?: string) {
 
 // Loads the authenticated creator together with their store for resource management actions.
 async function getCurrentCreator() {
-  const session = await auth();
-
-  if (!session?.user?.email) {
+  let session;
+  try {
+    session = await requireAuth();
+  } catch {
     return null;
   }
 
   return db.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: session.id },
     include: { store: true },
   });
 }
@@ -720,7 +722,7 @@ export async function saveResourceAction(
       resourceSlug: created.slug,
     };
   } catch (error) {
-    console.error("saveResourceAction failed", error);
+    logger.error("saveResourceAction failed.", error);
 
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

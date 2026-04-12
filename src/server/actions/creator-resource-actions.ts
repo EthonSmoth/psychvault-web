@@ -1,9 +1,8 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { requireAuth, requireOwnership } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { ResourceStatus } from "@prisma/client";
 import { verifyCSRFToken } from "@/lib/csrf";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
@@ -11,14 +10,13 @@ import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 // Loads the signed-in creator and guarantees they have a store before continuing.
 async function getCurrentUserWithStore() {
-  const session = await auth();
-
-  if (!session?.user?.email) {
-    redirect("/login");
-  }
+  const authedUser = await requireAuth({
+    redirectOnFail: true,
+    redirectTo: "/creator/resources",
+  });
 
   const user = await db.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: authedUser.id },
     include: { store: true },
   });
 
@@ -70,7 +68,13 @@ export async function deleteOwnResourceAction(formData: FormData) {
 
   if (!resource) throw new Error("Resource not found.");
 
-  if (resource.creatorId !== user.id || resource.storeId !== user.store.id) {
+  try {
+    requireOwnership(user.id, resource.creatorId, "Not authorised.");
+  } catch {
+    throw new Error("Not authorised.");
+  }
+
+  if (resource.storeId !== user.store.id) {
     throw new Error("Not authorised.");
   }
 
@@ -111,7 +115,13 @@ export async function restoreOwnResourceAction(formData: FormData) {
 
   if (!resource) throw new Error("Resource not found.");
 
-  if (resource.creatorId !== user.id || resource.storeId !== user.store.id) {
+  try {
+    requireOwnership(user.id, resource.creatorId, "Not authorised.");
+  } catch {
+    throw new Error("Not authorised.");
+  }
+
+  if (resource.storeId !== user.store.id) {
     throw new Error("Not authorised.");
   }
 
@@ -149,7 +159,13 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
 
   if (!resource) throw new Error("Resource not found.");
 
-  if (resource.creatorId !== user.id || resource.storeId !== user.store.id) {
+  try {
+    requireOwnership(user.id, resource.creatorId, "Not authorised.");
+  } catch {
+    throw new Error("Not authorised.");
+  }
+
+  if (resource.storeId !== user.store.id) {
     throw new Error("Not authorised.");
   }
 

@@ -31,6 +31,43 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [32, 48, 64, 72, 96, 128, 256],
   },
+  async headers() {
+    const headers = [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), geolocation=(), microphone=()",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "base-uri 'self'",
+              "frame-ancestors 'none'",
+              "object-src 'none'",
+              "form-action 'self' https://checkout.stripe.com https://appleid.apple.com",
+            ].join("; "),
+          },
+        ],
+      },
+    ];
+
+    if (process.env.NODE_ENV === "production") {
+      headers[0].headers.push({
+        key: "Strict-Transport-Security",
+        value: "max-age=63072000; includeSubDomains; preload",
+      });
+    }
+
+    return headers;
+  },
 };
 
 module.exports = nextConfig;

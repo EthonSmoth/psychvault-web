@@ -134,23 +134,34 @@ export async function clearRateLimit(key: string) {
 
 export const RATE_LIMITS = {
   registration: { max: 5, window: 60 * 60 * 1000 },
+  registrationPerEmail: { max: 3, window: 60 * 60 * 1000 },
   login: { max: 5, window: 15 * 60 * 1000 },
   verificationEmail: { max: 3, window: 60 * 60 * 1000 },
   verifyEmailAttempt: { max: 10, window: 15 * 60 * 1000 },
   contact: { max: 3, window: 60 * 60 * 1000 },
   checkout: { max: 10, window: 60 * 60 * 1000 },
+  checkoutPerUser: { max: 15, window: 60 * 60 * 1000 },
   upload: { max: 20, window: 60 * 60 * 1000 },
+  uploadPerUser: { max: 25, window: 60 * 60 * 1000 },
   resourceReport: { max: 5, window: 60 * 60 * 1000 },
   review: { max: 8, window: 60 * 60 * 1000 },
   messageSend: { max: 30, window: 10 * 60 * 1000 },
+  messageRead: { max: 120, window: 10 * 60 * 1000 },
+  viewerState: { max: 90, window: 10 * 60 * 1000 },
+  publicDetail: { max: 180, window: 60 * 1000 },
+  download: { max: 60, window: 15 * 60 * 1000 },
   publicBrowse: { max: 120, window: 60 * 1000 },
 } as const;
 
 // Attempts to derive the best available client IP for route-level abuse controls.
 export function getClientIP(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  const realIP = request.headers.get("x-real-ip");
-  const cfIP = request.headers.get("cf-connecting-ip");
+  return getClientIPFromHeaders(request.headers);
+}
+
+export function getClientIPFromHeaders(headers: Pick<globalThis.Headers, "get">) {
+  const forwarded = headers.get("x-forwarded-for");
+  const realIP = headers.get("x-real-ip");
+  const cfIP = headers.get("cf-connecting-ip");
 
   return forwarded?.split(",")[0]?.trim() || realIP || cfIP || "unknown";
 }

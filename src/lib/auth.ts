@@ -6,6 +6,8 @@ import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { getRequiredServerEnv, isGoogleOAuthEnabled } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { getSafeAuthRedirectUrl } from "@/lib/redirects";
 
 function normalizeEmail(value: string | undefined) {
   return value?.trim().toLowerCase() ?? "";
@@ -13,7 +15,7 @@ function normalizeEmail(value: string | undefined) {
 
 function logAuthError(error: Error) {
   const name = error instanceof AuthError ? error.type : error.name;
-  console.error(`[auth][error] ${name}: ${error.message}`);
+  logger.error(`[auth] ${name}: ${error.message}`);
 
   if (
     "cause" in error &&
@@ -23,17 +25,17 @@ function logAuthError(error: Error) {
     error.cause.err instanceof Error
   ) {
     const { err, ...data } = error.cause as { err: Error } & Record<string, unknown>;
-    console.error("[auth][cause]:", err.stack);
+    logger.debug("[auth][cause]", err);
 
     if (Object.keys(data).length > 0) {
-      console.error("[auth][details]:", JSON.stringify(data, null, 2));
+      logger.debug("[auth][details]", data);
     }
 
     return;
   }
 
   if (error.stack) {
-    console.error(error.stack);
+    logger.debug("[auth][stack]", error);
   }
 }
 
@@ -122,11 +124,11 @@ const providers = [
           error instanceof Prisma.PrismaClientKnownRequestError &&
           error.code === "P2024"
         ) {
-          console.error("[auth] prisma connection pool timeout:", error);
+          logger.error("[auth] prisma connection pool timeout.", error);
           throw error;
         }
 
-        console.error("[auth] authorize crash:", error);
+        logger.error("[auth] authorize crash.", error);
         return null;
       }
     },
@@ -136,7 +138,29 @@ const providers = [
 export const { auth, handlers, signIn, signOut } = NextAuth({
   secret: getRequiredServerEnv("NEXTAUTH_SECRET"),
   adapter: PrismaAdapter(db),
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 12,
+  },
+  jwt: {
+    maxAge: 60 * 60 * 24 * 7,
+  },
+  useSecureCookies: process.env.NODE_ENV === "production",
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.session-token"
+          : "authjs.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   logger: {
     error: logAuthError,
   },
@@ -176,8 +200,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         token.name = authUser.name;
         token.role = authUser.role;
         token.emailVerified = Boolean(authUser.emailVerified);
+        return token;
       }
 
+      delete token.sub;
+      delete token.email;
+      delete token.name;
+      delete token.role;
+      delete token.emailVerified;
       return token;
     },
     session({ session, token }) {
@@ -187,6 +217,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         (session.user as any).emailVerified = Boolean(token.emailVerified);
       }
       return session;
+    },
+    redirect({ url, baseUrl }) {
+      return getSafeAuthRedirectUrl(url, baseUrl);
     },
   },
 });

@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -8,20 +8,19 @@ import { verifyCSRFToken } from "@/lib/csrf";
 import { revalidatePublicStores } from "@/server/cache/public-cache";
 
 export async function deleteOwnStoreAction(formData: FormData) {
-  const session = await auth();
-
-  if (!session?.user?.email) {
-    redirect("/login");
-  }
+  const userSession = await requireAuth({
+    redirectOnFail: true,
+    redirectTo: "/creator/store",
+  });
 
   // CSRF Protection
   const csrfToken = String(formData.get("_csrf") || "").trim();
-  if (!csrfToken || !verifyCSRFToken(csrfToken, session.user.id)) {
+  if (!csrfToken || !verifyCSRFToken(csrfToken, userSession.id)) {
     throw new Error("Invalid security token. Please refresh the page and try again.");
   }
 
   const user = await db.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: userSession.id },
     include: {
       store: {
         include: {

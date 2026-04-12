@@ -4,20 +4,14 @@ import { FormEvent, useMemo, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-
-function getSafeRedirect(redirectTo: string | null) {
-  if (!redirectTo) return "/library";
-  if (!redirectTo.startsWith("/")) return "/library";
-  if (redirectTo.startsWith("//")) return "/library";
-  return redirectTo;
-}
+import { getSafeRedirectTarget } from "@/lib/redirects";
 
 export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const redirectTo = useMemo(
-    () => getSafeRedirect(searchParams.get("redirectTo")),
+    () => getSafeRedirectTarget(searchParams.get("redirectTo"), "/library"),
     [searchParams]
   );
 

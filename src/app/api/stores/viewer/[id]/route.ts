@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { generateCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
+import { jsonError } from "@/lib/http";
+import { checkRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
 
 type RouteContext = {
   params: Promise<{
@@ -9,69 +11,91 @@ type RouteContext = {
   }>;
 };
 
-export async function GET(_: Request, { params }: RouteContext) {
-  const session = await auth();
-  const { id } = await params;
-
-  const store = await db.store.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      isPublished: true,
-      ownerId: true,
-    },
-  });
-
-  if (!store || !store.isPublished) {
-    return NextResponse.json(
-      { error: "Store not found." },
-      {
-        status: 404,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
+export async function GET(request: Request, { params }: RouteContext) {
+  try {
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(
+      `store-viewer:${clientIP}`,
+      RATE_LIMITS.viewerState.max,
+      RATE_LIMITS.viewerState.window
     );
-  }
 
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      {
-        authenticated: false,
-      },
-      {
-        headers: {
-          "Cache-Control": "no-store",
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Too many requests. Please slow down and try again shortly.",
+          retryAfter: rateLimitResult.resetInSeconds,
         },
-      }
-    );
-  }
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.resetInSeconds),
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
 
-  const [user, follow] = await Promise.all([
-    db.user.findUnique({
-      where: { id: session.user.id },
+    const session = await auth();
+    const { id } = await params;
+
+    const store = await db.store.findUnique({
+      where: { id },
       select: {
         id: true,
-        emailVerified: true,
+        isPublished: true,
+        ownerId: true,
       },
-    }),
-    db.follow.findUnique({
+    });
+
+    if (!store || !store.isPublished) {
+      return NextResponse.json(
+        { error: "Store not found." },
+        {
+          status: 404,
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        {
+          authenticated: false,
+        },
+        {
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
+
+    const viewerUserId = session.user.id;
+    const follow = await db.follow.findUnique({
       where: {
         followerId_storeId: {
-          followerId: session.user.id,
+          followerId: viewerUserId,
           storeId: id,
         },
       },
       select: {
         followerId: true,
       },
-    }),
-  ]);
+    });
 
-  if (!user) {
     return NextResponse.json(
       {
-        authenticated: false,
+        authenticated: true,
+        viewer: {
+          userId: viewerUserId,
+          emailVerified: Boolean(session.user.emailVerified),
+          isOwner: store.ownerId === viewerUserId,
+          isFollowing: Boolean(follow),
+          csrfToken: generateCSRFToken(viewerUserId),
+        },
       },
       {
         headers: {
@@ -79,23 +103,7 @@ export async function GET(_: Request, { params }: RouteContext) {
         },
       }
     );
+  } catch (error) {
+    return jsonError("Unable to load viewer state.", 500, error);
   }
-
-  return NextResponse.json(
-    {
-      authenticated: true,
-      viewer: {
-        userId: user.id,
-        emailVerified: Boolean(user.emailVerified),
-        isOwner: store.ownerId === user.id,
-        isFollowing: Boolean(follow),
-        csrfToken: generateCSRFToken(user.id),
-      },
-    },
-    {
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    }
-  );
 }

@@ -7,6 +7,8 @@ import {
   getStoredUploadValue,
   getBucketCandidatesForUploadKind,
 } from "@/lib/storage";
+import { jsonError } from "@/lib/http";
+import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 const DISALLOWED_EXTENSIONS = [
@@ -87,120 +89,152 @@ async function optimizeImageUpload(file: File, uploadKind: UploadKind) {
 }
 
 export async function POST(req: NextRequest) {
-  const clientIP = getClientIP(req);
-  const rateLimitKey = `upload:${clientIP}`;
+  try {
+    const originError = ensureAllowedOrigin(req);
 
-  const rateLimitResult = await checkRateLimit(
-    rateLimitKey,
-    RATE_LIMITS.upload.max,
-    RATE_LIMITS.upload.window
-  );
+    if (originError) {
+      return originError;
+    }
 
-  if (!rateLimitResult.success) {
-    return NextResponse.json(
-      {
-        error: "Too many upload attempts. Please try again later.",
-        retryAfter: rateLimitResult.resetInSeconds
-      },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(rateLimitResult.resetInSeconds),
+    const clientIP = getClientIP(req);
+    const rateLimitResult = await checkRateLimit(
+      `upload:${clientIP}`,
+      RATE_LIMITS.upload.max,
+      RATE_LIMITS.upload.window
+    );
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Too many upload attempts. Please try again later.",
+          retryAfter: rateLimitResult.resetInSeconds,
         },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.resetInSeconds),
+          },
+        }
+      );
+    }
+
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRateLimit = await checkRateLimit(
+      `upload:user:${session.user.id}`,
+      RATE_LIMITS.uploadPerUser.max,
+      RATE_LIMITS.uploadPerUser.window
+    );
+
+    if (!userRateLimit.success) {
+      return NextResponse.json(
+        {
+          error: "Too many upload attempts. Please try again later.",
+          retryAfter: userRateLimit.resetInSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(userRateLimit.resetInSeconds),
+          },
+        }
+      );
+    }
+
+    if (!(await isEmailVerified(session.user.id))) {
+      return NextResponse.json(
+        { error: "Please verify your email before uploading files." },
+        { status: 403 }
+      );
+    }
+
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+    const uploadKind = String(formData.get("uploadKind") || "").trim() as UploadKind;
+
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    if (!uploadKind || !(uploadKind in UPLOAD_RULES)) {
+      return NextResponse.json({ error: "Invalid upload type." }, { status: 400 });
+    }
+
+    const uploadRule = UPLOAD_RULES[uploadKind];
+
+    if (file.size > uploadRule.maxSizeBytes) {
+      return NextResponse.json({ error: "File is too large." }, { status: 413 });
+    }
+
+    const fileExt = getFileExtension(file.name);
+    if (DISALLOWED_EXTENSIONS.includes(fileExt)) {
+      return NextResponse.json(
+        { error: "This file type is not allowed." },
+        { status: 400 }
+      );
+    }
+
+    const uploadValidation = validateUpload(file.name, file.type, uploadKind);
+    if (!uploadValidation.ok) {
+      return NextResponse.json({ error: uploadValidation.error }, { status: 400 });
+    }
+
+    const timestamp = Date.now();
+    const optimizedImage = await optimizeImageUpload(file, uploadKind);
+    const uploadBody = optimizedImage?.body ?? file;
+    const contentType = optimizedImage?.contentType ?? file.type;
+    const safeName = getSafeFileName(optimizedImage?.fileName ?? file.name);
+    const fileSize = optimizedImage?.size ?? file.size;
+    const path = `uploads/${session.user.id}/${timestamp}-${safeName}`;
+    const bucketCandidates = getBucketCandidatesForUploadKind(uploadKind);
+    let uploadedPath: string | null = null;
+    let uploadedBucket: string | null = null;
+    let lastErrorMessage = "Unable to upload file.";
+
+    for (const bucket of bucketCandidates) {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(path, uploadBody, {
+          contentType,
+          upsert: false,
+        });
+
+      if (data?.path) {
+        uploadedPath = data.path;
+        uploadedBucket = bucket;
+        break;
       }
-    );
-  }
 
-  const session = await auth();
+      lastErrorMessage = error?.message || lastErrorMessage;
 
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+      const shouldTryNextBucket =
+        uploadKind === "main" &&
+        bucket !== bucketCandidates[bucketCandidates.length - 1] &&
+        error?.message?.toLowerCase().includes("bucket not found");
 
-  if (!(await isEmailVerified(session.user.id))) {
-    return NextResponse.json(
-      { error: "Please verify your email before uploading files." },
-      { status: 403 }
-    );
-  }
+      if (!shouldTryNextBucket) {
+        break;
+      }
+    }
 
-  const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-  const uploadKind = String(formData.get("uploadKind") || "").trim() as UploadKind;
-
-  if (!file) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
-  }
-
-  if (!uploadKind || !(uploadKind in UPLOAD_RULES)) {
-    return NextResponse.json({ error: "Invalid upload type." }, { status: 400 });
-  }
-
-  const uploadRule = UPLOAD_RULES[uploadKind];
-
-  if (file.size > uploadRule.maxSizeBytes) {
-    return NextResponse.json({ error: "File is too large." }, { status: 413 });
-  }
-
-  const fileExt = getFileExtension(file.name);
-  if (DISALLOWED_EXTENSIONS.includes(fileExt)) {
-    return NextResponse.json(
-      { error: "This file type is not allowed." },
-      { status: 400 }
-    );
-  }
-
-  const uploadValidation = validateUpload(file.name, file.type, uploadKind);
-  if (!uploadValidation.ok) {
-    return NextResponse.json({ error: uploadValidation.error }, { status: 400 });
-  }
-
-  const timestamp = Date.now();
-  const optimizedImage = await optimizeImageUpload(file, uploadKind);
-  const uploadBody = optimizedImage?.body ?? file;
-  const contentType = optimizedImage?.contentType ?? file.type;
-  const safeName = getSafeFileName(optimizedImage?.fileName ?? file.name);
-  const fileSize = optimizedImage?.size ?? file.size;
-  const path = `uploads/${session.user.id}/${timestamp}-${safeName}`;
-  const bucketCandidates = getBucketCandidatesForUploadKind(uploadKind);
-  let uploadedPath: string | null = null;
-  let uploadedBucket: string | null = null;
-  let lastErrorMessage = "Unable to upload file.";
-
-  for (const bucket of bucketCandidates) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(path, uploadBody, {
-        contentType,
-        upsert: false,
+    if (!uploadedPath || !uploadedBucket) {
+      return jsonError("Unable to upload file right now.", 500, {
+        uploadKind,
+        lastErrorMessage,
       });
-
-    if (data?.path) {
-      uploadedPath = data.path;
-      uploadedBucket = bucket;
-      break;
     }
 
-    lastErrorMessage = error?.message || lastErrorMessage;
-
-    const shouldTryNextBucket =
-      uploadKind === "main" &&
-      bucket !== bucketCandidates[bucketCandidates.length - 1] &&
-      error?.message?.toLowerCase().includes("bucket not found");
-
-    if (!shouldTryNextBucket) {
-      break;
-    }
+    return NextResponse.json({
+      url: getStoredUploadValue(uploadKind, uploadedBucket, uploadedPath),
+      name: safeName,
+      mime: contentType,
+      size: fileSize,
+    });
+  } catch (error) {
+    return jsonError("Unable to upload file right now.", 500, error);
   }
-
-  if (!uploadedPath || !uploadedBucket) {
-    return NextResponse.json({ error: lastErrorMessage }, { status: 500 });
-  }
-
-  return NextResponse.json({
-    url: getStoredUploadValue(uploadKind, uploadedBucket, uploadedPath),
-    name: safeName,
-    mime: contentType,
-    size: fileSize,
-  });
 }

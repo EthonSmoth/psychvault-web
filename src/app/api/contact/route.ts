@@ -2,9 +2,16 @@ import { NextResponse } from "next/server";
 import { contactSchema } from "@/lib/validators";
 import { sendContactEmail } from "@/lib/email";
 import { jsonError } from "@/lib/http";
+import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const originError = ensureAllowedOrigin(request);
+
+  if (originError) {
+    return originError;
+  }
+
   const clientIP = getClientIP(request);
   const rateLimitKey = `contact:${clientIP}`;
 
@@ -42,9 +49,29 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: firstFieldError || "Invalid contact request.",
-          details,
         },
         { status: 400 }
+      );
+    }
+
+    const emailRateLimit = await checkRateLimit(
+      `contact-email:${parsed.data.email.trim().toLowerCase()}`,
+      RATE_LIMITS.contact.max,
+      RATE_LIMITS.contact.window
+    );
+
+    if (!emailRateLimit.success) {
+      return NextResponse.json(
+        {
+          error: "Too many contact form submissions. Please try again later.",
+          retryAfter: emailRateLimit.resetInSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(emailRateLimit.resetInSeconds),
+          },
+        }
       );
     }
 

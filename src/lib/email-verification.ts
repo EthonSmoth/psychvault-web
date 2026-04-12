@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { db } from "@/lib/db";
 import { getAppBaseUrl } from "@/lib/env";
 import { sendVerificationEmail } from "@/lib/email";
+import { getSafeRedirectTarget } from "@/lib/redirects";
 
 const EMAIL_VERIFICATION_TOKEN_TTL_MS = 1000 * 60 * 60 * 24;
 
@@ -13,10 +14,7 @@ export const EMAIL_VERIFICATION_REQUIRED_MESSAGE =
 export function getVerifyEmailUrl(token: string, redirectTo?: string | null) {
   const url = new URL("/verify-email", getAppBaseUrl());
   url.searchParams.set("token", token);
-
-  if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
-    url.searchParams.set("redirectTo", redirectTo);
-  }
+  url.searchParams.set("redirectTo", getSafeRedirectTarget(redirectTo, "/library"));
 
   return url.toString();
 }

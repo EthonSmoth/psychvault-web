@@ -4,6 +4,7 @@ import { isEmailVerified } from "@/lib/require-email-verification";
 import { db } from "@/lib/db";
 import { jsonError } from "@/lib/http";
 import { sanitizeUserText } from "@/lib/input-safety";
+import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 import { createMessage, findConversationForUser } from "@/server/actions/message-actions";
 import { z } from "zod";
@@ -14,6 +15,12 @@ const messageSchema = z.object({
 
 export async function POST(request: Request, { params }: { params: Promise<{ conversationId: string }> }) {
   try {
+    const originError = ensureAllowedOrigin(request);
+
+    if (originError) {
+      return originError;
+    }
+
     const session = await auth();
     const userId = session?.user?.id;
 
@@ -29,22 +36,34 @@ export async function POST(request: Request, { params }: { params: Promise<{ con
     }
 
     const clientIP = getClientIP(request);
-    const rateLimitResult = await checkRateLimit(
-      `message-send:${userId}:${clientIP}`,
-      RATE_LIMITS.messageSend.max,
-      RATE_LIMITS.messageSend.window
-    );
+    const [userRateLimit, ipRateLimit] = await Promise.all([
+      checkRateLimit(
+        `message-send:user:${userId}`,
+        RATE_LIMITS.messageSend.max,
+        RATE_LIMITS.messageSend.window
+      ),
+      checkRateLimit(
+        `message-send:ip:${clientIP}`,
+        RATE_LIMITS.messageSend.max,
+        RATE_LIMITS.messageSend.window
+      ),
+    ]);
 
-    if (!rateLimitResult.success) {
+    if (!userRateLimit.success || !ipRateLimit.success) {
+      const retryAfter = Math.max(
+        userRateLimit.resetInSeconds,
+        ipRateLimit.resetInSeconds
+      );
+
       return NextResponse.json(
         {
           error: "Too many messages sent. Please slow down and try again shortly.",
-          retryAfter: rateLimitResult.resetInSeconds,
+          retryAfter,
         },
         {
           status: 429,
           headers: {
-            "Retry-After": String(rateLimitResult.resetInSeconds),
+            "Retry-After": String(retryAfter),
           },
         }
       );
@@ -59,7 +78,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ con
     const body = await request.json();
     const parsed = messageSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid message payload.", details: parsed.error.flatten() }, { status: 400 });
+      return NextResponse.json({ error: "Invalid message payload." }, { status: 400 });
     }
 
     const messageBody = sanitizeUserText(parsed.data.body, {

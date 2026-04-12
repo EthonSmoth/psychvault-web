@@ -6,19 +6,13 @@ import { useSearchParams } from "next/navigation";
 import { loginAction } from "@/app/(public)/login/actions";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { SubmitButton } from "@/components/auth/submit-button";
-
-function getSafeRedirect(redirectTo: string | null) {
-  if (!redirectTo) return "/library";
-  if (!redirectTo.startsWith("/")) return "/library";
-  if (redirectTo.startsWith("//")) return "/library";
-  return redirectTo;
-}
+import { getSafeRedirectTarget } from "@/lib/redirects";
 
 export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const searchParams = useSearchParams();
 
   const redirectTo = useMemo(
-    () => getSafeRedirect(searchParams.get("redirectTo")),
+    () => getSafeRedirectTarget(searchParams.get("redirectTo"), "/library"),
     [searchParams]
   );
 

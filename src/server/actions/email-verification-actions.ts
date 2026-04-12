@@ -6,6 +6,7 @@ import {
   createAndSendEmailVerification,
   getUserVerificationState,
 } from "@/lib/email-verification";
+import { getSafeRedirectTarget } from "@/lib/redirects";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 export type EmailVerificationState = {
@@ -66,11 +67,10 @@ export async function resendVerificationEmailAction(
 // Resends a verification email from plain server-rendered forms.
 export async function resendVerificationEmailFormAction(formData: FormData) {
   const result = await resendVerificationEmailInternal(formData);
-  const redirectTo = String(formData.get("redirectTo") ?? "/verify-email").trim();
-  const safeRedirect =
-    redirectTo.startsWith("/") && !redirectTo.startsWith("//")
-      ? redirectTo
-      : "/verify-email";
+  const safeRedirect = getSafeRedirectTarget(
+    String(formData.get("redirectTo") ?? "/verify-email").trim(),
+    "/verify-email"
+  );
   const nextUrl = new URL(
     safeRedirect,
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
