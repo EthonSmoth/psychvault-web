@@ -5,6 +5,7 @@ import { getCreatorTrustProfile, shouldForceTrustReview } from "@/lib/creator-tr
 import { db } from "@/lib/db";
 import { logModerationEvent } from "@/lib/moderation-events";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
+import { sanitizeUserText } from "@/lib/input-safety";
 import { revalidatePath } from "next/cache";
 import {
   ModerationActionType,
@@ -46,12 +47,15 @@ export async function saveStoreAction(
     return { error: "Invalid security token. Please refresh the page and try again." };
   }
 
-  const bannerUrl = String(formData.get("bannerUrl") || "").trim();
-  const logoUrl = String(formData.get("logoUrl") || "").trim();
-  const name = String(formData.get("name") || "").trim();
+  const bannerUrl = sanitizeUserText(formData.get("bannerUrl"), { maxLength: 2048 });
+  const logoUrl = sanitizeUserText(formData.get("logoUrl"), { maxLength: 2048 });
+  const name = sanitizeUserText(formData.get("name"), { maxLength: 120 });
   const slug = normaliseSlug(String(formData.get("slug") || ""));
-  const location = String(formData.get("location") || "").trim();
-  const bio = String(formData.get("bio") || "").trim();
+  const location = sanitizeUserText(formData.get("location"), { maxLength: 120 });
+  const bio = sanitizeUserText(formData.get("bio"), {
+    maxLength: 5000,
+    preserveNewlines: true,
+  });
   const isPublished = formData.get("isPublished") === "on";
   const moderation = moderateStoreText({
     name,
@@ -65,6 +69,10 @@ export async function saveStoreAction(
 
   if (!slug) {
     return { error: "Store slug is required." };
+  }
+
+  if (slug.length < 2 || slug.length > 120) {
+    return { error: "Store slug must be between 2 and 120 characters." };
   }
 
   if (moderation.decision === "block") {

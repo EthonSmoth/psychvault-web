@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAppBaseUrl } from "@/lib/env";
+import { serializeJsonLd } from "@/lib/input-safety";
 import { getMarketplacePolicyLinks } from "@/lib/payments";
 import {
   getPublishedStoreMetadata,
@@ -102,7 +103,7 @@ export default async function StorePage({ params }: StorePageProps) {
     <StoreViewerProvider storeId={store.id}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(cleanSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(cleanSchema) }}
       />
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

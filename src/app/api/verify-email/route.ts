@@ -1,8 +1,31 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   try {
+    const clientIP = getClientIP(req);
+    const rateLimitResult = await checkRateLimit(
+      `verify-email:${clientIP}`,
+      RATE_LIMITS.verifyEmailAttempt.max,
+      RATE_LIMITS.verifyEmailAttempt.window
+    );
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Too many verification attempts. Please try again later.",
+          retryAfter: rateLimitResult.resetInSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.resetInSeconds),
+          },
+        }
+      );
+    }
+
     const body = await req.json().catch(() => null);
     const token = typeof body?.token === "string" ? body.token.trim() : "";
 

@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs";
 import { signIn } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { sanitizeUserText } from "@/lib/input-safety";
 
 export type SignupFormState = {
   error?: string;
@@ -12,7 +13,7 @@ export async function signupAction(
   _prevState: SignupFormState,
   formData: FormData
 ): Promise<SignupFormState> {
-  const name = String(formData.get("name") || "").trim();
+  const name = sanitizeUserText(formData.get("name"), { maxLength: 80 });
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
 

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { db } from "@/lib/db";
 import { trySendVerificationEmail } from "@/lib/email";
+import { sanitizeUserText } from "@/lib/input-safety";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 function normalizeEmail(value: string | undefined) {
@@ -47,7 +48,10 @@ export async function POST(req: Request) {
 
     const body = await req.json().catch(() => null);
 
-    const name = typeof body?.name === "string" ? body.name.trim() : "";
+    const name =
+      typeof body?.name === "string"
+        ? sanitizeUserText(body.name, { maxLength: 80 })
+        : "";
     const email = normalizeEmail(
       typeof body?.email === "string" ? body.email : undefined
     );

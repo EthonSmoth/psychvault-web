@@ -13,6 +13,7 @@ import { auth } from "@/lib/auth";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
 import { verifyCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
+import { sanitizeUserText } from "@/lib/input-safety";
 import { logModerationEvent } from "@/lib/moderation-events";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import {
@@ -68,7 +69,10 @@ export async function submitResourceReportAction(
   const resourceId = String(formData.get("resourceId") ?? "").trim();
   const resourceSlug = String(formData.get("resourceSlug") ?? "").trim();
   const reason = String(formData.get("reason") ?? "").trim();
-  const details = String(formData.get("details") ?? "").trim();
+  const details = sanitizeUserText(formData.get("details"), {
+    maxLength: 2000,
+    preserveNewlines: true,
+  });
 
   if (!resourceId || !resourceSlug) {
     return { error: "Missing resource information." };
@@ -211,7 +215,10 @@ export async function submitStoreReportAction(
   const storeId = String(formData.get("storeId") ?? "").trim();
   const storeSlug = String(formData.get("storeSlug") ?? "").trim();
   const reason = String(formData.get("reason") ?? "").trim();
-  const details = String(formData.get("details") ?? "").trim();
+  const details = sanitizeUserText(formData.get("details"), {
+    maxLength: 2000,
+    preserveNewlines: true,
+  });
 
   if (!storeId || !storeSlug) {
     return { error: "Missing store information." };

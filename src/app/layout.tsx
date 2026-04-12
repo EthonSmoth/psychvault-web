@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getAppBaseUrl } from "@/lib/env";
+import { serializeJsonLd } from "@/lib/input-safety";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -162,15 +163,15 @@ export default function RootLayout({
         </Suspense>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationSchema) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteSchema) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(webApplicationSchema) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(webApplicationSchema) }}
         />
         <div className="flex min-h-screen flex-col">
           <Navbar />

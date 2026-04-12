@@ -20,6 +20,7 @@ import {
   moderateResourceText,
   validateUpload,
 } from "@/lib/resource-moderation";
+import { sanitizeUserText } from "@/lib/input-safety";
 import { getPublicResourceFileState } from "@/lib/resource-file-state";
 import { resolveStorageLocation } from "@/lib/storage";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
@@ -225,10 +226,15 @@ export async function saveResourceAction(
   const resourceId = String(formData.get("resourceId") ?? "").trim();
   const isEditMode = Boolean(resourceId);
 
-  const title = String(formData.get("title") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const shortDescription = String(formData.get("shortDescription") ?? "").trim();
-  const thumbnailUrl = String(formData.get("thumbnailUrl") ?? "").trim();
+  const title = sanitizeUserText(formData.get("title"), { maxLength: 160 });
+  const description = sanitizeUserText(formData.get("description"), {
+    maxLength: 20000,
+    preserveNewlines: true,
+  });
+  const shortDescription = sanitizeUserText(formData.get("shortDescription"), {
+    maxLength: 220,
+  });
+  const thumbnailUrl = sanitizeUserText(formData.get("thumbnailUrl"), { maxLength: 2048 });
 
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const tagIds = dedupe(formData.getAll("tagIds").map(String));
@@ -236,9 +242,9 @@ export async function saveResourceAction(
   const isPublished = formData.get("isPublished") === "on";
   const creatorAttestation = String(formData.get("creatorAttestation") ?? "").trim() === "yes";
 
-  const mainFileUrl = String(formData.get("mainFileUrl") ?? "").trim();
-  const mainFileName = String(formData.get("mainFileName") ?? "").trim();
-  const mainFileMime = String(formData.get("mainFileMime") ?? "").trim();
+  const mainFileUrl = sanitizeUserText(formData.get("mainFileUrl"), { maxLength: 2048 });
+  const mainFileName = sanitizeUserText(formData.get("mainFileName"), { maxLength: 255 });
+  const mainFileMime = sanitizeUserText(formData.get("mainFileMime"), { maxLength: 120 });
   const mainFileSize = parseOptionalPositiveInt(formData.get("mainFileSize"));
 
   const previewUrls = dedupe(formData.getAll("previewUrl").map(String));

@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { isEmailVerified } from "@/lib/require-email-verification";
 import { db } from "@/lib/db";
 import { jsonError } from "@/lib/http";
+import { sanitizeUserText } from "@/lib/input-safety";
+import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 import { createMessage, findConversationForUser } from "@/server/actions/message-actions";
 import { z } from "zod";
 
@@ -26,6 +28,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ con
       );
     }
 
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(
+      `message-send:${userId}:${clientIP}`,
+      RATE_LIMITS.messageSend.max,
+      RATE_LIMITS.messageSend.window
+    );
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Too many messages sent. Please slow down and try again shortly.",
+          retryAfter: rateLimitResult.resetInSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.resetInSeconds),
+          },
+        }
+      );
+    }
+
     const { conversationId } = await params;
     const conversation = await findConversationForUser(conversationId, userId);
     if (!conversation) {
@@ -38,7 +62,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ con
       return NextResponse.json({ error: "Invalid message payload.", details: parsed.error.flatten() }, { status: 400 });
     }
 
-    await createMessage(conversationId, userId, parsed.data.body.trim());
+    const messageBody = sanitizeUserText(parsed.data.body, {
+      maxLength: 5000,
+      preserveNewlines: true,
+    });
+
+    if (!messageBody) {
+      return NextResponse.json({ error: "Message cannot be empty." }, { status: 400 });
+    }
+
+    await createMessage(conversationId, userId, messageBody);
 
     return NextResponse.json({ message: "Message sent." }, { status: 201 });
   } catch (error) {

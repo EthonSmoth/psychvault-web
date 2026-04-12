@@ -159,6 +159,7 @@ async function HomeHeroShowcase() {
               alt={heroResource.title}
               fill
               priority
+              loading="eager"
               sizes="(max-width: 1024px) 100vw, 42vw"
               className="object-cover transition group-hover:scale-[1.02]"
             />

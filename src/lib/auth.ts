@@ -69,6 +69,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
               name: true,
               passwordHash: true,
               role: true,
+              emailVerified: true,
             },
           });
 
@@ -91,6 +92,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             email: user.email,
             name: user.name,
             role: user.role,
+            emailVerified: Boolean(user.emailVerified),
           } as any;
         } catch (error) {
           if (
@@ -112,6 +114,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (user) {
         token.role = (user as any).role;
         token.sub = user.id as string;
+        token.emailVerified = Boolean((user as any).emailVerified);
       }
       return token;
     },
@@ -119,6 +122,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (session.user) {
         (session.user as any).id = token.sub;
         (session.user as any).role = token.role;
+        (session.user as any).emailVerified = Boolean(token.emailVerified);
       }
       return session;
     },

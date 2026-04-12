@@ -136,10 +136,14 @@ export const RATE_LIMITS = {
   registration: { max: 5, window: 60 * 60 * 1000 },
   login: { max: 5, window: 15 * 60 * 1000 },
   verificationEmail: { max: 3, window: 60 * 60 * 1000 },
+  verifyEmailAttempt: { max: 10, window: 15 * 60 * 1000 },
   contact: { max: 3, window: 60 * 60 * 1000 },
   checkout: { max: 10, window: 60 * 60 * 1000 },
   upload: { max: 20, window: 60 * 60 * 1000 },
   resourceReport: { max: 5, window: 60 * 60 * 1000 },
+  review: { max: 8, window: 60 * 60 * 1000 },
+  messageSend: { max: 30, window: 10 * 60 * 1000 },
+  publicBrowse: { max: 120, window: 60 * 1000 },
 } as const;
 
 // Attempts to derive the best available client IP for route-level abuse controls.
