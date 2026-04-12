@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { isGoogleOAuthEnabled } from "@/lib/env";
 import { SignupForm } from "@/components/auth/signup-form";
 
 type SignupPageProps = {
@@ -20,6 +21,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   const session = await auth();
   const params = (await searchParams) ?? {};
   const redirectTo = getSafeRedirect(params.redirectTo);
+  const googleEnabled = isGoogleOAuthEnabled();
 
   if (session?.user) {
     redirect(redirectTo);
@@ -58,7 +60,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             </p>
           </div>
 
-          <SignupForm />
+          <SignupForm googleEnabled={googleEnabled} />
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
             Already have an account?{" "}

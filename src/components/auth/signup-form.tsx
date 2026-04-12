@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 
 function getSafeRedirect(redirectTo: string | null) {
   if (!redirectTo) return "/library";
@@ -11,7 +12,7 @@ function getSafeRedirect(redirectTo: string | null) {
   return redirectTo;
 }
 
-export function SignupForm() {
+export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -74,6 +75,22 @@ export function SignupForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <input type="hidden" name="redirectTo" value={redirectTo} />
+
+      {googleEnabled ? (
+        <>
+          <GoogleAuthButton redirectTo={redirectTo} label="Continue with Google" />
+          <div className="relative py-1">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--border)]" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-[var(--card)] px-3 text-xs font-medium uppercase tracking-wide text-[var(--text-light)]">
+                Or sign up with email
+              </span>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       <div>
         <label

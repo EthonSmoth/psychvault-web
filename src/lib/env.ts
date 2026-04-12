@@ -55,3 +55,9 @@ export function isValidHttpUrl(value: string): boolean {
     return false;
   }
 }
+
+export function isGoogleOAuthEnabled() {
+  return Boolean(
+    process.env.AUTH_GOOGLE_ID?.trim() && process.env.AUTH_GOOGLE_SECRET?.trim()
+  );
+}

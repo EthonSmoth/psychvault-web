@@ -9,7 +9,7 @@ import {
   getHomepageResourceShowcaseData,
   getHomepageStatsData,
 } from "@/server/queries/public-content";
-import { ResourceGrid } from "@/components/resources/resource-grid";
+import ResourceCard from "@/components/resources/resource-card";
 
 export const revalidate = 300;
 
@@ -30,6 +30,35 @@ const CATEGORY_ICONS: Record<string, string> = {
   "ndis-resources": "NDIS",
   "therapy-worksheets": "Worksheets",
 };
+
+function getHomeSectionResources<T>(items: T[], count: number) {
+  return items.slice(0, count);
+}
+
+function ResourceSectionPlaceholder({
+  title,
+  description,
+  href,
+  linkLabel,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  linkLabel: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="text-lg font-semibold text-[var(--text)]">{title}</div>
+      <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{description}</p>
+      <Link
+        href={href}
+        className="mt-5 inline-flex rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+      >
+        {linkLabel}
+      </Link>
+    </div>
+  );
+}
 
 function HomeHero() {
   return (
@@ -294,7 +323,7 @@ async function HomeCategoriesSection() {
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {categories.map((category) => (
           <Link
             key={category.id}
@@ -322,8 +351,8 @@ async function HomeCategoriesSection() {
 function HomeCategoriesFallback() {
   return (
     <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[0, 1, 2, 3].map((item) => (
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {[0, 1, 2, 3, 4, 5].map((item) => (
           <div
             key={item}
             className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm"
@@ -340,6 +369,7 @@ function HomeCategoriesFallback() {
 
 async function HomeFeaturedResourcesSection() {
   const { featuredResources } = await getHomepageResourceShowcaseData();
+  const visibleResources = getHomeSectionResources(featuredResources, 3);
 
   return (
     <section className="defer-section mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -359,16 +389,27 @@ async function HomeFeaturedResourcesSection() {
           Browse all
         </Link>
       </div>
-      <ResourceGrid
-        resources={featuredResources}
-        className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-      />
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {visibleResources.map((resource) => (
+          <ResourceCard key={resource.id} resource={resource} />
+        ))}
+        {Array.from({ length: Math.max(0, 3 - visibleResources.length) }).map((_, index) => (
+          <ResourceSectionPlaceholder
+            key={`featured-placeholder-${index}`}
+            title="More featured resources coming soon"
+            description="As more clinician-made resources go live, this section will fill out automatically."
+            href="/creator/resources/new"
+            linkLabel="Add a resource"
+          />
+        ))}
+      </div>
     </section>
   );
 }
 
 async function HomeRecentResourcesSection() {
   const { recentResources } = await getHomepageResourceShowcaseData();
+  const visibleResources = getHomeSectionResources(recentResources, 3);
 
   return (
     <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -390,7 +431,7 @@ async function HomeRecentResourcesSection() {
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {recentResources.map((resource) => (
+        {visibleResources.map((resource) => (
           <Link
             key={resource.id}
             href={`/resources/${resource.slug}`}
@@ -428,6 +469,15 @@ async function HomeRecentResourcesSection() {
               </div>
             </div>
           </Link>
+        ))}
+        {Array.from({ length: Math.max(0, 3 - visibleResources.length) }).map((_, index) => (
+          <ResourceSectionPlaceholder
+            key={`recent-placeholder-${index}`}
+            title="Fresh resources will appear here"
+            description="Newly published listings will fill this row as your marketplace grows."
+            href="/resources"
+            linkLabel="Browse all resources"
+          />
         ))}
       </div>
     </section>

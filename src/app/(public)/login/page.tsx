@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isGoogleOAuthEnabled } from "@/lib/env";
 import { LoginForm } from "@/components/auth/login-form";
 
 type LoginPageProps = {
@@ -21,6 +22,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await auth();
   const params = (await searchParams) ?? {};
   const redirectTo = getSafeRedirect(params.redirectTo);
+  const googleEnabled = isGoogleOAuthEnabled();
 
   const dbUser =
     session?.user?.email
@@ -64,7 +66,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
           </div>
 
-          <LoginForm />
+          <LoginForm googleEnabled={googleEnabled} />
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
             Don’t have an account?{" "}

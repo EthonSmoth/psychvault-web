@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getAppBaseUrl } from "@/lib/env";
 import { ResourcesBrowseClient } from "@/components/resources/resources-browse-client";
 import {
@@ -26,18 +27,20 @@ export default async function SearchPage() {
   const { categories, tags } = await getResourceBrowseFacets();
 
   return (
-    <ResourcesBrowseClient
-      categories={categories}
-      tags={tags}
-      initialResources={[]}
-      initialPageInfo={{
-        page: 1,
-        pageSize: PUBLIC_RESOURCE_BROWSE_PAGE_SIZE,
-        hasNextPage: false,
-        hasPreviousPage: false,
-        nextPage: null,
-        previousPage: null,
-      }}
-    />
+    <Suspense fallback={null}>
+      <ResourcesBrowseClient
+        categories={categories}
+        tags={tags}
+        initialResources={[]}
+        initialPageInfo={{
+          page: 1,
+          pageSize: PUBLIC_RESOURCE_BROWSE_PAGE_SIZE,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          nextPage: null,
+          previousPage: null,
+        }}
+      />
+    </Suspense>
   );
 }

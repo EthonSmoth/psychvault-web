@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { loginAction } from "@/app/(public)/login/actions";
+import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { SubmitButton } from "@/components/auth/submit-button";
 
 function getSafeRedirect(redirectTo: string | null) {
@@ -13,7 +14,7 @@ function getSafeRedirect(redirectTo: string | null) {
   return redirectTo;
 }
 
-export function LoginForm() {
+export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const searchParams = useSearchParams();
 
   const redirectTo = useMemo(
@@ -26,6 +27,22 @@ export function LoginForm() {
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="redirectTo" value={redirectTo} />
+
+      {googleEnabled ? (
+        <>
+          <GoogleAuthButton redirectTo={redirectTo} label="Continue with Google" />
+          <div className="relative py-1">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--border)]" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-[var(--card)] px-3 text-xs font-medium uppercase tracking-wide text-[var(--text-light)]">
+                Or use email
+              </span>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       <div>
         <label

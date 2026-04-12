@@ -434,34 +434,43 @@ export function getHomepageResourceShowcaseData() {
 
 export function getHomepageCategoryData() {
   return unstable_cache(
-    async () =>
-      db.category.findMany({
-        where: {
+    async () => {
+      const categories = await db.category.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
           resources: {
-            some: {
+            where: {
               resource: {
                 status: "PUBLISHED",
               },
             },
-          },
-        },
-        orderBy: [
-          {
-            resources: {
-              _count: "desc",
-            },
-          },
-          { name: "asc" },
-        ],
-        take: 12,
-        include: {
-          _count: {
             select: {
-              resources: true,
+              resourceId: true,
             },
           },
         },
-      }),
+      });
+
+      return categories
+        .map((category) => ({
+          id: category.id,
+          name: category.name,
+          slug: category.slug,
+          _count: {
+            resources: category.resources.length,
+          },
+        }))
+        .sort((a, b) => {
+          if (b._count.resources !== a._count.resources) {
+            return b._count.resources - a._count.resources;
+          }
+
+          return a.name.localeCompare(b.name);
+        })
+        .slice(0, 6);
+    },
     ["homepage-categories"],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
