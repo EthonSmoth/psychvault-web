@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getAppBaseUrl } from "@/lib/env";
 import { StoresBrowseClient } from "@/components/stores/stores-browse-client";
 import { getPublishedStoresBrowseData } from "@/server/queries/public-content";
@@ -36,9 +37,11 @@ export default async function StoresBrowsePage() {
   });
 
   return (
-    <StoresBrowseClient
-      initialStores={browseData.stores}
-      initialPageInfo={browseData.pageInfo}
-    />
+    <Suspense fallback={null}>
+      <StoresBrowseClient
+        initialStores={browseData.stores}
+        initialPageInfo={browseData.pageInfo}
+      />
+    </Suspense>
   );
 }
