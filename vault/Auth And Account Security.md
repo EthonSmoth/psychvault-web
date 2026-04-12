@@ -2,80 +2,62 @@
 
 ## Current State
 
-- credentials auth only
-- bcrypt password hashes
-- JWT session strategy
-- email verification gates on sensitive actions
+- credentials auth with bcrypt password hashes
+- optional Google OAuth provider
+- JWT session strategy with explicit 7-day max age
+- secure cookies in production with `httpOnly` and `sameSite=lax`
+- email verification gates on purchases, uploads, creator actions, follows, messaging, and reporting
 - CSRF protection on server-action forms
+- centralized safe redirect validation
+- origin validation on state-changing API routes
 - database-backed rate limiting with memory fallback
+- centralized auth, role, and ownership guard helpers
 
-## OAuth Recommendation
-
-### Google
-
-Recommended as the first OAuth provider.
-
-Why:
-
-- lowest setup friction
-- strong user familiarity
-- good fit for both buyers and creators
-
-Suggested env vars:
-
-- `AUTH_GOOGLE_ID`
-- `AUTH_GOOGLE_SECRET`
-
-Suggested implementation file:
-
-- `src/lib/auth.ts`
+## Google OAuth
 
 Current repo status:
 
-- Google OAuth is now wired as an optional provider.
-- Login and signup pages show the Google button only when the Google env vars are present.
-- Google sign-in marks the user as email-verified in the local app model.
-- Same-email accounts are linked automatically for Google sign-in.
+- Google OAuth is implemented in `src/lib/auth.ts`
+- login and signup show the Google button only when `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` are set
+- Google sign-in marks same-email accounts as verified in the local app model
+- redirect handling is sanitized through the shared redirect helper
 
-### Apple
+Operational notes:
 
-Possible, but should come after Google unless required immediately.
+- rotate the Google client secret if it has ever been exposed
+- keep production callback URLs aligned with the canonical domain
 
-Why:
+## Apple OAuth
 
-- more operational setup
-- Apple developer configuration is stricter
-- more moving parts for web callbacks and domain setup
+Not implemented yet.
 
-Suggested env vars:
+Recommendation:
 
-- `AUTH_APPLE_ID`
-- `AUTH_APPLE_SECRET`
-- `AUTH_APPLE_ISSUER`
+- only add it if the business case is clear
+- do it after Google is stable
+- expect stricter operational setup than Google
 
-## CAPTCHA Recommendation
+## CAPTCHA / Turnstile
 
-Best fit: Cloudflare Turnstile.
+Not implemented yet.
 
-Why:
+Recommendation:
 
-- already aligned with Cloudflare at the edge
-- lower friction than traditional CAPTCHA
-- good protection for signup without making the app feel hostile
+- add Cloudflare Turnstile only if signup abuse becomes meaningful
+- keep it off the happy path unless there is real bot pressure
 
-Suggested env vars:
+## Security Hardening Already Applied
 
-- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
-- `TURNSTILE_SECRET_KEY`
+- generic user-facing error responses
+- server-side logging with safer formatting
+- role and ownership checks on protected operations
+- Stripe signature verification before webhook processing
+- rate limits on login, signup, verification, checkout, uploads, reporting, reviews, and messaging
+- security headers in Next.js config
 
-Recommended rollout order:
+## Remaining Gaps
 
-1. signup
-2. contact form if needed
-3. resend verification if abused
-
-## Notes
-
-- do not force CAPTCHA on every auth action unless abuse is real
-- keep provider rollout incremental
-- decide whether social-login users count as verified immediately or still need email policy checks
+- no password reset flow yet
+- no Apple OAuth yet
+- no CAPTCHA yet
+- long-lived JWT sessions are bounded, but not a full server-side idle timeout model

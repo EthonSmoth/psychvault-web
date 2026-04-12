@@ -13,16 +13,16 @@
 
 ### Creators
 
-- create a store
-- upload and price resources
-- publish moderated listings
-- view analytics and sales
+- create and manage a store
+- upload, price, archive, and publish resources
+- manage previews and private downloadable files
+- view sales, payouts, and analytics
 
 ### Admin
 
 - review reports
-- approve or reject content
-- archive or restore public listings
+- approve, reject, archive, or restore content
+- moderate public marketplace visibility
 
 ## Resource Model
 
@@ -38,7 +38,7 @@ A resource can have:
 - category
 - tags
 - moderation state
-- review aggregates
+- review and sales aggregates
 
 ## Store Model
 
@@ -52,3 +52,4 @@ A store can have:
 - location
 - publication status
 - verification state
+- owner relationship

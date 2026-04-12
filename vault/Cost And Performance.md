@@ -2,31 +2,31 @@
 
 ## Goal
 
-Make anonymous traffic cheap and reserve dynamic compute for account and money flows.
+Make anonymous traffic cheap and reserve dynamic compute for account, entitlement, and money flows.
 
 ## Current Direction
 
-- cached public resource and store browse
-- denormalized public file-state for cheaper cards
-- static-safe public shell
-- signed storage downloads
-- trimmed public query payloads
-- sitemap and metadata cleanup
+- cache-first public resource and store browse
+- static-safe public shell with viewer-specific state fetched separately
+- denormalized public file-state for cheaper card and browse queries
+- public detail and browse APIs rate-limited to reduce scraping and cost abuse
+- signed private download delivery instead of streaming files through app code
+- trimmed public query payloads and leaner public serializers
+- sitemap and metadata cleanup for better SEO without extra request cost
 
 ## Dynamic Surfaces That Should Stay Dynamic
 
-- auth
-- signup/login/verification
-- checkout
-- protected downloads
+- auth and signup/login/verification
+- checkout and webhook fulfilment
+- protected downloads and entitlement checks
 - creator dashboard
 - admin dashboard
 - uploads
-- webhooks
+- messaging and user-specific viewer state
 
 ## Ongoing Follow-Ups
 
 - keep public browse APIs paginated and capped
-- keep metadata generation from duplicating DB work
-- avoid session and user lookups on anonymous page renders
-- monitor nav/session and viewer APIs for unnecessary database touches
+- continue reducing duplicated data work between metadata and page content
+- monitor session/nav and viewer APIs for unnecessary database reads
+- consider moving shared rate limiting to Redis/Upstash if traffic grows beyond what the main database should absorb

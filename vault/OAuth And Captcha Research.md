@@ -2,98 +2,69 @@
 
 ## Summary
 
-### Best next auth move
+### Current auth posture
 
-Add Google OAuth first.
+- credentials auth is live
+- Google OAuth is implemented and can be enabled with env vars
+- Apple OAuth is not implemented
+- CAPTCHA is not implemented
 
-Why:
+### Recommended next auth move
 
-- lower implementation friction than Apple
-- good user familiarity
-- strong fit for marketplace signup/login
+Keep Google as the primary social sign-in option and only add Apple if there is a clear business reason.
 
 ### CAPTCHA recommendation
 
-Add Cloudflare Turnstile to account creation before adding it elsewhere.
+If signup abuse becomes real, add Cloudflare Turnstile to account creation first.
 
-Why:
+## Practical Rollout Order
 
-- lowest-friction CAPTCHA option here
-- already aligned with the Cloudflare edge in front of the app
-- server-side validation is simple and required
+1. keep Google OAuth stable in production
+2. decide whether Apple OAuth is worth the setup burden
+3. add Turnstile only if abuse justifies the friction
 
-### Apple OAuth recommendation
+## Google
 
-Feasible, but do it after Google unless it is a business requirement.
+Status:
 
-Why:
+- implemented in the Auth.js config
+- exposed on login and signup when `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` are present
+- same-email Google users are linked automatically
+- Google users are treated as verified in the local app model
 
-- stricter Apple account setup
-- more operational steps for web authentication
-- more likely to slow rollout than Google
+Operational requirements:
 
-## Practical rollout order
+- correct browser origins and callback URLs in Google Cloud
+- canonical production domain set correctly in env
+- secret rotation if the OAuth secret was exposed
 
-1. Google OAuth
-2. Turnstile on signup
-3. Apple OAuth
+## Apple
 
-## Official source notes
+Status:
 
-### Google
+- not implemented
 
-Google’s current web guidance centers on Google Identity Services and obtaining a web client ID with the correct browser origins configured.
+Reason to delay:
 
-Relevant docs:
+- stricter operational setup than Google
+- requires Apple developer configuration for web sign-in
+- more maintenance overhead for lower immediate value
 
-- https://developers.google.com/identity/oauth2/web/guides/get-google-api-clientid
-- https://developers.google.com/accounts/docs/OAuth2Login
+## Turnstile
 
-Repo note:
+Status:
 
-- Google OAuth is now implemented in the Auth.js config and exposed on login/signup when env vars are set.
-- You still need to configure the Google Cloud OAuth client and allowed redirect URI.
+- not implemented
 
-### Apple
+When to add:
 
-Apple’s web sign-in flow requires a Services ID and association to a primary App ID with Sign in with Apple enabled.
+- only if signup or contact abuse becomes meaningful
+- avoid adding friction unless the traffic pattern justifies it
 
-Relevant docs:
+## Relevant Project Touchpoints
 
-- https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web
-- https://developer.apple.com/help/account/configure-app-capabilities/about-sign-in-with-apple/
-
-### Cloudflare Turnstile
-
-Cloudflare requires server-side token validation through Siteverify. Tokens are single-use and expire after five minutes.
-
-Relevant docs:
-
-- https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
-- https://developers.cloudflare.com/turnstile/troubleshooting/testing/
-
-## Repo impact notes
-
-### Google OAuth
-
-Likely changes:
-
-- add provider to `src/lib/auth.ts`
-- link OAuth users to existing accounts carefully
-- decide how `emailVerified` should behave for OAuth accounts
-
-### Apple OAuth
-
-Likely changes:
-
-- add provider to `src/lib/auth.ts`
-- configure Apple web return URLs
-- ensure branding/domain config matches production host
-
-### Turnstile
-
-Likely changes:
-
-- add widget to signup UI
-- verify token in `src/app/api/register/route.ts`
-- fail closed if token validation is missing or invalid
+- `src/lib/auth.ts`
+- `src/components/auth/google-auth-button.tsx`
+- `src/components/auth/login-form.tsx`
+- `src/components/auth/signup-form.tsx`
+- `src/app/api/register/route.ts`
