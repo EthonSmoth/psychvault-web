@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { ResourceStatus } from "@prisma/client";
 import { verifyCSRFToken } from "@/lib/csrf";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
+import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 // Loads the signed-in creator and guarantees they have a store before continuing.
@@ -153,7 +154,14 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
       slug: true,
       creatorId: true,
       storeId: true,
+      mainDownloadUrl: true,
       hasMainFile: true,
+      files: {
+        select: {
+          kind: true,
+          fileUrl: true,
+        },
+      },
     },
   });
 
@@ -169,13 +177,22 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
     throw new Error("Not authorised.");
   }
 
-  if (!resource.hasMainFile) {
+  const effectiveFileState = getEffectivePublicResourceFileState({
+    mainDownloadUrl: resource.mainDownloadUrl,
+    files: resource.files,
+  });
+
+  if (!effectiveFileState.hasMainFile) {
     throw new Error("This resource cannot be published because it has no main download file.");
   }
 
   await db.resource.update({
     where: { id: resource.id },
-    data: { status: ResourceStatus.PUBLISHED },
+    data: {
+      status: ResourceStatus.PUBLISHED,
+      hasMainFile: effectiveFileState.hasMainFile,
+      mainDownloadUrl: effectiveFileState.mainDownloadUrl,
+    },
   });
 
   revalidateResourcePaths(resource.slug, user.store.slug);

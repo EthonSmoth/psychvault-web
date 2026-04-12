@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { jsonError } from "@/lib/http";
 import { checkRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
+import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
 import { createSignedDownloadUrl } from "@/lib/storage";
 
 type RouteContext = {
@@ -46,6 +47,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
         slug: true,
         hasMainFile: true,
         mainDownloadUrl: true,
+        files: {
+          select: {
+            kind: true,
+            fileUrl: true,
+          },
+        },
         store: {
           select: {
             ownerId: true,
@@ -97,6 +104,23 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 
     const userId = session.user.id;
     const isOwner = resource.store?.ownerId === userId;
+    const effectiveFileState = getEffectivePublicResourceFileState({
+      mainDownloadUrl: resource.mainDownloadUrl,
+      files: resource.files,
+    });
+
+    if (
+      effectiveFileState.hasMainFile !== resource.hasMainFile ||
+      effectiveFileState.mainDownloadUrl !== resource.mainDownloadUrl
+    ) {
+      await db.resource.update({
+        where: { id: resource.id },
+        data: {
+          hasMainFile: effectiveFileState.hasMainFile,
+          mainDownloadUrl: effectiveFileState.mainDownloadUrl,
+        },
+      });
+    }
 
     const purchase = await db.purchase.findUnique({
       where: {
@@ -122,7 +146,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    if (!resource.hasMainFile || !resource.mainDownloadUrl) {
+    if (!effectiveFileState.hasMainFile || !effectiveFileState.mainDownloadUrl) {
       return NextResponse.json(
         { error: "No downloadable file is attached to this resource yet." },
         {
@@ -134,7 +158,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const signedUrl = await createSignedDownloadUrl(resource.mainDownloadUrl);
+    const signedUrl = await createSignedDownloadUrl(effectiveFileState.mainDownloadUrl);
 
     if (!signedUrl) {
       return NextResponse.json(

@@ -10,6 +10,7 @@ import { getPaymentsAvailability } from "@/lib/payments";
 import { getSafeRedirectTarget } from "@/lib/redirects";
 import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
+import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
 
 export async function POST(request: Request) {
   try {
@@ -84,6 +85,12 @@ export async function POST(request: Request) {
     const resource = await db.resource.findUnique({
       where: { id: resourceId },
       include: {
+        files: {
+          select: {
+            kind: true,
+            fileUrl: true,
+          },
+        },
         store: {
           include: {
             owner: {
@@ -101,6 +108,23 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+    const effectiveFileState = getEffectivePublicResourceFileState({
+      mainDownloadUrl: resource.mainDownloadUrl,
+      files: resource.files,
+    });
+
+    if (
+      effectiveFileState.hasMainFile !== resource.hasMainFile ||
+      effectiveFileState.mainDownloadUrl !== resource.mainDownloadUrl
+    ) {
+      await db.resource.update({
+        where: { id: resource.id },
+        data: {
+          hasMainFile: effectiveFileState.hasMainFile,
+          mainDownloadUrl: effectiveFileState.mainDownloadUrl,
+        },
+      });
+    }
 
     if (!(await isEmailVerified(userId))) {
       const verifyUrl = new URL("/verify-email", request.url);
@@ -108,7 +132,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(verifyUrl, 303);
     }
 
-    if (!resource.hasMainFile) {
+    if (!effectiveFileState.hasMainFile) {
       const errorUrl = new URL(`/resources/${resource.slug}`, request.url);
       errorUrl.searchParams.set("error", "download-missing");
       return NextResponse.redirect(errorUrl, 303);

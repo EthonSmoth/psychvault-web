@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { logModerationEvent } from "@/lib/moderation-events";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/require-admin";
+import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 import {
   ModerationActionType,
@@ -76,13 +77,25 @@ export async function adminPublishResourceAction(formData: FormData) {
     select: {
       id: true,
       slug: true,
+      mainDownloadUrl: true,
       hasMainFile: true,
+      files: {
+        select: {
+          kind: true,
+          fileUrl: true,
+        },
+      },
       store: { select: { slug: true } },
     },
   });
 
   if (!resource) throw new Error("Resource not found.");
-  if (!resource.hasMainFile) {
+  const effectiveFileState = getEffectivePublicResourceFileState({
+    mainDownloadUrl: resource.mainDownloadUrl,
+    files: resource.files,
+  });
+
+  if (!effectiveFileState.hasMainFile) {
     throw new Error("Cannot publish a resource without a main download file.");
   }
 
@@ -90,6 +103,8 @@ export async function adminPublishResourceAction(formData: FormData) {
     where: { id: resource.id },
     data: {
       status: ResourceStatus.PUBLISHED,
+      hasMainFile: effectiveFileState.hasMainFile,
+      mainDownloadUrl: effectiveFileState.mainDownloadUrl,
       moderationStatus: ModerationStatus.APPROVED,
       moderationReason: null,
       moderatedAt: new Date(),
@@ -257,12 +272,24 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
       id: true,
       slug: true,
       store: { select: { slug: true } },
+      mainDownloadUrl: true,
       hasMainFile: true,
+      files: {
+        select: {
+          kind: true,
+          fileUrl: true,
+        },
+      },
     },
   });
 
   if (!resource) throw new Error("Resource not found.");
-  if (!resource.hasMainFile) {
+  const effectiveFileState = getEffectivePublicResourceFileState({
+    mainDownloadUrl: resource.mainDownloadUrl,
+    files: resource.files,
+  });
+
+  if (!effectiveFileState.hasMainFile) {
     throw new Error("Cannot approve and publish a resource without a main download file.");
   }
 
@@ -271,6 +298,8 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
       where: { id: resource.id },
       data: {
         status: ResourceStatus.PUBLISHED,
+        hasMainFile: effectiveFileState.hasMainFile,
+        mainDownloadUrl: effectiveFileState.mainDownloadUrl,
         moderationStatus: ModerationStatus.APPROVED,
         moderationReason: null,
         moderatedAt: new Date(),
