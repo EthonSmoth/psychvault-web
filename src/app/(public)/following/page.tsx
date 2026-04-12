@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import type { PublicResourceCard } from "@/types/public";
@@ -46,25 +47,24 @@ export default async function FollowingFeedPage() {
     followedStoreIds.length > 0
       ? (
           await db.resource.findMany({
-            where: {
-              status: "PUBLISHED",
+            where: getPubliclyVisiblePublishedResourceWhere({
               storeId: {
                 in: followedStoreIds,
               },
-            },
-          select: {
-            id: true,
-            slug: true,
-            title: true,
-            shortDescription: true,
-            thumbnailUrl: true,
-            previewImageUrl: true,
-            priceCents: true,
-            isFree: true,
-            hasMainFile: true,
-            averageRating: true,
-            reviewCount: true,
-            store: {
+            }),
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              shortDescription: true,
+              thumbnailUrl: true,
+              previewImageUrl: true,
+              priceCents: true,
+              isFree: true,
+              hasMainFile: true,
+              averageRating: true,
+              reviewCount: true,
+              store: {
                 select: {
                   name: true,
                   slug: true,

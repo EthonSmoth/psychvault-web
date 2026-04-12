@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
 
 export type ResourceFilters = {
   query?: string;
@@ -10,22 +11,21 @@ export type ResourceFilters = {
 };
 
 export async function listPublishedResources(filters: ResourceFilters = {}) {
-  const where: Prisma.ResourceWhereInput = {
-    status: "PUBLISHED",
+  const where: Prisma.ResourceWhereInput = getPubliclyVisiblePublishedResourceWhere({
     ...(filters.query
       ? {
           OR: [
             { title: { contains: filters.query, mode: "insensitive" } },
-            { description: { contains: filters.query, mode: "insensitive" } }
-          ]
+            { description: { contains: filters.query, mode: "insensitive" } },
+          ],
         }
       : {}),
     ...(filters.category
       ? { categories: { some: { category: { slug: filters.category } } } }
       : {}),
     ...(filters.tag ? { tags: { some: { tag: { slug: filters.tag } } } } : {}),
-    ...(filters.storeSlug ? { store: { slug: filters.storeSlug } } : {})
-  };
+    ...(filters.storeSlug ? { store: { slug: filters.storeSlug } } : {}),
+  });
 
   const orderBy: Prisma.ResourceOrderByWithRelationInput[] =
     filters.sort === "best-selling"
@@ -52,7 +52,7 @@ export async function listPublishedResources(filters: ResourceFilters = {}) {
 
 export async function getPublishedResourceBySlug(slug: string) {
   return db.resource.findFirst({
-    where: { slug, status: "PUBLISHED" },
+    where: getPubliclyVisiblePublishedResourceWhere({ slug }),
     include: {
       store: true,
       creator: true,

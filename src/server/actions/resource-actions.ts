@@ -24,6 +24,7 @@ import { sanitizeUserText } from "@/lib/input-safety";
 import { getPublicResourceFileState } from "@/lib/resource-file-state";
 import { logger } from "@/lib/logger";
 import { resolveStorageLocation } from "@/lib/storage";
+import { syncCreatorPayoutStatus } from "@/lib/stripe-connect";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 export type ResourceFormState = {
@@ -320,6 +321,17 @@ export async function saveResourceAction(
       error:
         "Please confirm the creator attestation before publishing this resource.",
     };
+  }
+
+  if (isPublished && priceCents !== null && priceCents > 0) {
+    const payoutStatus = await syncCreatorPayoutStatus(user.id);
+
+    if (!payoutStatus.ready) {
+      return {
+        error:
+          "Complete Stripe payout onboarding before publishing paid resources.",
+      };
+    }
   }
 
   if (moderation.decision === "block") {

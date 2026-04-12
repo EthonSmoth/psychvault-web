@@ -11,6 +11,7 @@ import { getSafeRedirectTarget } from "@/lib/redirects";
 import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
+import { isPayoutAccountReady, syncCreatorPayoutStatus } from "@/lib/stripe-connect";
 
 export async function POST(request: Request) {
   try {
@@ -194,6 +195,18 @@ export async function POST(request: Request) {
     const feeBps = getPlatformFeeBps();
     const platformFeeCents = Math.round((resource.priceCents * feeBps) / 10000);
     const stripeAccountId = resource.store?.owner?.payoutAccount?.stripeAccountId;
+    let creatorPayoutReady = isPayoutAccountReady(resource.store?.owner?.payoutAccount);
+
+    if (!creatorPayoutReady && resource.store?.ownerId) {
+      const syncedPayoutStatus = await syncCreatorPayoutStatus(resource.store.ownerId);
+      creatorPayoutReady = syncedPayoutStatus.ready;
+    }
+
+    if (!creatorPayoutReady) {
+      const unavailableUrl = new URL(`/resources/${resource.slug}`, request.url);
+      unavailableUrl.searchParams.set("error", "creator-payouts-unavailable");
+      return NextResponse.redirect(unavailableUrl, 303);
+    }
 
     const checkoutParams = {
       mode: "payment" as const,

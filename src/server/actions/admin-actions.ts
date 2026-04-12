@@ -5,6 +5,7 @@ import { logModerationEvent } from "@/lib/moderation-events";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/require-admin";
 import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
+import { syncCreatorPayoutStatus } from "@/lib/stripe-connect";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 import {
   ModerationActionType,
@@ -77,6 +78,8 @@ export async function adminPublishResourceAction(formData: FormData) {
     select: {
       id: true,
       slug: true,
+      creatorId: true,
+      priceCents: true,
       mainDownloadUrl: true,
       hasMainFile: true,
       files: {
@@ -97,6 +100,14 @@ export async function adminPublishResourceAction(formData: FormData) {
 
   if (!effectiveFileState.hasMainFile) {
     throw new Error("Cannot publish a resource without a main download file.");
+  }
+
+  if (resource.priceCents > 0) {
+    const payoutStatus = await syncCreatorPayoutStatus(resource.creatorId);
+
+    if (!payoutStatus.ready) {
+      throw new Error("Cannot publish a paid resource until the creator finishes Stripe payout onboarding.");
+    }
   }
 
   await db.resource.update({
@@ -271,6 +282,8 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
     select: {
       id: true,
       slug: true,
+      creatorId: true,
+      priceCents: true,
       store: { select: { slug: true } },
       mainDownloadUrl: true,
       hasMainFile: true,
@@ -291,6 +304,14 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
 
   if (!effectiveFileState.hasMainFile) {
     throw new Error("Cannot approve and publish a resource without a main download file.");
+  }
+
+  if (resource.priceCents > 0) {
+    const payoutStatus = await syncCreatorPayoutStatus(resource.creatorId);
+
+    if (!payoutStatus.ready) {
+      throw new Error("Cannot approve a paid resource until the creator finishes Stripe payout onboarding.");
+    }
   }
 
   await db.$transaction(async (tx) => {

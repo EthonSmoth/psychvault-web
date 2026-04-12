@@ -249,6 +249,10 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
           Listings may stay in draft if they are new, flagged by moderation rules, or
           need manual review before public sale.
         </p>
+        <p className="mt-2 text-sm text-[var(--text-muted)]">
+          Paid resources also require completed Stripe payout onboarding for the creator
+          account before they can be published.
+        </p>
 
         {resource?.moderationStatus === "PENDING_REVIEW" ? (
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -359,6 +363,10 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
               placeholder="0.00 for free"
               className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
             />
+            <p className="mt-2 text-xs text-[var(--text-light)]">
+              Free resources can go live without payout setup. Paid resources require Stripe
+              payout onboarding first.
+            </p>
           </div>
 
           <div>

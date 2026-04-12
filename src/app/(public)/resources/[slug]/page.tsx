@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { getAppBaseUrl } from "@/lib/env";
 import { serializeJsonLd } from "@/lib/input-safety";
 import { getMarketplacePolicyLinks, getPaymentsAvailability } from "@/lib/payments";
+import { isPayoutAccountReady } from "@/lib/stripe-connect";
 import {
   getPublishedResourceMetadata,
   getPublishedResourcePageData,
@@ -155,7 +156,18 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const primaryCategory = resource.categories[0]?.category;
   const paymentAvailability = getPaymentsAvailability();
   const policyLinks = getMarketplacePolicyLinks();
-  const paidCheckoutUnavailable = !resource.isFree && !paymentAvailability.enabled;
+  const creatorPayoutReady = isPayoutAccountReady(
+    resourceData.store?.owner?.payoutAccount
+  );
+  const paidCheckoutUnavailable =
+    !resource.isFree && (!paymentAvailability.enabled || !creatorPayoutReady);
+  const checkoutUnavailableReason = !resource.isFree
+    ? !paymentAvailability.enabled
+      ? "platform"
+      : !creatorPayoutReady
+      ? "creator-payouts"
+      : null
+    : null;
 
   // JSON-LD Structured Data
   const baseUrl = getAppBaseUrl();
@@ -210,8 +222,10 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
           <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
             {resourceData.isFree
               ? "Create an account to add this free resource to your library and download it."
-              : paidCheckoutUnavailable
+              : checkoutUnavailableReason === "platform"
               ? "Paid checkout is temporarily paused while payment activation is being completed."
+              : checkoutUnavailableReason === "creator-payouts"
+              ? "This creator still needs to finish Stripe payout onboarding before paid checkout can go live."
               : "Purchase once and access the downloadable resource through your library."}
           </p>
 
@@ -227,7 +241,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
               <span className="text-right text-[var(--text-muted)]">
                 {resourceData.isFree
                   ? "Instant after claim"
-                  : paidCheckoutUnavailable
+                  : checkoutUnavailableReason
                   ? "Temporarily paused"
                   : "Instant after payment"}
               </span>
@@ -252,18 +266,24 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
               hasMainFile={hasMainFile}
               isFree={resourceData.isFree}
               priceCents={resourceData.priceCents}
-              paidCheckoutUnavailable={paidCheckoutUnavailable}
+              checkoutUnavailableReason={checkoutUnavailableReason}
             />
           </div>
 
           {!resourceData.isFree && hasMainFile ? (
             <div className="mt-6 rounded-2xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--text)]">
               <div className="font-semibold text-[var(--text)]">
-                {paidCheckoutUnavailable ? "Payment activation in progress" : "Secure purchase"}
+                {checkoutUnavailableReason === "platform"
+                  ? "Payment activation in progress"
+                  : checkoutUnavailableReason === "creator-payouts"
+                  ? "Creator payout setup required"
+                  : "Secure purchase"}
               </div>
               <p className="mt-2">
-                {paidCheckoutUnavailable
+                {checkoutUnavailableReason === "platform"
                   ? "This listing is ready for sale, but paid checkout is temporarily paused while live payments are being finalised."
+                  : checkoutUnavailableReason === "creator-payouts"
+                  ? "This listing has a downloadable file, but the creator has not completed Stripe payout onboarding yet."
                   : "Stripe checkout protects the transaction and grants instant access once payment clears."}
               </p>
               <p className="mt-3 text-xs text-[var(--text-muted)]">

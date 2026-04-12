@@ -2,6 +2,7 @@ import { MetadataRoute } from "next";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import { getAppBaseUrl } from "@/lib/env";
+import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
 import {
   PUBLIC_CACHE_TAGS,
 } from "@/server/cache/public-cache";
@@ -13,7 +14,7 @@ const getSitemapEntries = unstable_cache(
   async () => {
     const [resources, stores] = await Promise.all([
       db.resource.findMany({
-        where: { status: "PUBLISHED" },
+        where: getPubliclyVisiblePublishedResourceWhere(),
         select: {
           slug: true,
           updatedAt: true,

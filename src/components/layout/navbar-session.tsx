@@ -133,6 +133,12 @@ function AccountMenuContent({
       >
         Analytics
       </Link>
+      <Link
+        href="/creator/payouts"
+        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+      >
+        Payouts
+      </Link>
       {role === "ADMIN" ? (
         <Link
           href="/admin"

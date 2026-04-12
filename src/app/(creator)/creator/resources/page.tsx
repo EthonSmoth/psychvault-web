@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCSRFToken } from "@/lib/csrf";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
+import { isPayoutAccountReady } from "@/lib/stripe-connect";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { deleteOwnResourceAction } from "@/server/actions/creator-resource-actions";
@@ -39,7 +40,7 @@ export default async function CreatorResourcesPage() {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    include: { store: true },
+    include: { store: true, payoutAccount: true },
   });
 
   if (!user) redirect("/login");
@@ -65,6 +66,10 @@ export default async function CreatorResourcesPage() {
       },
     }),
   ]);
+  const payoutReady = isPayoutAccountReady(user.payoutAccount);
+  const publishedPaidResources = resources.filter(
+    (resource) => resource.status === "PUBLISHED" && resource.priceCents > 0
+  ).length;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -97,6 +102,19 @@ export default async function CreatorResourcesPage() {
           </Link>
         </div>
       </div>
+
+      {!payoutReady ? (
+        <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+          {publishedPaidResources > 0
+            ? `${publishedPaidResources} published paid resource${publishedPaidResources === 1 ? "" : "s"} from your older creator setup now need Stripe payout onboarding before they can stay sale-ready.`
+            : "Connect Stripe before publishing paid resources. Free resources can still go live normally."}
+          {" "}
+          <Link href="/creator/payouts" className="font-semibold underline">
+            Finish payout setup
+          </Link>
+          .
+        </div>
+      ) : null}
 
       {resources.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
@@ -138,6 +156,12 @@ export default async function CreatorResourcesPage() {
                     {r.isFree ? (
                       <span className="inline-flex rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700">
                         Free
+                      </span>
+                    ) : null}
+
+                    {!r.isFree && !payoutReady ? (
+                      <span className="inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                        Payout setup required
                       </span>
                     ) : null}
 

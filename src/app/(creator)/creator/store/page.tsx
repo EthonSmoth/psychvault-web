@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { generateCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
+import { isPayoutAccountReady } from "@/lib/stripe-connect";
 import { redirect } from "next/navigation";
 import { StoreForm } from "@/components/forms/store-form";
 
@@ -14,7 +16,7 @@ export default async function CreatorStorePage() {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    include: { store: true },
+    include: { store: true, payoutAccount: true },
   });
 
   if (!user) {
@@ -24,12 +26,14 @@ export default async function CreatorStorePage() {
   await requireVerifiedEmailOrRedirect(user.id, "/creator/store");
 
   const csrfToken = generateCSRFToken(user.id);
+  const payoutReady = isPayoutAccountReady(user.payoutAccount);
   const storeChecklist = [
     { label: "Store name added", done: Boolean(user.store?.name?.trim()) },
     { label: "Unique store slug set", done: Boolean(user.store?.slug?.trim()) },
     { label: "Store bio added", done: Boolean(user.store?.bio?.trim()) },
     { label: "Store logo uploaded", done: Boolean(user.store?.logoUrl) },
     { label: "Store banner uploaded", done: Boolean(user.store?.bannerUrl) },
+    { label: "Payout setup complete", done: payoutReady },
     { label: "Store published", done: Boolean(user.store?.isPublished) },
   ];
   const completedChecklistCount = storeChecklist.filter((item) => item.done).length;
@@ -85,6 +89,18 @@ export default async function CreatorStorePage() {
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
         <StoreForm store={user.store ?? undefined} csrfToken={csrfToken} />
       </div>
+
+      {!payoutReady ? (
+        <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
+          Paid listings now require Stripe payout setup so creator earnings can be sent to
+          the right connected account.
+          {" "}
+          <Link href="/creator/payouts" className="font-semibold underline">
+            Complete payouts
+          </Link>
+          .
+        </div>
+      ) : null}
 
       <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-[var(--text)]">Go-live checklist</h2>

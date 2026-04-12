@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { Prisma, UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
+import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
 import {
   PUBLIC_CACHE_TAGS,
   PUBLIC_CONTENT_REVALIDATE_SECONDS,
@@ -211,6 +212,16 @@ export function getPublishedResourcePageData(slug: string) {
               ownerId: true,
               isVerified: true,
               logoUrl: true,
+              owner: {
+                select: {
+                  payoutAccount: {
+                    select: {
+                      payoutsEnabled: true,
+                      detailsSubmitted: true,
+                    },
+                  },
+                },
+              },
             },
           },
           creator: {
@@ -274,7 +285,14 @@ export function getPublishedResourcePageData(slug: string) {
         },
       });
 
-      if (!resource || resource.status !== "PUBLISHED") {
+      if (
+        !resource ||
+        resource.status !== "PUBLISHED" ||
+        (!resource.isFree &&
+          resource.priceCents > 0 &&
+          (!resource.store?.owner?.payoutAccount?.payoutsEnabled ||
+            !resource.store?.owner?.payoutAccount?.detailsSubmitted))
+      ) {
         return null;
       }
 
@@ -283,8 +301,7 @@ export function getPublishedResourcePageData(slug: string) {
         .slice(0, 2);
 
       const relatedResources = await db.resource.findMany({
-        where: {
-          status: "PUBLISHED",
+        where: getPubliclyVisiblePublishedResourceWhere({
           id: {
             not: resource.id,
           },
@@ -306,7 +323,7 @@ export function getPublishedResourcePageData(slug: string) {
                 ]
               : []),
           ],
-        },
+        }),
         select: resourceCardSelect,
         orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
         take: 3,
@@ -366,16 +383,12 @@ export function getPublishedStorePageData(slug: string) {
             select: {
               followers: true,
               resources: {
-                where: {
-                  status: "PUBLISHED",
-                },
+                where: getPubliclyVisiblePublishedResourceWhere(),
               },
             },
           },
           resources: {
-            where: {
-              status: "PUBLISHED",
-            },
+            where: getPubliclyVisiblePublishedResourceWhere(),
             select: resourceCardSelect,
             orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
           },
@@ -406,13 +419,13 @@ export function getHomepageResourceShowcaseData() {
     async () => {
       const [featuredResources, recentResources] = await Promise.all([
         db.resource.findMany({
-          where: { status: "PUBLISHED" },
+          where: getPubliclyVisiblePublishedResourceWhere(),
           orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
           take: 6,
           select: resourceCardSelect,
         }),
         db.resource.findMany({
-          where: { status: "PUBLISHED" },
+          where: getPubliclyVisiblePublishedResourceWhere(),
           orderBy: { createdAt: "desc" },
           take: 3,
           select: resourceCardSelect,
@@ -443,7 +456,7 @@ export function getHomepageCategoryData() {
           resources: {
             where: {
               resource: {
-                status: "PUBLISHED",
+                ...getPubliclyVisiblePublishedResourceWhere(),
               },
             },
             select: {
@@ -483,7 +496,7 @@ export function getHomepageStatsData() {
   return unstable_cache(
     async () => {
       const [totalResources, totalCreators, totalStores] = await Promise.all([
-        db.resource.count({ where: { status: "PUBLISHED" } }),
+        db.resource.count({ where: getPubliclyVisiblePublishedResourceWhere() }),
         db.user.count({
           where: {
             role: UserRole.CREATOR,
@@ -558,8 +571,7 @@ export function getPublishedResourcesBrowseData(options: ResourceBrowseOptions) 
     }> => {
       const skip = (page - 1) * PUBLIC_RESOURCE_BROWSE_PAGE_SIZE;
       const resources = await db.resource.findMany({
-        where: {
-          status: "PUBLISHED",
+        where: getPubliclyVisiblePublishedResourceWhere({
           ...(category
             ? {
                 categories: {
@@ -660,7 +672,7 @@ export function getPublishedResourcesBrowseData(options: ResourceBrowseOptions) 
                 ],
               }
             : {}),
-        },
+        }),
         select: resourceCardSelect,
         orderBy: getResourceBrowseSortOrder(sort),
         skip,
@@ -758,9 +770,7 @@ export function getPublishedStoresBrowseData(options: {
             select: {
               followers: true,
               resources: {
-                where: {
-                  status: "PUBLISHED",
-                },
+                where: getPubliclyVisiblePublishedResourceWhere(),
               },
             },
           },

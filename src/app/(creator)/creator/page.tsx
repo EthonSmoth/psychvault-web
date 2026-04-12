@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getCreatorTrustProfile } from "@/lib/creator-trust";
 import { db } from "@/lib/db";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
+import { isPayoutAccountReady } from "@/lib/stripe-connect";
 import { redirect } from "next/navigation";
 
 export default async function CreatorDashboardPage() {
@@ -15,6 +16,7 @@ export default async function CreatorDashboardPage() {
   const user = await db.user.findUnique({
     where: { email: session.user.email },
     include: {
+      payoutAccount: true,
       store: {
         include: {
           resources: true,
@@ -34,6 +36,10 @@ export default async function CreatorDashboardPage() {
   const resourceCount = store?.resources.length ?? 0;
   const followerCount = store?.followers.length ?? 0;
   const storeStatus = store?.isPublished ? "Published" : "Draft";
+  const payoutReady = isPayoutAccountReady(user.payoutAccount);
+  const publishedPaidResources =
+    store?.resources.filter((resource) => resource.status === "PUBLISHED" && resource.priceCents > 0)
+      .length ?? 0;
   const trustProfile = await getCreatorTrustProfile(user.id);
   const storeModerationMessage =
     store?.moderationStatus === "PENDING_REVIEW"
@@ -72,6 +78,12 @@ export default async function CreatorDashboardPage() {
             Manage resources
           </Link>
           <Link
+            href="/creator/payouts"
+            className="inline-flex rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Payouts
+          </Link>
+          <Link
             href="/creator/resources/new"
             className="inline-flex rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
@@ -86,6 +98,20 @@ export default async function CreatorDashboardPage() {
             {store?.moderationStatus === "REJECTED" ? "Store changes needed" : "Store under review"}
           </div>
           <div className="mt-1">{storeModerationMessage}</div>
+        </div>
+      ) : null}
+
+      {store && !payoutReady ? (
+        <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+          <div className="font-semibold">Complete payouts before selling paid resources</div>
+          <div className="mt-1">
+            {publishedPaidResources > 0
+              ? `${publishedPaidResources} published paid resource${publishedPaidResources === 1 ? "" : "s"} from your older creator setup now need Stripe onboarding before they can stay sale-ready.`
+              : "Your store can exist without Stripe onboarding, but paid listings now require a connected payout account so creator earnings can flow correctly."}
+          </div>
+          <Link href="/creator/payouts" className="mt-2 inline-flex font-semibold underline">
+            Finish Stripe setup
+          </Link>
         </div>
       ) : null}
 
@@ -129,6 +155,18 @@ export default async function CreatorDashboardPage() {
               : "Your account is on stricter review due to moderation risk."}
           </p>
         </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="text-sm font-medium text-slate-500">Payouts</div>
+          <div className="mt-3 text-3xl font-semibold text-slate-900">
+            {payoutReady ? "Ready" : "Action needed"}
+          </div>
+          <p className="mt-2 text-sm text-slate-600">
+            {payoutReady
+              ? "Paid resource sales can route creator earnings through Stripe Connect."
+              : "Connect Stripe before publishing paid resources so buyers can pay you safely."}
+          </p>
+        </div>
       </div>
 
       <div className="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -157,7 +195,14 @@ export default async function CreatorDashboardPage() {
               </p>
             </div>
             <div className="rounded-xl bg-slate-50 p-4">
-              <div className="font-medium text-slate-900">4. Build trust over time</div>
+              <div className="font-medium text-slate-900">4. Connect payouts</div>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Complete Stripe onboarding before you publish paid resources so earnings
+                can be sent to your connected account.
+              </p>
+            </div>
+            <div className="rounded-xl bg-slate-50 p-4">
+              <div className="font-medium text-slate-900">5. Build trust over time</div>
               <p className="mt-1 text-sm leading-6 text-slate-600">
                 Approved listings, low report volume, and successful sales improve your
                 publishing trust score over time.

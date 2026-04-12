@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCSRFToken } from "@/lib/csrf";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
+import { isPayoutAccountReady } from "@/lib/stripe-connect";
 import {
   DEFAULT_RESOURCE_CATEGORIES,
   DEFAULT_RESOURCE_TAGS,
@@ -26,7 +27,7 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    include: { store: true },
+    include: { store: true, payoutAccount: true },
   });
 
   if (!user?.store) {
@@ -80,6 +81,8 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
   }
 
   const csrfToken = generateCSRFToken(user.id);
+  const payoutReady = isPayoutAccountReady(user.payoutAccount);
+  const paidResourceNeedsPayouts = resource.priceCents > 0 && !payoutReady;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -115,6 +118,18 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
           </span>
         </div>
       </div>
+
+      {paidResourceNeedsPayouts ? (
+        <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
+          This is a paid resource. Existing paid listings now require Stripe payout
+          onboarding before they can stay sale-ready.
+          {" "}
+          <a href="/creator/payouts" className="font-semibold underline">
+            Finish payout setup
+          </a>
+          .
+        </div>
+      ) : null}
 
       <ResourceForm categories={categories} tags={tags} resource={resource} csrfToken={csrfToken} />
     </main>

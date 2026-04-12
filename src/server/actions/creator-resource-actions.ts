@@ -7,6 +7,7 @@ import { ResourceStatus } from "@prisma/client";
 import { verifyCSRFToken } from "@/lib/csrf";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
 import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
+import { syncCreatorPayoutStatus } from "@/lib/stripe-connect";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 // Loads the signed-in creator and guarantees they have a store before continuing.
@@ -154,6 +155,7 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
       slug: true,
       creatorId: true,
       storeId: true,
+      priceCents: true,
       mainDownloadUrl: true,
       hasMainFile: true,
       files: {
@@ -184,6 +186,14 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
 
   if (!effectiveFileState.hasMainFile) {
     throw new Error("This resource cannot be published because it has no main download file.");
+  }
+
+  if (resource.priceCents > 0) {
+    const payoutStatus = await syncCreatorPayoutStatus(user.id);
+
+    if (!payoutStatus.ready) {
+      throw new Error("Complete Stripe payout onboarding before publishing paid resources.");
+    }
   }
 
   await db.resource.update({

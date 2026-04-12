@@ -97,6 +97,8 @@ export function ResourcePageNotices() {
   const errorMessage =
     errorCode === "download-missing"
       ? "This resource cannot be purchased yet because it does not have a downloadable file attached."
+      : errorCode === "creator-payouts-unavailable"
+      ? "This creator needs to finish Stripe payout onboarding before paid checkout can go live for this resource."
       : errorCode === "payments-unavailable"
       ? "Paid checkout is temporarily unavailable while payment activation is being finalised. Free resources are still available as normal."
       : null;
@@ -119,7 +121,7 @@ export function ResourcePurchaseActions({
   hasMainFile,
   isFree,
   priceCents,
-  paidCheckoutUnavailable,
+  checkoutUnavailableReason,
 }: {
   resourceId: string;
   resourceSlug: string;
@@ -127,7 +129,7 @@ export function ResourcePurchaseActions({
   hasMainFile: boolean;
   isFree: boolean;
   priceCents: number;
-  paidCheckoutUnavailable: boolean;
+  checkoutUnavailableReason: "platform" | "creator-payouts" | null;
 }) {
   const viewerState = useResourceViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
@@ -189,10 +191,11 @@ export function ResourcePurchaseActions({
 
   return (
     <>
-      {paidCheckoutUnavailable ? (
+      {checkoutUnavailableReason ? (
         <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Paid checkout is temporarily unavailable. You can still message the creator or browse
-          free resources while payment activation is completed.
+          {checkoutUnavailableReason === "creator-payouts"
+            ? "This creator still needs to complete Stripe payout onboarding before paid checkout can go live."
+            : "Paid checkout is temporarily unavailable. You can still message the creator or browse free resources while payment activation is completed."}
         </div>
       ) : (
         <form method="POST" action="/api/checkout">

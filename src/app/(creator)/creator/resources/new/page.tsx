@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCSRFToken } from "@/lib/csrf";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
+import { isPayoutAccountReady } from "@/lib/stripe-connect";
 import {
   DEFAULT_RESOURCE_CATEGORIES,
   DEFAULT_RESOURCE_TAGS,
@@ -20,6 +21,7 @@ export default async function NewCreatorResourcePage() {
     where: { email: session.user.email },
     include: {
       store: true,
+      payoutAccount: true,
     },
   });
 
@@ -52,6 +54,7 @@ export default async function NewCreatorResourcePage() {
     orderBy: { name: "asc" },
   });
   const csrfToken = generateCSRFToken(user.id);
+  const payoutReady = isPayoutAccountReady(user.payoutAccount);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -66,6 +69,18 @@ export default async function NewCreatorResourcePage() {
           Add a clear title, concise description, useful tags, and a fair price.
         </p>
       </div>
+
+      {!payoutReady ? (
+        <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
+          Existing creators can keep creating free resources right away, but paid resources
+          now require Stripe payout onboarding.
+          {" "}
+          <a href="/creator/payouts" className="font-semibold underline">
+            Complete payout setup
+          </a>
+          .
+        </div>
+      ) : null}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <ResourceForm categories={categories} tags={tags} csrfToken={csrfToken} />

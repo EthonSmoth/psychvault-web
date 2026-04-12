@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
 
 export async function getPublishedStoreBySlug(slug: string) {
   return db.store.findFirst({
@@ -7,7 +8,7 @@ export async function getPublishedStoreBySlug(slug: string) {
       owner: true,
       followers: true,
       resources: {
-        where: { status: "PUBLISHED" },
+        where: getPubliclyVisiblePublishedResourceWhere(),
         orderBy: { createdAt: "desc" },
         include: {
           files: true,
@@ -72,7 +73,7 @@ export async function getPublishedStores({
           followers: true,
           resources: {
             where: {
-              status: "PUBLISHED",
+              ...getPubliclyVisiblePublishedResourceWhere(),
             },
           },
         },
