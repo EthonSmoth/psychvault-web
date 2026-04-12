@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { headers } from "next/headers";
 import { signIn } from "@/lib/auth";
 import { logger } from "@/lib/logger";
@@ -70,6 +71,11 @@ export async function loginAction(
 
     return {};
   } catch (error) {
+    if (isRedirectError(error)) {
+      await Promise.all(clearKeys.map((key) => clearRateLimit(key)));
+      throw error;
+    }
+
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." };
     }
