@@ -1,25 +1,27 @@
 # PsychVault
 
-PsychVault is a clinician-focused marketplace for psychology resources. The app supports public browsing, creator storefronts, moderated listings, protected downloads, reviews, messaging, Stripe checkout, and email-based account verification.
+PsychVault is a clinician-focused marketplace for psychology resources. The app supports public browsing, creator storefronts, trust-aware moderation, protected downloads, reviews, follows, messaging, Stripe checkout, and email-based account verification.
 
-This repo is already shaped around a production deployment on Vercel with Cloudflare in front, Supabase for Postgres and Storage, Stripe for payments, and Resend for transactional email.
+This repo is structured for a production deployment on Vercel with Cloudflare in front, Supabase for Postgres and Storage, Stripe for payments, and Resend for transactional email.
 
 ## Current Status
 
-- Public marketplace pages are optimized for cache-first delivery.
-- Auth, checkout, downloads, uploads, dashboards, moderation, and webhooks stay dynamic.
-- Credentials auth and Google OAuth are both supported.
-- Private downloads are issued as short-lived signed Supabase URLs after entitlement checks.
-- Security hardening is in place for sessions, redirects, origin validation, rate limiting, and error handling.
+- Public resource and store surfaces are cache-first and SEO-oriented.
+- Creator, buyer, admin, checkout, upload, download, messaging, and webhook flows stay dynamic.
+- Creator trust scoring feeds moderation and admin review workflows.
+- Store viewer state is now rendered server-side to avoid auth-state flicker on store pages.
+- Resource and navbar session-dependent UI still hydrate client-side, but they now show loading skeletons instead of incorrect logged-out actions.
+- Image uploads for thumbnails, logos, banners, and previews are optimized with `sharp` before storage when possible.
+- Security hardening is in place for sessions, redirects, origin validation, CSRF, rate limiting, and server-side authorization.
 
 ## Core Features
 
 - Public browse for resources and creator stores
-- Resource detail pages with previews, ratings, and related content
+- Resource detail pages with previews, purchase state, reviews, and related content
+- Store pages with follows, messaging entry points, and reporting
 - Buyer library with protected free and paid download access
-- Creator dashboards for store and resource management
-- Reviews, follows, and creator messaging
-- Admin moderation for reports, publishing, and trust workflows
+- Creator dashboards for store, resource, analytics, sales, and payout management
+- Admin moderation for reports, publishing, trust workflows, and audit visibility
 - Stripe Checkout plus verified webhook fulfilment
 - SEO metadata, sitemap, structured data, and crawlable server-rendered public content
 
@@ -44,9 +46,10 @@ Implemented today:
 - Credentials auth with bcrypt password hashes
 - Optional Google OAuth provider
 - JWT sessions with explicit 7-day max age
+- Lightweight token refresh throttling to avoid unnecessary Prisma reads on every session lookup
 - Secure session cookies with `httpOnly`, `sameSite=lax`, and `secure` in production
-- Email verification gating for sensitive marketplace actions
-- CSRF protection on server-action forms
+- Email verification gating for uploads, purchases, follows, messaging, reviews, and reporting
+- CSRF protection on state-changing server-action forms
 - Centralized safe redirect validation
 - Origin validation on state-changing API routes
 - Database-backed rate limiting with in-memory fallback
@@ -110,12 +113,13 @@ Notes:
 
 Current recommended setup:
 
-- `psychvault-resources`: public bucket for thumbnails and preview assets
-- `psychvault-downloads`: private bucket for purchased/downloadable files
+- `psychvault-resources`: public bucket for thumbnails, logos, banners, and preview assets
+- `psychvault-downloads`: private bucket for downloadable files
 
 Current app behavior:
 
 - uploads flow through server routes using the service-role client
+- non-main image uploads are resized and converted to WebP when optimization succeeds
 - preview assets can be rendered publicly
 - main downloads are stored as internal storage references
 - access is checked in the app before issuing a short-lived signed URL
@@ -178,29 +182,37 @@ npm run dev
 ## Production And Operations Notes
 
 - Anonymous traffic should mostly hit cached/static public surfaces.
-- Dynamic compute should stay focused on auth, checkout, downloads, dashboards, uploads, moderation, and webhooks.
-- Stripe webhook fulfilment is server-side source of truth.
+- Dynamic compute should stay focused on auth, checkout, downloads, dashboards, uploads, moderation, messaging, and webhooks.
+- Stripe webhook fulfilment is the server-side source of truth.
 - Rotate any secret that has been exposed in logs, chat, or screenshots.
 - Keep Google OAuth and database secrets out of version control.
 - If Prisma build steps fail on Windows with a locked query engine DLL, close running dev processes and retry.
 
 ## Current Documentation Vault
 
-This repo includes an Obsidian-ready knowledge base in [`vault/`](./vault).
+This repo includes an Obsidian-friendly knowledge base in [`vault/`](./vault).
 
 Start here:
 
 - [vault/Home.md](./vault/Home.md)
 - [vault/Architecture.md](./vault/Architecture.md)
 - [vault/Auth And Account Security.md](./vault/Auth%20And%20Account%20Security.md)
+- [vault/Cost And Performance.md](./vault/Cost%20And%20Performance.md)
 - [vault/Deployment And Infra.md](./vault/Deployment%20And%20Infra.md)
+
+Git note:
+
+- Markdown docs in `vault/` are meant to stay tracked.
+- Local Obsidian app state in `vault/.obsidian/` is now intended to stay out of Git.
+- Renaming the folder to `.vault` is optional for local preference, but the ignore rule is what actually prevents Git noise.
 
 ## Near-Term Focus
 
-- decide whether Apple OAuth is worth the extra setup
+- keep public request cost low while preserving strong SEO
+- keep trust, moderation, and admin workflows aligned with real marketplace risk
+- decide whether Apple OAuth is worth the extra setup burden
 - add Turnstile only if signup abuse becomes meaningful
-- continue reducing public-request cost on browse/detail pages
-- keep docs, env setup, and infra notes aligned with the real production app
+- keep docs, env setup, and infra notes aligned with the shipped app
 
 ## License
 

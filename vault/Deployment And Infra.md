@@ -18,9 +18,10 @@
 
 ## Supabase Storage Posture
 
-- `psychvault-resources` is a public bucket for preview assets
+- `psychvault-resources` is a public bucket for thumbnails, logos, banners, and preview assets
 - `psychvault-downloads` is a private bucket for purchased/downloadable files
 - current app uploads run through the server using the service-role key
+- non-main image uploads are optimized before storage when `sharp` succeeds
 - private downloads are served with short-lived signed URLs after access checks
 - broad `storage.objects` policies are not required for the current server-mediated architecture
 
@@ -30,3 +31,4 @@
 - if Prisma client generation fails on Windows because the query engine DLL is locked, stop running dev/build processes and retry
 - rotate any secret that has been exposed in logs, chat, or screenshots
 - keep Cloudflare aligned with Vercel/Next caching rather than forcing brittle "cache all HTML" behavior
+- keep local Obsidian workspace state out of Git; only the Markdown docs are meant to stay versioned

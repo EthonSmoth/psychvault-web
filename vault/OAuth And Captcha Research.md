@@ -65,6 +65,6 @@ When to add:
 
 - `src/lib/auth.ts`
 - `src/components/auth/google-auth-button.tsx`
-- `src/components/auth/login-form.tsx`
+- `src/components/forms/login-form.tsx`
 - `src/components/auth/signup-form.tsx`
 - `src/app/api/register/route.ts`

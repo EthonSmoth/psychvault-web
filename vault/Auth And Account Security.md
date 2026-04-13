@@ -7,11 +7,17 @@
 - JWT session strategy with explicit 7-day max age
 - secure cookies in production with `httpOnly` and `sameSite=lax`
 - email verification gates on purchases, uploads, creator actions, follows, messaging, and reporting
-- CSRF protection on server-action forms
+- CSRF protection on state-changing server-action forms
 - centralized safe redirect validation
 - origin validation on state-changing API routes
 - database-backed rate limiting with memory fallback
 - centralized auth, role, and ownership guard helpers
+
+## Current Auth Performance Posture
+
+- token-derived session data is refreshed from Prisma on a short window instead of every single session read
+- this keeps page switches lighter without changing the server-side authorization model
+- DB-backed guards such as `requireAuth`, `requireRole`, and `requireAdmin` remain the real source of truth for privileged actions
 
 ## Google OAuth
 
@@ -52,12 +58,13 @@ Recommendation:
 - server-side logging with safer formatting
 - role and ownership checks on protected operations
 - Stripe signature verification before webhook processing
-- rate limits on login, signup, verification, checkout, uploads, reporting, reviews, and messaging
+- rate limits on login, signup, verification, checkout, uploads, reporting, reviews, follows, and messaging
 - security headers in Next.js config
+- stateless CSRF tokens tied to the authenticated user id for protected form actions
 
 ## Remaining Gaps
 
 - no password reset flow yet
 - no Apple OAuth yet
 - no CAPTCHA yet
-- long-lived JWT sessions are bounded, but not a full server-side idle timeout model
+- JWT sessions are bounded, but this is still not a fully server-revoked session model

@@ -2,17 +2,18 @@
 
 ## Goal
 
-Make anonymous traffic cheap and reserve dynamic compute for account, entitlement, and money flows.
+Make anonymous traffic cheap and reserve dynamic compute for account, entitlement, moderation, and money flows.
 
 ## Current Direction
 
 - cache-first public resource and store browse
-- static-safe public shell with viewer-specific state fetched separately
+- cache-first public detail pages with lean serialized payloads
+- store viewer state moved server-side so the page does not flash logged-out follow controls first
+- navbar and resource viewer surfaces use loading skeletons instead of incorrect logged-out UI while session/viewer state resolves
 - denormalized public file-state for cheaper card and browse queries
-- public detail and browse APIs rate-limited to reduce scraping and cost abuse
+- image uploads are optimized before storage for non-main image assets
 - signed private download delivery instead of streaming files through app code
-- trimmed public query payloads and leaner public serializers
-- sitemap and metadata cleanup for better SEO without extra request cost
+- public detail and browse APIs are rate-limited to reduce scraping and cost abuse
 
 ## Dynamic Surfaces That Should Stay Dynamic
 
@@ -22,11 +23,13 @@ Make anonymous traffic cheap and reserve dynamic compute for account, entitlemen
 - creator dashboard
 - admin dashboard
 - uploads
-- messaging and user-specific viewer state
+- messaging
+- user-specific viewer state
 
 ## Ongoing Follow-Ups
 
-- keep public browse APIs paginated and capped
-- continue reducing duplicated data work between metadata and page content
-- monitor session/nav and viewer APIs for unnecessary database reads
+- continue reducing duplicated work between metadata and page-content queries
+- consider moving resource viewer state server-side too if it becomes a real hotspot
+- keep session/nav reads lean and avoid unnecessary Prisma lookups
 - consider moving shared rate limiting to Redis/Upstash if traffic grows beyond what the main database should absorb
+- keep image optimization reliable so oversized uploads do not inflate storage and bandwidth
