@@ -33,6 +33,28 @@ const ResourceViewerContext = createContext<ResourceViewerContextValue>({
   viewerState: null,
 });
 
+function ActionSkeleton({ compact = false }: { compact?: boolean }) {
+  return (
+    <div
+      className={`animate-pulse rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] ${
+        compact ? "h-10 w-32" : "h-12 w-full"
+      }`}
+      aria-hidden="true"
+    />
+  );
+}
+
+function InfoSkeleton({ tall = false }: { tall?: boolean }) {
+  return (
+    <div
+      className={`animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] ${
+        tall ? "h-24" : "h-16"
+      } w-full`}
+      aria-hidden="true"
+    />
+  );
+}
+
 function formatPrice(priceCents: number, isFree?: boolean) {
   if (isFree || priceCents === 0) {
     return "Free";
@@ -134,6 +156,15 @@ export function ResourcePurchaseActions({
   const viewerState = useResourceViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
 
+  if (!viewerState) {
+    return (
+      <>
+        <ActionSkeleton />
+        {storeOwnerId ? <ActionSkeleton /> : null}
+      </>
+    );
+  }
+
   if (viewer?.isOwner) {
     return (
       <>
@@ -232,6 +263,10 @@ export function ResourceReportBox({
   const viewerState = useResourceViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
 
+  if (!viewerState) {
+    return <InfoSkeleton />;
+  }
+
   if (!viewerState || !viewer) {
     return (
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
@@ -286,6 +321,10 @@ export function ResourceReviewGate({
 }) {
   const viewerState = useResourceViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
+
+  if (!viewerState) {
+    return <InfoSkeleton tall />;
+  }
 
   if (!viewerState || !viewer) {
     return (

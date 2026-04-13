@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { generateCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
 import { jsonError } from "@/lib/http";
 import { checkRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
+import { getStoreViewerState } from "@/server/queries/store-viewer";
 
 type RouteContext = {
   params: Promise<{
@@ -36,7 +35,6 @@ export async function GET(request: Request, { params }: RouteContext) {
       );
     }
 
-    const session = await auth();
     const { id } = await params;
 
     const store = await db.store.findUnique({
@@ -60,43 +58,13 @@ export async function GET(request: Request, { params }: RouteContext) {
       );
     }
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        {
-          authenticated: false,
-        },
-        {
-          headers: {
-            "Cache-Control": "no-store",
-          },
-        }
-      );
-    }
-
-    const viewerUserId = session.user.id;
-    const follow = await db.follow.findUnique({
-      where: {
-        followerId_storeId: {
-          followerId: viewerUserId,
-          storeId: id,
-        },
-      },
-      select: {
-        followerId: true,
-      },
+    const viewerState = await getStoreViewerState({
+      storeId: store.id,
+      ownerId: store.ownerId,
     });
 
     return NextResponse.json(
-      {
-        authenticated: true,
-        viewer: {
-          userId: viewerUserId,
-          emailVerified: Boolean(session.user.emailVerified),
-          isOwner: store.ownerId === viewerUserId,
-          isFollowing: Boolean(follow),
-          csrfToken: generateCSRFToken(viewerUserId),
-        },
-      },
+      viewerState,
       {
         headers: {
           "Cache-Control": "no-store",

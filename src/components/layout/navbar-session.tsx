@@ -82,6 +82,38 @@ function useNavbarSession() {
   return useContext(NavbarSessionContext).session;
 }
 
+function NavbarSessionSkeleton() {
+  return (
+    <>
+      <div className="flex items-center gap-2 md:hidden">
+        <div
+          className="h-10 w-18 animate-pulse rounded-xl border border-soft bg-[var(--surface-alt)]"
+          aria-hidden="true"
+        />
+        <div
+          className="h-10 w-18 animate-pulse rounded-xl border border-soft bg-[var(--surface-alt)]"
+          aria-hidden="true"
+        />
+        <div
+          className="h-10 w-14 animate-pulse rounded-2xl border border-soft bg-[var(--surface-alt)]"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div className="hidden items-center gap-3 md:flex">
+        <div
+          className="h-10 w-24 animate-pulse rounded-xl border border-soft bg-[var(--surface-alt)]"
+          aria-hidden="true"
+        />
+        <div
+          className="h-10 w-28 animate-pulse rounded-xl border border-soft bg-[var(--surface-alt)]"
+          aria-hidden="true"
+        />
+      </div>
+    </>
+  );
+}
+
 function AccountMenuContent({
   role,
   name,
@@ -253,6 +285,10 @@ export function NavbarSessionBanner() {
 
 export function NavbarSessionControls() {
   const session = useNavbarSession();
+
+  if (!session) {
+    return <NavbarSessionSkeleton />;
+  }
 
   if (session?.authenticated) {
     const { email, name, role } = session.user;

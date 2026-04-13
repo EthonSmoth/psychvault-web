@@ -1,70 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 import { toggleFollowStoreAction } from "@/server/actions/follow-actions";
 import { ReportStoreForm } from "@/components/stores/report-store-form";
-
-type StoreViewerResponse =
-  | {
-      authenticated: false;
-    }
-  | {
-      authenticated: true;
-      viewer: {
-        userId: string;
-        emailVerified: boolean;
-        isOwner: boolean;
-        isFollowing: boolean;
-        csrfToken: string;
-      };
-    };
+import type { StoreViewerState } from "@/types/store-viewer";
 
 type StoreViewerContextValue = {
-  viewerState: StoreViewerResponse | null;
+  viewerState: StoreViewerState;
 };
 
 const StoreViewerContext = createContext<StoreViewerContextValue>({
-  viewerState: null,
+  viewerState: { authenticated: false },
 });
 
 export function StoreViewerProvider({
-  storeId,
+  initialViewerState,
   children,
 }: {
-  storeId: string;
+  initialViewerState: StoreViewerState;
   children: React.ReactNode;
 }) {
-  const [viewerState, setViewerState] = useState<StoreViewerResponse | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    fetch(`/api/stores/viewer/${storeId}`, {
-      cache: "no-store",
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error("Failed to load viewer state");
-        }
-
-        return (await response.json()) as StoreViewerResponse;
-      })
-      .then((payload) => {
-        setViewerState(payload);
-      })
-      .catch(() => {
-        setViewerState({ authenticated: false });
-      });
-
-    return () => {
-      controller.abort();
-    };
-  }, [storeId]);
-
   return (
-    <StoreViewerContext.Provider value={{ viewerState }}>
+    <StoreViewerContext.Provider value={{ viewerState: initialViewerState }}>
       {children}
     </StoreViewerContext.Provider>
   );
@@ -86,7 +44,7 @@ export function StorePrimaryActions({
   const viewerState = useStoreViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
 
-  if (!viewerState || !viewer) {
+  if (!viewer) {
     return (
       <>
         <Link
@@ -155,7 +113,7 @@ export function StoreReportSection({
   const viewerState = useStoreViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
 
-  if (!viewerState || !viewer) {
+  if (!viewer) {
     return (
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
         <Link

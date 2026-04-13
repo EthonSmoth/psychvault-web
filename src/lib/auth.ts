@@ -39,6 +39,31 @@ function logAuthError(error: Error) {
   }
 }
 
+const AUTH_USER_STATE_REFRESH_MS = 30 * 1000;
+
+function applyAuthUserStateToToken(
+  token: Record<string, unknown>,
+  authUser: Awaited<ReturnType<typeof getAuthUserState>>
+) {
+  if (!authUser) {
+    delete token.sub;
+    delete token.email;
+    delete token.name;
+    delete token.role;
+    delete token.emailVerified;
+    delete token.userStateRefreshedAt;
+    return token;
+  }
+
+  token.sub = authUser.id;
+  token.email = authUser.email;
+  token.name = authUser.name;
+  token.role = authUser.role;
+  token.emailVerified = Boolean(authUser.emailVerified);
+  token.userStateRefreshedAt = Date.now();
+  return token;
+}
+
 async function getAuthUserState(input: { id?: string | null; email?: string | null }) {
   const email = normalizeEmail(input.email ?? undefined);
 
@@ -189,26 +214,24 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         token.sub = user.id as string;
       }
 
+      const lastRefreshAt =
+        typeof token.userStateRefreshedAt === "number" ? token.userStateRefreshedAt : 0;
+      const shouldRefreshFromDatabase =
+        Boolean(user) ||
+        !token.sub ||
+        !token.email ||
+        Date.now() - lastRefreshAt > AUTH_USER_STATE_REFRESH_MS;
+
+      if (!shouldRefreshFromDatabase) {
+        return token;
+      }
+
       const authUser = await getAuthUserState({
         id: (user?.id as string | undefined) ?? token.sub,
         email: user?.email ?? token.email,
       });
 
-      if (authUser) {
-        token.sub = authUser.id;
-        token.email = authUser.email;
-        token.name = authUser.name;
-        token.role = authUser.role;
-        token.emailVerified = Boolean(authUser.emailVerified);
-        return token;
-      }
-
-      delete token.sub;
-      delete token.email;
-      delete token.name;
-      delete token.role;
-      delete token.emailVerified;
-      return token;
+      return applyAuthUserStateToToken(token, authUser);
     },
     session({ session, token }) {
       if (session.user) {

@@ -95,18 +95,20 @@ export async function GET(request: Request, { params }: RouteContext) {
               id: true,
             },
           }),
-      db.review.findUnique({
-        where: {
-          buyerId_resourceId: {
-            buyerId: viewerUserId,
-            resourceId: resource.id,
-          },
-        },
-        select: {
-          rating: true,
-          body: true,
-        },
-      }),
+      isOwner
+        ? Promise.resolve(null)
+        : db.review.findUnique({
+            where: {
+              buyerId_resourceId: {
+                buyerId: viewerUserId,
+                resourceId: resource.id,
+              },
+            },
+            select: {
+              rating: true,
+              body: true,
+            },
+          }),
     ]);
 
     return NextResponse.json(
