@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import {
+  canBypassPaidResourcePayoutRequirement,
+  isPaidResourcePayoutReady,
+} from "@/lib/payout-readiness";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
 import { syncCreatorPayoutStatus } from "@/lib/stripe-connect";
 import { redirect } from "next/navigation";
@@ -42,6 +46,7 @@ export default async function CreatorPayoutsPage({
         id: true,
         name: true,
         email: true,
+        role: true,
         store: {
           select: {
             id: true,
@@ -59,6 +64,11 @@ export default async function CreatorPayoutsPage({
   }
 
   const payoutStatus = await syncCreatorPayoutStatus(user.id);
+  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user.role);
+  const paidResourcePayoutReady = isPaidResourcePayoutReady({
+    role: user.role,
+    payoutReady: payoutStatus.ready,
+  });
   const publishedPaidResourceCount = user.store
     ? await db.resource.count({
         where: {
@@ -83,8 +93,9 @@ export default async function CreatorPayoutsPage({
             Stripe payout setup
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
-            Connect your Stripe account so paid resources can send creator earnings to
-            your bank account instead of staying on the platform account.
+            {bypassesPaidPayoutRequirement
+              ? "This admin account can keep paid resources live without Stripe onboarding. Connect Stripe if you want creator earnings routed automatically."
+              : "Connect your Stripe account so paid resources can send creator earnings to your bank account instead of staying on the platform account."}
           </p>
         </div>
 
@@ -138,7 +149,7 @@ export default async function CreatorPayoutsPage({
         </div>
       ) : null}
 
-      {!payoutStatus.ready && publishedPaidResourceCount > 0 ? (
+      {!paidResourcePayoutReady && publishedPaidResourceCount > 0 ? (
         <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           {publishedPaidResourceCount} published paid resource
           {publishedPaidResourceCount === 1 ? "" : "s"} from your existing creator account
@@ -175,7 +186,9 @@ export default async function CreatorPayoutsPage({
             {payoutStatus.payoutsEnabled ? "Ready" : "Pending"}
           </div>
           <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-            Paid resources should only go live once payouts are enabled.
+            {bypassesPaidPayoutRequirement
+              ? "Stripe payouts are optional for this admin-owned creator account."
+              : "Paid resources should only go live once payouts are enabled."}
           </p>
         </div>
       </div>
@@ -190,9 +203,9 @@ export default async function CreatorPayoutsPage({
               creator share of that sale to your connected account automatically.
             </p>
             <p>
-              Without payout setup, PsychVault can still take the payment on the platform
-              account, but it cannot safely guarantee automatic creator payouts. That is
-              why paid resources are now blocked until payout setup is complete.
+              {bypassesPaidPayoutRequirement
+                ? "Without payout setup, PsychVault can still take payment on the platform account, but creator payouts will not be routed automatically until Stripe is connected."
+                : "Without payout setup, PsychVault can still take the payment on the platform account, but it cannot safely guarantee automatic creator payouts. That is why paid resources are now blocked until payout setup is complete."}
             </p>
           </div>
 
@@ -235,8 +248,9 @@ export default async function CreatorPayoutsPage({
             ) : (
               <>
                 <p>
-                  Complete Stripe Express onboarding now so your paid resources can be sold
-                  with automatic marketplace payouts.
+                  {bypassesPaidPayoutRequirement
+                    ? "Stripe onboarding is optional here, but it is still the cleanest way to route creator earnings automatically."
+                    : "Complete Stripe Express onboarding now so your paid resources can be sold with automatic marketplace payouts."}
                 </p>
                 <a
                   href="/api/stripe/connect/onboarding"

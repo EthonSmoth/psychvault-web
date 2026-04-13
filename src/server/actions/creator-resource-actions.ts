@@ -7,7 +7,10 @@ import { ResourceStatus } from "@prisma/client";
 import { verifyCSRFToken } from "@/lib/csrf";
 import { EMAIL_VERIFICATION_REQUIRED_MESSAGE } from "@/lib/email-verification";
 import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
-import { syncCreatorPayoutStatus } from "@/lib/stripe-connect";
+import {
+  canBypassPaidResourcePayoutRequirement,
+  syncCreatorPayoutStatus,
+} from "@/lib/stripe-connect";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 // Loads the signed-in creator and guarantees they have a store before continuing.
@@ -188,7 +191,10 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
     throw new Error("This resource cannot be published because it has no main download file.");
   }
 
-  if (resource.priceCents > 0) {
+  if (
+    resource.priceCents > 0 &&
+    !canBypassPaidResourcePayoutRequirement(user.role)
+  ) {
     const payoutStatus = await syncCreatorPayoutStatus(user.id);
 
     if (!payoutStatus.ready) {

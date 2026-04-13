@@ -1,8 +1,9 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCSRFToken } from "@/lib/csrf";
+import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPayoutAccountReady } from "@/lib/stripe-connect";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import {
   DEFAULT_RESOURCE_CATEGORIES,
   DEFAULT_RESOURCE_TAGS,
@@ -55,6 +56,12 @@ export default async function NewCreatorResourcePage() {
   });
   const csrfToken = generateCSRFToken(user.id);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
+  const paidResourcePayoutReady = isPaidResourcePayoutReady({
+    role: user.role,
+    payoutReady,
+  });
+  const requiresPaidResourcePayoutSetup =
+    !canBypassPaidResourcePayoutRequirement(user.role);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -70,7 +77,7 @@ export default async function NewCreatorResourcePage() {
         </p>
       </div>
 
-      {!payoutReady ? (
+      {!paidResourcePayoutReady ? (
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           Existing creators can keep creating free resources right away, but paid resources
           now require Stripe payout onboarding.
@@ -83,7 +90,12 @@ export default async function NewCreatorResourcePage() {
       ) : null}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <ResourceForm categories={categories} tags={tags} csrfToken={csrfToken} />
+        <ResourceForm
+          categories={categories}
+          tags={tags}
+          csrfToken={csrfToken}
+          paidResourcePayoutRequired={requiresPaidResourcePayoutSetup}
+        />
       </div>
     </div>
   );

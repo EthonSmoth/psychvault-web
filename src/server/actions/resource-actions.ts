@@ -24,7 +24,10 @@ import { sanitizeUserText } from "@/lib/input-safety";
 import { getPublicResourceFileState } from "@/lib/resource-file-state";
 import { logger } from "@/lib/logger";
 import { resolveStorageLocation } from "@/lib/storage";
-import { syncCreatorPayoutStatus } from "@/lib/stripe-connect";
+import {
+  canBypassPaidResourcePayoutRequirement,
+  syncCreatorPayoutStatus,
+} from "@/lib/stripe-connect";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 
 export type ResourceFormState = {
@@ -323,7 +326,12 @@ export async function saveResourceAction(
     };
   }
 
-  if (isPublished && priceCents !== null && priceCents > 0) {
+  if (
+    isPublished &&
+    priceCents !== null &&
+    priceCents > 0 &&
+    !canBypassPaidResourcePayoutRequirement(user.role)
+  ) {
     const payoutStatus = await syncCreatorPayoutStatus(user.id);
 
     if (!payoutStatus.ready) {

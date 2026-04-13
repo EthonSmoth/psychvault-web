@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { getAppBaseUrl } from "@/lib/env";
 import { serializeJsonLd } from "@/lib/input-safety";
 import { getMarketplacePolicyLinks, getPaymentsAvailability } from "@/lib/payments";
-import { isPayoutAccountReady } from "@/lib/stripe-connect";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import {
   getPublishedResourceReviews,
   getPublishedResourceMetadata,
@@ -282,9 +282,10 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
     .slice(0, 2);
   const paymentAvailability = getPaymentsAvailability();
   const policyLinks = getMarketplacePolicyLinks();
-  const creatorPayoutReady = isPayoutAccountReady(
-    resourceData.store?.owner?.payoutAccount
-  );
+  const creatorPayoutReady = isPaidResourcePayoutReady({
+    role: resourceData.store?.owner?.role,
+    payoutReady: isPayoutAccountReady(resourceData.store?.owner?.payoutAccount),
+  });
   const paidCheckoutUnavailable =
     !resource.isFree && (!paymentAvailability.enabled || !creatorPayoutReady);
   const checkoutUnavailableReason = !resource.isFree

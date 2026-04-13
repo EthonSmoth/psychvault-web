@@ -2,8 +2,9 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { generateCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
+import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPayoutAccountReady } from "@/lib/stripe-connect";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import { redirect } from "next/navigation";
 import { StoreForm } from "@/components/forms/store-form";
 
@@ -27,13 +28,23 @@ export default async function CreatorStorePage() {
 
   const csrfToken = generateCSRFToken(user.id);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
+  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user.role);
+  const paidResourcePayoutReady = isPaidResourcePayoutReady({
+    role: user.role,
+    payoutReady,
+  });
   const storeChecklist = [
     { label: "Store name added", done: Boolean(user.store?.name?.trim()) },
     { label: "Unique store slug set", done: Boolean(user.store?.slug?.trim()) },
     { label: "Store bio added", done: Boolean(user.store?.bio?.trim()) },
     { label: "Store logo uploaded", done: Boolean(user.store?.logoUrl) },
     { label: "Store banner uploaded", done: Boolean(user.store?.bannerUrl) },
-    { label: "Payout setup complete", done: payoutReady },
+    {
+      label: bypassesPaidPayoutRequirement
+        ? "Admin paid listing access"
+        : "Payout setup complete",
+      done: bypassesPaidPayoutRequirement ? true : payoutReady,
+    },
     { label: "Store published", done: Boolean(user.store?.isPublished) },
   ];
   const completedChecklistCount = storeChecklist.filter((item) => item.done).length;
@@ -90,7 +101,7 @@ export default async function CreatorStorePage() {
         <StoreForm store={user.store ?? undefined} csrfToken={csrfToken} />
       </div>
 
-      {!payoutReady ? (
+      {!paidResourcePayoutReady ? (
         <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           Paid listings now require Stripe payout setup so creator earnings can be sent to
           the right connected account.

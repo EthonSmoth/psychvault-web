@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCSRFToken } from "@/lib/csrf";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPayoutAccountReady } from "@/lib/stripe-connect";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { deleteOwnResourceAction } from "@/server/actions/creator-resource-actions";
@@ -67,6 +67,10 @@ export default async function CreatorResourcesPage() {
     }),
   ]);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
+  const paidResourcePayoutReady = isPaidResourcePayoutReady({
+    role: user.role,
+    payoutReady,
+  });
   const publishedPaidResources = resources.filter(
     (resource) => resource.status === "PUBLISHED" && resource.priceCents > 0
   ).length;
@@ -103,7 +107,7 @@ export default async function CreatorResourcesPage() {
         </div>
       </div>
 
-      {!payoutReady ? (
+      {!paidResourcePayoutReady ? (
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
           {publishedPaidResources > 0
             ? `${publishedPaidResources} published paid resource${publishedPaidResources === 1 ? "" : "s"} from your older creator setup now need Stripe payout onboarding before they can stay sale-ready.`
@@ -159,7 +163,7 @@ export default async function CreatorResourcesPage() {
                       </span>
                     ) : null}
 
-                    {!r.isFree && !payoutReady ? (
+                    {!r.isFree && !paidResourcePayoutReady ? (
                       <span className="inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
                         Payout setup required
                       </span>

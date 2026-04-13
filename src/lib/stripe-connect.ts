@@ -1,7 +1,14 @@
 import { db } from "@/lib/db";
 import { getAppBaseUrl } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { isPayoutAccountReady } from "@/lib/payout-readiness";
 import { stripe } from "@/lib/stripe";
+
+export {
+  canBypassPaidResourcePayoutRequirement,
+  isPaidResourcePayoutReady,
+  isPayoutAccountReady,
+} from "@/lib/payout-readiness";
 
 type StoredPayoutAccount = {
   stripeAccountId: string;
@@ -42,18 +49,6 @@ function getStoredStatusUpdate(account: {
     payoutsEnabled: account.payouts_enabled,
     detailsSubmitted: account.details_submitted,
   };
-}
-
-export function isPayoutAccountReady(
-  payoutAccount:
-    | {
-        payoutsEnabled: boolean;
-        detailsSubmitted: boolean;
-      }
-    | null
-    | undefined
-) {
-  return Boolean(payoutAccount?.payoutsEnabled && payoutAccount?.detailsSubmitted);
 }
 
 export async function ensureCreatorStripeAccount(options: {

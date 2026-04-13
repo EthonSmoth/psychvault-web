@@ -5,8 +5,9 @@ import {
   getCreatorTrustProfile,
 } from "@/lib/creator-trust";
 import { db } from "@/lib/db";
+import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPayoutAccountReady } from "@/lib/stripe-connect";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import { redirect } from "next/navigation";
 
 export default async function CreatorDashboardPage() {
@@ -40,6 +41,11 @@ export default async function CreatorDashboardPage() {
   const followerCount = store?.followers.length ?? 0;
   const storeStatus = store?.isPublished ? "Published" : "Draft";
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
+  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user.role);
+  const paidResourcePayoutReady = isPaidResourcePayoutReady({
+    role: user.role,
+    payoutReady,
+  });
   const publishedPaidResources =
     store?.resources.filter((resource) => resource.status === "PUBLISHED" && resource.priceCents > 0)
       .length ?? 0;
@@ -105,7 +111,7 @@ export default async function CreatorDashboardPage() {
         </div>
       ) : null}
 
-      {store && !payoutReady ? (
+      {store && !paidResourcePayoutReady ? (
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
           <div className="font-semibold">Complete payouts before selling paid resources</div>
           <div className="mt-1">
@@ -192,11 +198,13 @@ export default async function CreatorDashboardPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="text-sm font-medium text-slate-500">Payouts</div>
           <div className="mt-3 text-3xl font-semibold text-slate-900">
-            {payoutReady ? "Ready" : "Action needed"}
+            {payoutReady ? "Ready" : bypassesPaidPayoutRequirement ? "Optional" : "Action needed"}
           </div>
           <p className="mt-2 text-sm text-slate-600">
             {payoutReady
               ? "Paid resource sales can route creator earnings through Stripe Connect."
+              : bypassesPaidPayoutRequirement
+              ? "Admin-owned paid resources can stay live without Stripe onboarding. Connect Stripe later if you want automatic creator payout routing."
               : "Connect Stripe before publishing paid resources so buyers can pay you safely."}
           </p>
         </div>

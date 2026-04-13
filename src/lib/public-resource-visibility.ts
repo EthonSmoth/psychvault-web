@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 
 export function getPubliclyVisiblePublishedResourceWhere(
   extra: Prisma.ResourceWhereInput = {}
@@ -10,6 +10,13 @@ export function getPubliclyVisiblePublishedResourceWhere(
         OR: [
           { isFree: true },
           { priceCents: 0 },
+          {
+            store: {
+              owner: {
+                role: UserRole.ADMIN,
+              },
+            },
+          },
           {
             store: {
               owner: {

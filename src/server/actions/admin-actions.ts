@@ -5,7 +5,10 @@ import { logModerationEvent } from "@/lib/moderation-events";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/require-admin";
 import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
-import { syncCreatorPayoutStatus } from "@/lib/stripe-connect";
+import {
+  canBypassPaidResourcePayoutRequirement,
+  syncCreatorPayoutStatus,
+} from "@/lib/stripe-connect";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 import {
   ModerationActionType,
@@ -80,6 +83,11 @@ export async function adminPublishResourceAction(formData: FormData) {
       slug: true,
       creatorId: true,
       priceCents: true,
+      creator: {
+        select: {
+          role: true,
+        },
+      },
       mainDownloadUrl: true,
       hasMainFile: true,
       files: {
@@ -102,7 +110,10 @@ export async function adminPublishResourceAction(formData: FormData) {
     throw new Error("Cannot publish a resource without a main download file.");
   }
 
-  if (resource.priceCents > 0) {
+  if (
+    resource.priceCents > 0 &&
+    !canBypassPaidResourcePayoutRequirement(resource.creator.role)
+  ) {
     const payoutStatus = await syncCreatorPayoutStatus(resource.creatorId);
 
     if (!payoutStatus.ready) {
@@ -284,6 +295,11 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
       slug: true,
       creatorId: true,
       priceCents: true,
+      creator: {
+        select: {
+          role: true,
+        },
+      },
       store: { select: { slug: true } },
       mainDownloadUrl: true,
       hasMainFile: true,
@@ -306,7 +322,10 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
     throw new Error("Cannot approve and publish a resource without a main download file.");
   }
 
-  if (resource.priceCents > 0) {
+  if (
+    resource.priceCents > 0 &&
+    !canBypassPaidResourcePayoutRequirement(resource.creator.role)
+  ) {
     const payoutStatus = await syncCreatorPayoutStatus(resource.creatorId);
 
     if (!payoutStatus.ready) {

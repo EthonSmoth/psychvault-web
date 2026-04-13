@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { jsonError } from "@/lib/http";
 import { getAppBaseUrl } from "@/lib/env";
 import { getPaymentsAvailability } from "@/lib/payments";
+import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
 import { getSafeRedirectTarget } from "@/lib/redirects";
 import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
@@ -195,7 +196,12 @@ export async function POST(request: Request) {
     const feeBps = getPlatformFeeBps();
     const platformFeeCents = Math.round((resource.priceCents * feeBps) / 10000);
     const stripeAccountId = resource.store?.owner?.payoutAccount?.stripeAccountId;
-    let creatorPayoutReady = isPayoutAccountReady(resource.store?.owner?.payoutAccount);
+    const bypassesPayoutRequirement = canBypassPaidResourcePayoutRequirement(
+      resource.store?.owner?.role
+    );
+    let creatorPayoutReady =
+      bypassesPayoutRequirement ||
+      isPayoutAccountReady(resource.store?.owner?.payoutAccount);
 
     if (!creatorPayoutReady && resource.store?.ownerId) {
       const syncedPayoutStatus = await syncCreatorPayoutStatus(resource.store.ownerId);

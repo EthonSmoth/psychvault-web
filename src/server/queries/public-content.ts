@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { Prisma, UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { logTimedOperation, startTimer } from "@/lib/performance";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
 import {
   PUBLIC_CACHE_TAGS,
@@ -250,6 +251,7 @@ export function getPublishedResourcePageData(slug: string) {
                 logoUrl: true,
                 owner: {
                   select: {
+                    role: true,
                     payoutAccount: {
                       select: {
                         payoutsEnabled: true,
@@ -304,13 +306,15 @@ export function getPublishedResourcePageData(slug: string) {
           },
         });
 
+        const creatorCanSellPaidResources = isPaidResourcePayoutReady({
+          role: resource?.store?.owner?.role,
+          payoutReady: isPayoutAccountReady(resource?.store?.owner?.payoutAccount),
+        });
+
         if (
           !resource ||
           resource.status !== "PUBLISHED" ||
-          (!resource.isFree &&
-            resource.priceCents > 0 &&
-            (!resource.store?.owner?.payoutAccount?.payoutsEnabled ||
-              !resource.store?.owner?.payoutAccount?.detailsSubmitted))
+          (!resource.isFree && resource.priceCents > 0 && !creatorCanSellPaidResources)
         ) {
           return null;
         }

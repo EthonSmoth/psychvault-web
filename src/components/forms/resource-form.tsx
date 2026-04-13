@@ -53,6 +53,7 @@ type Props = {
   tags: Tag[];
   resource?: ResourceData;
   csrfToken: string;
+  paidResourcePayoutRequired?: boolean;
 };
 
 type UploadedFile = {
@@ -86,7 +87,13 @@ async function uploadFile(file: File, uploadKind: "thumbnail" | "preview" | "mai
   return res.json();
 }
 
-export default function ResourceForm({ categories, tags, resource, csrfToken }: Props) {
+export default function ResourceForm({
+  categories,
+  tags,
+  resource,
+  csrfToken,
+  paidResourcePayoutRequired = true,
+}: Props) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
     saveResourceAction,
@@ -250,8 +257,9 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
           need manual review before public sale.
         </p>
         <p className="mt-2 text-sm text-[var(--text-muted)]">
-          Paid resources also require completed Stripe payout onboarding for the creator
-          account before they can be published.
+          {paidResourcePayoutRequired
+            ? "Paid resources also require completed Stripe payout onboarding for the creator account before they can be published."
+            : "This admin-owned creator account can publish paid resources without completed Stripe payout onboarding."}
         </p>
 
         {resource?.moderationStatus === "PENDING_REVIEW" ? (
@@ -364,8 +372,9 @@ export default function ResourceForm({ categories, tags, resource, csrfToken }: 
               className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
             />
             <p className="mt-2 text-xs text-[var(--text-light)]">
-              Free resources can go live without payout setup. Paid resources require Stripe
-              payout onboarding first.
+              {paidResourcePayoutRequired
+                ? "Free resources can go live without payout setup. Paid resources require Stripe payout onboarding first."
+                : "Free and paid resources can both go live on this admin-owned account without Stripe payout onboarding."}
             </p>
           </div>
 

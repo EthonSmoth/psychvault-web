@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCSRFToken } from "@/lib/csrf";
+import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPayoutAccountReady } from "@/lib/stripe-connect";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import {
   DEFAULT_RESOURCE_CATEGORIES,
   DEFAULT_RESOURCE_TAGS,
@@ -82,7 +83,13 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
 
   const csrfToken = generateCSRFToken(user.id);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
-  const paidResourceNeedsPayouts = resource.priceCents > 0 && !payoutReady;
+  const paidResourcePayoutReady = isPaidResourcePayoutReady({
+    role: user.role,
+    payoutReady,
+  });
+  const paidResourceNeedsPayouts = resource.priceCents > 0 && !paidResourcePayoutReady;
+  const requiresPaidResourcePayoutSetup =
+    !canBypassPaidResourcePayoutRequirement(user.role);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -131,7 +138,13 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
         </div>
       ) : null}
 
-      <ResourceForm categories={categories} tags={tags} resource={resource} csrfToken={csrfToken} />
+      <ResourceForm
+        categories={categories}
+        tags={tags}
+        resource={resource}
+        csrfToken={csrfToken}
+        paidResourcePayoutRequired={requiresPaidResourcePayoutSetup}
+      />
     </main>
   );
 }
