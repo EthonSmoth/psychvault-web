@@ -77,6 +77,9 @@ export function Footer() {
               <Link href="/stores" className="block transition-colors hover:text-[var(--accent)]">
                 Creator stores
               </Link>
+              <Link href="/blog" className="block transition-colors hover:text-[var(--accent)]">
+                Blog
+              </Link>
               <Link
                 href="/resources?price=free"
                 className="block transition-colors hover:text-[var(--accent)]"
@@ -148,6 +151,12 @@ export function Footer() {
               </Link>
               <Link href="/contact" className="block transition-colors hover:text-[var(--accent)]">
                 Contact
+              </Link>
+              <Link
+                href="/feed.xml"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
+                RSS feed
               </Link>
               <Link
                 href="/sitemap.xml"

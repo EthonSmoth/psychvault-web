@@ -48,6 +48,13 @@ export function Navbar() {
             </Link>
 
             <Link
+              href="/blog"
+              className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
+            >
+              Blog
+            </Link>
+
+            <Link
               href="/creator"
               className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
             >

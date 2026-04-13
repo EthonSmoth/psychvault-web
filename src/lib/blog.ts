@@ -1,6 +1,5 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { cache } from "react";
 import { sanitizeUserText } from "@/lib/input-safety";
 
 const BLOG_DIRECTORY = path.join(process.cwd(), "content", "blog");
@@ -71,18 +70,20 @@ function parseFrontmatterValue(value: string): FrontmatterValue {
 }
 
 function parseFrontmatter(raw: string) {
-  if (!raw.startsWith("---\n")) {
+  const normalisedRaw = raw.replace(/\r\n?/g, "\n");
+
+  if (!normalisedRaw.startsWith("---\n")) {
     throw new Error("Blog posts must start with frontmatter.");
   }
 
-  const frontmatterEnd = raw.indexOf("\n---\n");
+  const frontmatterEnd = normalisedRaw.indexOf("\n---\n");
 
   if (frontmatterEnd === -1) {
     throw new Error("Blog frontmatter is missing a closing delimiter.");
   }
 
-  const rawFrontmatter = raw.slice(4, frontmatterEnd);
-  const content = raw.slice(frontmatterEnd + 5).trim();
+  const rawFrontmatter = normalisedRaw.slice(4, frontmatterEnd);
+  const content = normalisedRaw.slice(frontmatterEnd + 5).trim();
   const data: Record<string, FrontmatterValue> = {};
 
   for (const line of rawFrontmatter.split("\n")) {
@@ -297,8 +298,21 @@ function normaliseBlogPost(raw: string, slug: string): BlogPost {
   };
 }
 
-const loadBlogPosts = cache(async () => {
-  const entries = await fs.readdir(BLOG_DIRECTORY, { withFileTypes: true });
+async function readBlogPosts() {
+  let entries: Array<{
+    isFile(): boolean;
+    name: string;
+  }>;
+
+  try {
+    entries = await fs.readdir(BLOG_DIRECTORY, { withFileTypes: true });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+
+    throw error;
+  }
 
   const posts = await Promise.all(
     entries
@@ -311,7 +325,17 @@ const loadBlogPosts = cache(async () => {
   );
 
   return posts.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
-});
+}
+
+let blogPostsPromise: Promise<BlogPost[]> | null = null;
+
+function loadBlogPosts() {
+  if (!blogPostsPromise) {
+    blogPostsPromise = readBlogPosts();
+  }
+
+  return blogPostsPromise;
+}
 
 export async function getAllBlogPosts(): Promise<BlogPostListItem[]> {
   const posts = await loadBlogPosts();

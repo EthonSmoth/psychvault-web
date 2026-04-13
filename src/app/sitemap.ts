@@ -1,8 +1,12 @@
 import { MetadataRoute } from "next";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
+import { getAllBlogPosts } from "@/lib/blog";
 import { getAppBaseUrl } from "@/lib/env";
-import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
+import {
+  getPubliclyVisiblePublishedResourceWhere,
+  getPubliclyVisibleStoreWhere,
+} from "@/lib/public-resource-visibility";
 import {
   PUBLIC_CACHE_TAGS,
 } from "@/server/cache/public-cache";
@@ -21,7 +25,7 @@ const getSitemapEntries = unstable_cache(
         },
       }),
       db.store.findMany({
-        where: { isPublished: true },
+        where: getPubliclyVisibleStoreWhere(),
         select: {
           slug: true,
           updatedAt: true,
@@ -40,7 +44,10 @@ const getSitemapEntries = unstable_cache(
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getAppBaseUrl();
-  const { resources, stores } = await getSitemapEntries();
+  const [{ resources, stores }, blogPosts] = await Promise.all([
+    getSitemapEntries(),
+    getAllBlogPosts(),
+  ]);
 
   return [
     {
@@ -59,6 +66,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/stores`,
       lastModified: new Date(),
       changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: blogPosts[0]?.updatedAt ?? blogPosts[0]?.publishedAt ?? new Date(),
+      changeFrequency: "weekly",
       priority: 0.8,
     },
     {
@@ -103,6 +116,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/stores/${store.slug}`,
       lastModified: store.updatedAt,
       changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+
+    ...blogPosts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.updatedAt ?? post.publishedAt,
+      changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
   ];

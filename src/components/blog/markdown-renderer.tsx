@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Fragment, type ReactNode } from "react";
+import { Fragment, createElement, type ReactNode } from "react";
 import { slugifyHeading, type BlogHeading } from "@/lib/blog";
 
 type MarkdownRendererProps = {
   content: string;
+  headings?: BlogHeading[];
 };
 
 function isExternalUrl(href: string) {
@@ -128,11 +129,12 @@ function isBlockBoundary(line: string) {
   );
 }
 
-function renderMarkdownBlocks(content: string) {
+function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
   const blocks: ReactNode[] = [];
   const lines = content.split("\n");
   let index = 0;
   let key = 0;
+  let headingIndex = 0;
 
   while (index < lines.length) {
     const currentLine = lines[index];
@@ -179,8 +181,8 @@ function renderMarkdownBlocks(content: string) {
     if (headingMatch) {
       const level = Math.min(headingMatch[1].length, 4);
       const text = headingMatch[2].trim();
-      const id = slugifyHeading(text) || `section-${key}`;
-      const Tag = (`h${level}` as keyof JSX.IntrinsicElements);
+      const id =
+        headings[headingIndex]?.id || slugifyHeading(text) || `section-${key}`;
       const className =
         level === 1
           ? "text-4xl font-semibold tracking-tight text-[var(--text)]"
@@ -191,11 +193,18 @@ function renderMarkdownBlocks(content: string) {
           : "scroll-mt-28 text-lg font-semibold text-[var(--text)]";
 
       blocks.push(
-        <Tag key={`block-${key}`} id={id} className={className}>
-          {renderInlineMarkdown(text, `heading-${key}`)}
-        </Tag>
+        createElement(
+          `h${level}`,
+          {
+            key: `block-${key}`,
+            id,
+            className,
+          },
+          renderInlineMarkdown(text, `heading-${key}`)
+        )
       );
 
+      headingIndex += 1;
       key += 1;
       index += 1;
       continue;
@@ -304,8 +313,8 @@ function renderMarkdownBlocks(content: string) {
   return blocks;
 }
 
-export function MarkdownRenderer({ content }: MarkdownRendererProps) {
-  return <div className="space-y-6">{renderMarkdownBlocks(content)}</div>;
+export function MarkdownRenderer({ content, headings }: MarkdownRendererProps) {
+  return <div className="space-y-6">{renderMarkdownBlocks(content, headings)}</div>;
 }
 
 export function BlogTableOfContents({ headings }: { headings: BlogHeading[] }) {

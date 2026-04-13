@@ -4,11 +4,13 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getAppBaseUrl } from "@/lib/env";
 import { getPaymentsAvailability } from "@/lib/payments";
+import { getFeaturedBlogPosts } from "@/lib/blog";
 import {
   getHomepageCategoryData,
   getHomepageResourceShowcaseData,
   getHomepageStatsData,
 } from "@/server/queries/public-content";
+import { BlogPostCard } from "@/components/blog/blog-post-card";
 import ResourceCard from "@/components/resources/resource-card";
 
 export const revalidate = 300;
@@ -502,6 +504,41 @@ function HomeRecentFallback() {
   );
 }
 
+async function HomeBlogSection() {
+  const posts = await getFeaturedBlogPosts(3);
+
+  if (posts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mb-8 flex items-end justify-between gap-6">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+            From the blog
+          </h2>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
+            Practical articles that support discovery, trust, and creator growth.
+          </p>
+        </div>
+        <Link
+          href="/blog"
+          className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
+        >
+          Visit the blog
+        </Link>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-3">
+        {posts.map((post) => (
+          <BlogPostCard key={post.slug} post={post} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function HomeValueSection() {
   return (
     <section className="defer-section mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -586,6 +623,10 @@ export default function HomePage() {
 
       <Suspense fallback={<HomeRecentFallback />}>
         <HomeRecentResourcesSection />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <HomeBlogSection />
       </Suspense>
 
       <HomeValueSection />

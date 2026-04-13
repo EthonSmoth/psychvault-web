@@ -214,6 +214,12 @@ function MobileMenuLinks({ authenticated }: { authenticated: boolean }) {
         Stores
       </Link>
       <Link
+        href="/blog"
+        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+      >
+        Blog
+      </Link>
+      <Link
         href="/creator"
         className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
       >
