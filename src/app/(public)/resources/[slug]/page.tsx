@@ -13,7 +13,6 @@ import {
   getPublishedResourcePageData,
   getRelatedPublishedResources,
 } from "@/server/queries/public-content";
-import { getResourceViewerState } from "@/server/queries/resource-viewer";
 import { ResourceGallery } from "@/components/resources/resource-gallery";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import {
@@ -245,11 +244,6 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
 
   const { resource } = publicData;
   const resourceData = resource as NonNullable<typeof resource>;
-  const viewerStatePromise = getResourceViewerState({
-    resourceId: resourceData.id,
-    creatorId: resourceData.creatorId,
-    storeOwnerId: resourceData.store?.ownerId,
-  });
 
   const imagePattern = /\.(jpg|jpeg|png|webp|gif)$/i;
   const previewFiles = resource.files.filter((file) => file.kind === "PREVIEW");
@@ -339,7 +333,6 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
 
   // Filter out undefined values
   const cleanSchema = JSON.parse(JSON.stringify(productSchema));
-  const viewerState = await viewerStatePromise;
 
   function renderPurchasePanel(extraClassName = "") {
     return (
@@ -484,7 +477,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   }
 
   return (
-    <ResourceViewerProvider initialViewerState={viewerState}>
+    <ResourceViewerProvider resourceId={resourceData.id}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(cleanSchema) }}

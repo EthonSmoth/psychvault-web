@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ReviewForm from "@/components/resources/review-form";
 import { ReportResourceForm } from "@/components/resources/report-resource-form";
 import type { ResourceViewerState } from "@/types/resource-viewer";
 
 type ResourceViewerContextValue = {
-  viewerState: ResourceViewerState;
+  viewerState: ResourceViewerState | null;
+  loading: boolean;
 };
 
 const ResourceViewerContext = createContext<ResourceViewerContextValue>({
-  viewerState: { authenticated: false },
+  viewerState: null,
+  loading: true,
 });
 
 function formatPrice(priceCents: number, isFree?: boolean) {
@@ -27,21 +29,76 @@ function formatPrice(priceCents: number, isFree?: boolean) {
 }
 
 export function ResourceViewerProvider({
-  initialViewerState,
+  resourceId,
   children,
 }: {
-  initialViewerState: ResourceViewerState;
+  resourceId: string;
   children: React.ReactNode;
 }) {
+  const [viewerState, setViewerState] = useState<ResourceViewerState | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+
+    setViewerState(null);
+
+    fetch(`/api/resources/${resourceId}/viewer`, {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Failed to load resource viewer state.");
+        }
+
+        return (await response.json()) as ResourceViewerState;
+      })
+      .then((payload) => {
+        if (active) {
+          setViewerState(payload);
+        }
+      })
+      .catch(() => {
+        if (active && !controller.signal.aborted) {
+          setViewerState({ authenticated: false });
+        }
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [resourceId]);
+
   return (
-    <ResourceViewerContext.Provider value={{ viewerState: initialViewerState }}>
+    <ResourceViewerContext.Provider
+      value={{ viewerState, loading: viewerState === null }}
+    >
       {children}
     </ResourceViewerContext.Provider>
   );
 }
 
 function useResourceViewerState() {
-  return useContext(ResourceViewerContext).viewerState;
+  return useContext(ResourceViewerContext);
+}
+
+function ResourceViewerButtonSkeleton() {
+  return (
+    <div
+      className="h-11 animate-pulse rounded-xl border border-[var(--border)] bg-[var(--surface-alt)]"
+      aria-hidden="true"
+    />
+  );
+}
+
+function ResourceViewerMessageSkeleton({ label }: { label: string }) {
+  return (
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
+      {label}
+    </div>
+  );
 }
 
 export function ResourcePageNotices() {
@@ -85,8 +142,18 @@ export function ResourcePurchaseActions({
   priceCents: number;
   checkoutUnavailableReason: "platform" | "creator-payouts" | null;
 }) {
-  const viewerState = useResourceViewerState();
-  const viewer = viewerState.authenticated ? viewerState.viewer : null;
+  const { viewerState, loading } = useResourceViewerState();
+  const viewer = viewerState?.authenticated ? viewerState.viewer : null;
+
+  if (loading) {
+    return (
+      <>
+        <ResourceViewerMessageSkeleton label="Checking purchase options..." />
+        <ResourceViewerButtonSkeleton />
+        {storeOwnerId ? <ResourceViewerButtonSkeleton /> : null}
+      </>
+    );
+  }
 
   if (viewer?.isOwner) {
     return (
@@ -183,8 +250,14 @@ export function ResourceReportBox({
   resourceId: string;
   resourceSlug: string;
 }) {
-  const viewerState = useResourceViewerState();
-  const viewer = viewerState.authenticated ? viewerState.viewer : null;
+  const { viewerState, loading } = useResourceViewerState();
+  const viewer = viewerState?.authenticated ? viewerState.viewer : null;
+
+  if (loading) {
+    return (
+      <ResourceViewerMessageSkeleton label="Checking reporting access..." />
+    );
+  }
 
   if (!viewer) {
     return (
@@ -238,8 +311,16 @@ export function ResourceReviewGate({
   resourceId: string;
   resourceSlug: string;
 }) {
-  const viewerState = useResourceViewerState();
-  const viewer = viewerState.authenticated ? viewerState.viewer : null;
+  const { viewerState, loading } = useResourceViewerState();
+  const viewer = viewerState?.authenticated ? viewerState.viewer : null;
+
+  if (loading) {
+    return (
+      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--text-muted)] shadow-sm">
+        Checking review access...
+      </div>
+    );
+  }
 
   if (!viewer) {
     return (

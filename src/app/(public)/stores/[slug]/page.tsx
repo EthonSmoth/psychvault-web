@@ -10,7 +10,6 @@ import {
   getPublishedStorePageData,
   getPublishedStoreResourcesPageData,
 } from "@/server/queries/public-content";
-import { getStoreViewerState } from "@/server/queries/store-viewer";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import {
   StorePrimaryActions,
@@ -95,17 +94,11 @@ export default async function StorePage({ params, searchParams }: StorePageProps
 
   const storeSlug = store.slug;
 
-  const [viewerState, resourcesPage] = await Promise.all([
-    getStoreViewerState({
-      storeId: store.id,
-      ownerId: store.ownerId,
-    }),
-    getPublishedStoreResourcesPageData({
-      storeId: store.id,
-      storeSlug: store.slug,
-      page,
-    }),
-  ]);
+  const resourcesPage = await getPublishedStoreResourcesPageData({
+    storeId: store.id,
+    storeSlug: store.slug,
+    page,
+  });
 
   const featuredResources = store.featuredResources;
   const policyLinks = getMarketplacePolicyLinks();
@@ -131,7 +124,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
   }
 
   return (
-    <StoreViewerProvider initialViewerState={viewerState}>
+    <StoreViewerProvider storeId={store.id}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(cleanSchema) }}
