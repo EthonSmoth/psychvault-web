@@ -8,9 +8,12 @@ import { serializeJsonLd } from "@/lib/input-safety";
 import { getMarketplacePolicyLinks, getPaymentsAvailability } from "@/lib/payments";
 import { isPayoutAccountReady } from "@/lib/stripe-connect";
 import {
+  getPublishedResourceReviews,
   getPublishedResourceMetadata,
   getPublishedResourcePageData,
+  getRelatedPublishedResources,
 } from "@/server/queries/public-content";
+import { getResourceViewerState } from "@/server/queries/resource-viewer";
 import { ResourceGallery } from "@/components/resources/resource-gallery";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import {
@@ -115,6 +118,121 @@ type ResourcePageProps = {
   }>;
 };
 
+async function ResourceReviewsSection({
+  resourceId,
+  resourceSlug,
+}: {
+  resourceId: string;
+  resourceSlug: string;
+}) {
+  const reviews = await getPublishedResourceReviews({
+    resourceId,
+    resourceSlug,
+  });
+
+  return (
+    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <h2 className="text-xl font-semibold text-[var(--text)]">Recent reviews</h2>
+
+      {reviews.length === 0 ? (
+        <p className="mt-4 text-sm leading-6 text-[var(--text-muted)]">No reviews yet.</p>
+      ) : (
+        <div className="mt-6 space-y-4">
+          {reviews.map((review) => (
+            <div
+              key={review.id}
+              className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="font-medium text-[var(--text)]">
+                    {review.buyer.name || "Buyer"}
+                  </div>
+                  <div className="mt-1 text-sm text-[var(--text-muted)]">
+                    {renderStars(review.rating)} <span className="ml-2">{review.rating}/5</span>
+                  </div>
+                </div>
+
+                <div className="text-xs text-[var(--text-light)]">
+                  {formatDate(review.createdAt)}
+                </div>
+              </div>
+
+              {review.body ? (
+                <p className="mt-2 text-sm leading-6 text-[var(--text)]">{review.body}</p>
+              ) : (
+                <p className="mt-2 text-sm italic text-[var(--text-light)]">
+                  No written review provided.
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+async function RelatedResourcesSection({
+  resourceId,
+  resourceSlug,
+  storeId,
+  relatedCategoryIds,
+}: {
+  resourceId: string;
+  resourceSlug: string;
+  storeId?: string | null;
+  relatedCategoryIds: string[];
+}) {
+  const relatedResources = await getRelatedPublishedResources({
+    resourceId,
+    resourceSlug,
+    storeId,
+    relatedCategoryIds,
+  });
+
+  if (relatedResources.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="defer-section mt-16">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+            Related resources
+          </h2>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
+            Similar resources from this creator or the same category.
+          </p>
+        </div>
+      </div>
+
+      <ResourceGrid resources={relatedResources} />
+    </section>
+  );
+}
+
+function DeferredCardFallback({
+  title,
+  copy,
+}: {
+  title: string;
+  copy: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="h-6 w-40 animate-pulse rounded-lg bg-[var(--surface-alt)]" aria-hidden="true" />
+      <p className="mt-4 text-sm leading-6 text-[var(--text-muted)]">{copy}</p>
+      <div className="mt-6 space-y-3" aria-hidden="true">
+        <div className="h-20 rounded-2xl bg-[var(--surface-alt)]" />
+        <div className="h-20 rounded-2xl bg-[var(--surface-alt)]" />
+      </div>
+      <span className="sr-only">{title}</span>
+    </div>
+  );
+}
+
 // Renders the public resource detail page, including gallery, commerce, reviews, and reporting.
 export default async function ResourceDetailPage({ params }: ResourcePageProps) {
   const { slug } = await params;
@@ -125,8 +243,13 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
     notFound();
   }
 
-  const { resource, relatedResources } = publicData;
+  const { resource } = publicData;
   const resourceData = resource as NonNullable<typeof resource>;
+  const viewerStatePromise = getResourceViewerState({
+    resourceId: resourceData.id,
+    creatorId: resourceData.creatorId,
+    storeOwnerId: resourceData.store?.ownerId,
+  });
 
   const imagePattern = /\.(jpg|jpeg|png|webp|gif)$/i;
   const previewFiles = resource.files.filter((file) => file.kind === "PREVIEW");
@@ -154,6 +277,9 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const hasMainFile = resource.hasMainFile || Boolean(mainFile);
   const fileFormat = getFileExtension(mainFile?.fileName);
   const primaryCategory = resource.categories[0]?.category;
+  const relatedCategoryIds = resource.categories
+    .map((item) => item.categoryId)
+    .slice(0, 2);
   const paymentAvailability = getPaymentsAvailability();
   const policyLinks = getMarketplacePolicyLinks();
   const creatorPayoutReady = isPayoutAccountReady(
@@ -210,6 +336,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
 
   // Filter out undefined values
   const cleanSchema = JSON.parse(JSON.stringify(productSchema));
+  const viewerState = await viewerStatePromise;
 
   function renderPurchasePanel(extraClassName = "") {
     return (
@@ -354,7 +481,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   }
 
   return (
-    <ResourceViewerProvider resourceId={resourceData.id}>
+    <ResourceViewerProvider initialViewerState={viewerState}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(cleanSchema) }}
@@ -544,47 +671,20 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
             </div>
           </div>
 
-          <div className="mt-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-[var(--text)]">Recent reviews</h2>
-
-            {resourceData.reviews.length === 0 ? (
-              <p className="mt-4 text-sm leading-6 text-[var(--text-muted)]">No reviews yet.</p>
-            ) : (
-              <div className="mt-6 space-y-4">
-                {resourceData.reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="font-medium text-[var(--text)]">
-                          {review.buyer.name || "Buyer"}
-                        </div>
-                        <div className="mt-1 text-sm text-[var(--text-muted)]">
-                          {renderStars(review.rating)}{" "}
-                          <span className="ml-2">{review.rating}/5</span>
-                        </div>
-                      </div>
-
-                      <div className="text-xs text-[var(--text-light)]">
-                        {formatDate(review.createdAt)}
-                      </div>
-                    </div>
-
-                    {review.body ? (
-                      <p className="mt-2 text-sm leading-6 text-[var(--text)]">
-                        {review.body}
-                      </p>
-                    ) : (
-                      <p className="mt-2 text-sm italic text-[var(--text-light)]">
-                        No written review provided.
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="mt-10">
+            <Suspense
+              fallback={
+                <DeferredCardFallback
+                  title="Recent reviews"
+                  copy="Loading recent buyer feedback for this resource."
+                />
+              }
+            >
+              <ResourceReviewsSection
+                resourceId={resourceData.id}
+                resourceSlug={resourceData.slug}
+              />
+            </Suspense>
           </div>
 
           <div className="mt-10">
@@ -598,20 +698,23 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
         {renderPurchasePanel("hidden lg:block lg:sticky lg:top-24 lg:self-start")}
       </div>
 
-      <section className="defer-section mt-16">
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
-              Related resources
-            </h2>
-            <p className="mt-2 text-sm text-[var(--text-muted)]">
-              Similar resources from this creator or the same category.
-            </p>
-          </div>
-        </div>
-
-        <ResourceGrid resources={relatedResources} />
-      </section>
+      <Suspense
+        fallback={
+          <section className="defer-section mt-16">
+            <DeferredCardFallback
+              title="Related resources"
+              copy="Loading similar resources from this creator and category."
+            />
+          </section>
+        }
+      >
+        <RelatedResourcesSection
+          resourceId={resourceData.id}
+          resourceSlug={resourceData.slug}
+          storeId={resourceData.storeId}
+          relatedCategoryIds={relatedCategoryIds}
+        />
+      </Suspense>
       </div>
     </ResourceViewerProvider>
   );

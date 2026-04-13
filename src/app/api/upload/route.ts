@@ -63,16 +63,25 @@ async function optimizeImageUpload(file: File, uploadKind: UploadKind) {
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const maxDimension = uploadKind === "thumbnail" ? 1200 : 1600;
+    const optimizationProfile =
+      uploadKind === "thumbnail"
+        ? {
+            maxDimension: 960,
+            quality: 80,
+          }
+        : {
+            maxDimension: 1440,
+            quality: 82,
+          };
 
     const optimizedBuffer = await sharp(buffer)
       .rotate()
-      .resize(maxDimension, maxDimension, {
+      .resize(optimizationProfile.maxDimension, optimizationProfile.maxDimension, {
         fit: "inside",
         withoutEnlargement: true,
       })
       .webp({
-        quality: uploadKind === "thumbnail" ? 82 : 84,
+        quality: optimizationProfile.quality,
         effort: 4,
       })
       .toBuffer();

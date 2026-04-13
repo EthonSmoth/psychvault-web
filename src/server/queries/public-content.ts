@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { Prisma, UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
+import { logTimedOperation, startTimer } from "@/lib/performance";
 import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
 import {
   PUBLIC_CACHE_TAGS,
@@ -17,6 +18,8 @@ const MAX_PUBLIC_FILTER_SLUG_LENGTH = 64;
 const MAX_PUBLIC_BROWSE_PAGE = 50;
 export const PUBLIC_RESOURCE_BROWSE_PAGE_SIZE = 24;
 export const PUBLIC_STORE_BROWSE_PAGE_SIZE = 18;
+export const PUBLIC_STORE_PAGE_RESOURCE_PAGE_SIZE = 12;
+const PUBLIC_RESOURCE_PAGE_REVIEW_LIMIT = 10;
 const RESOURCE_BROWSE_SORT_OPTIONS = new Set([
   "newest",
   "popular",
@@ -175,164 +178,153 @@ function getResourceBrowseSortOrder(sort: string): Prisma.ResourceOrderByWithRel
   }
 }
 
-export async function getPublishedResourceMetadata(slug: string) {
-  const pageData = await getPublishedResourcePageData(slug);
-  return pageData?.resource ?? null;
+export function getPublishedResourceMetadata(slug: string) {
+  return unstable_cache(
+    async () => {
+      const queryTimer = startTimer();
+
+      try {
+        return await db.resource.findFirst({
+          where: getPubliclyVisiblePublishedResourceWhere({
+            slug,
+          }),
+          select: {
+            slug: true,
+            status: true,
+            title: true,
+            description: true,
+            shortDescription: true,
+            thumbnailUrl: true,
+          },
+        });
+      } finally {
+        logTimedOperation("query.public.resource.metadata", queryTimer.elapsedMs(), {
+          infoAtMs: 80,
+          warnAtMs: 250,
+          context: { slug },
+        });
+      }
+    },
+    ["public-resource-metadata", slug],
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourcePage(slug)],
+    }
+  )();
 }
 
 export function getPublishedResourcePageData(slug: string) {
   return unstable_cache(
     async () => {
-      const resource = await db.resource.findUnique({
-        where: { slug },
-        select: {
-          id: true,
-          slug: true,
-          status: true,
-          title: true,
-          description: true,
-          shortDescription: true,
-          thumbnailUrl: true,
-          previewImageUrl: true,
-          mainDownloadUrl: true,
-          hasMainFile: true,
-          priceCents: true,
-          isFree: true,
-          averageRating: true,
-          reviewCount: true,
-          salesCount: true,
-          storeId: true,
-          creatorId: true,
-          store: {
-            select: {
-              id: true,
-              slug: true,
-              name: true,
-              bio: true,
-              ownerId: true,
-              isVerified: true,
-              logoUrl: true,
-              owner: {
-                select: {
-                  payoutAccount: {
-                    select: {
-                      payoutsEnabled: true,
-                      detailsSubmitted: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          creator: {
-            select: {
-              name: true,
-            },
-          },
-          tags: {
-            select: {
-              tagId: true,
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                },
-              },
-            },
-          },
-          categories: {
-            select: {
-              categoryId: true,
-              category: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                },
-              },
-            },
-          },
-          files: {
-            select: {
-              id: true,
-              kind: true,
-              fileUrl: true,
-              fileName: true,
-              mimeType: true,
-            },
-            orderBy: {
-              sortOrder: "asc",
-            },
-          },
-          reviews: {
-            orderBy: {
-              createdAt: "desc",
-            },
-            take: 10,
-            select: {
-              id: true,
-              rating: true,
-              body: true,
-              createdAt: true,
-              buyer: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-          },
-        },
-      });
+      const queryTimer = startTimer();
 
-      if (
-        !resource ||
-        resource.status !== "PUBLISHED" ||
-        (!resource.isFree &&
-          resource.priceCents > 0 &&
-          (!resource.store?.owner?.payoutAccount?.payoutsEnabled ||
-            !resource.store?.owner?.payoutAccount?.detailsSubmitted))
-      ) {
-        return null;
-      }
-
-      const relatedCategoryIds = resource.categories
-        .map((item) => item.categoryId)
-        .slice(0, 2);
-
-      const relatedResources = await db.resource.findMany({
-        where: getPubliclyVisiblePublishedResourceWhere({
-          id: {
-            not: resource.id,
-          },
-          OR: [
-            {
-              storeId: resource.storeId,
-            },
-            ...(relatedCategoryIds.length > 0
-              ? [
-                  {
-                    categories: {
-                      some: {
-                        categoryId: {
-                          in: relatedCategoryIds,
-                        },
+      try {
+        const resource = await db.resource.findUnique({
+          where: { slug },
+          select: {
+            id: true,
+            slug: true,
+            status: true,
+            title: true,
+            description: true,
+            shortDescription: true,
+            thumbnailUrl: true,
+            previewImageUrl: true,
+            mainDownloadUrl: true,
+            hasMainFile: true,
+            priceCents: true,
+            isFree: true,
+            averageRating: true,
+            reviewCount: true,
+            salesCount: true,
+            storeId: true,
+            creatorId: true,
+            store: {
+              select: {
+                id: true,
+                slug: true,
+                name: true,
+                bio: true,
+                ownerId: true,
+                isVerified: true,
+                logoUrl: true,
+                owner: {
+                  select: {
+                    payoutAccount: {
+                      select: {
+                        payoutsEnabled: true,
+                        detailsSubmitted: true,
                       },
                     },
                   },
-                ]
-              : []),
-          ],
-        }),
-        select: resourceCardSelect,
-        orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
-        take: 3,
-      });
+                },
+              },
+            },
+            creator: {
+              select: {
+                name: true,
+              },
+            },
+            tags: {
+              select: {
+                tagId: true,
+                tag: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                  },
+                },
+              },
+            },
+            categories: {
+              select: {
+                categoryId: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                  },
+                },
+              },
+            },
+            files: {
+              select: {
+                id: true,
+                kind: true,
+                fileUrl: true,
+                fileName: true,
+                mimeType: true,
+              },
+              orderBy: {
+                sortOrder: "asc",
+              },
+            },
+          },
+        });
 
-      return {
-        resource,
-        relatedResources: relatedResources.map(toPublicResourceCard),
-      };
+        if (
+          !resource ||
+          resource.status !== "PUBLISHED" ||
+          (!resource.isFree &&
+            resource.priceCents > 0 &&
+            (!resource.store?.owner?.payoutAccount?.payoutsEnabled ||
+              !resource.store?.owner?.payoutAccount?.detailsSubmitted))
+        ) {
+          return null;
+        }
+
+        return {
+          resource,
+        };
+      } finally {
+        logTimedOperation("query.public.resource.page", queryTimer.elapsedMs(), {
+          infoAtMs: 120,
+          warnAtMs: 400,
+          context: { slug },
+        });
+      }
     },
     ["public-resource-page", slug],
     {
@@ -342,74 +334,290 @@ export function getPublishedResourcePageData(slug: string) {
   )();
 }
 
-export async function getPublishedStoreMetadata(slug: string) {
-  const pageData = await getPublishedStorePageData(slug);
+export function getPublishedResourceReviews(options: {
+  resourceId: string;
+  resourceSlug: string;
+}) {
+  return unstable_cache(
+    async () => {
+      const queryTimer = startTimer();
 
-  if (!pageData) {
-    return null;
-  }
+      try {
+        return await db.review.findMany({
+          where: {
+            resourceId: options.resourceId,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: PUBLIC_RESOURCE_PAGE_REVIEW_LIMIT,
+          select: {
+            id: true,
+            rating: true,
+            body: true,
+            createdAt: true,
+            buyer: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+      } finally {
+        logTimedOperation("query.public.resource.reviews", queryTimer.elapsedMs(), {
+          infoAtMs: 100,
+          warnAtMs: 350,
+          context: {
+            resourceId: options.resourceId,
+            resourceSlug: options.resourceSlug,
+          },
+        });
+      }
+    },
+    ["public-resource-reviews", options.resourceId],
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourcePage(options.resourceSlug)],
+    }
+  )();
+}
 
-  return {
-    name: pageData.name,
-    bio: pageData.bio,
-    logoUrl: pageData.logoUrl,
-    isPublished: pageData.isPublished,
-    slug: pageData.slug,
-  };
+export function getRelatedPublishedResources(options: {
+  resourceId: string;
+  resourceSlug: string;
+  storeId?: string | null;
+  relatedCategoryIds: string[];
+}) {
+  const relatedCategoryIds = options.relatedCategoryIds.slice(0, 2);
+  const relatedWhereClauses: Prisma.ResourceWhereInput[] = [
+    ...(options.storeId
+      ? [
+          {
+            storeId: options.storeId,
+          },
+        ]
+      : []),
+    ...(relatedCategoryIds.length > 0
+      ? [
+          {
+            categories: {
+              some: {
+                categoryId: {
+                  in: relatedCategoryIds,
+                },
+              },
+            },
+          },
+        ]
+      : []),
+  ];
+
+  return unstable_cache(
+    async () => {
+      const queryTimer = startTimer();
+
+      try {
+        if (relatedWhereClauses.length === 0) {
+          return [];
+        }
+
+        const relatedResources = await db.resource.findMany({
+          where: getPubliclyVisiblePublishedResourceWhere({
+            id: {
+              not: options.resourceId,
+            },
+            OR: relatedWhereClauses,
+          }),
+          select: resourceCardSelect,
+          orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
+          take: 3,
+        });
+
+        return relatedResources.map(toPublicResourceCard);
+      } finally {
+        logTimedOperation("query.public.resource.related", queryTimer.elapsedMs(), {
+          infoAtMs: 100,
+          warnAtMs: 350,
+          context: {
+            resourceId: options.resourceId,
+            resourceSlug: options.resourceSlug,
+            storeId: options.storeId ?? null,
+            categoryCount: relatedCategoryIds.length,
+          },
+        });
+      }
+    },
+    [
+      "public-resource-related",
+      options.resourceId,
+      options.storeId ?? "none",
+      relatedCategoryIds.join(",") || "none",
+    ],
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourcePage(options.resourceSlug)],
+    }
+  )();
+}
+
+export function getPublishedStoreMetadata(slug: string) {
+  return unstable_cache(
+    async () => {
+      const queryTimer = startTimer();
+
+      try {
+        return await db.store.findFirst({
+          where: {
+            slug,
+            isPublished: true,
+          },
+          select: {
+            name: true,
+            bio: true,
+            logoUrl: true,
+            isPublished: true,
+            slug: true,
+          },
+        });
+      } finally {
+        logTimedOperation("query.public.store.metadata", queryTimer.elapsedMs(), {
+          infoAtMs: 80,
+          warnAtMs: 250,
+          context: { slug },
+        });
+      }
+    },
+    ["public-store-metadata", slug],
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storePage(slug)],
+    }
+  )();
 }
 
 export function getPublishedStorePageData(slug: string) {
   return unstable_cache(
     async () => {
-      const store = await db.store.findUnique({
-        where: { slug },
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-          bio: true,
-          location: true,
-          ownerId: true,
-          isPublished: true,
-          isVerified: true,
-          bannerUrl: true,
-          logoUrl: true,
-          owner: {
-            select: {
-              name: true,
-            },
-          },
-          _count: {
-            select: {
-              followers: true,
-              resources: {
-                where: getPubliclyVisiblePublishedResourceWhere(),
+      const queryTimer = startTimer();
+
+      try {
+        const store = await db.store.findUnique({
+          where: { slug },
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            bio: true,
+            location: true,
+            ownerId: true,
+            isPublished: true,
+            isVerified: true,
+            bannerUrl: true,
+            logoUrl: true,
+            owner: {
+              select: {
+                name: true,
               },
             },
+            _count: {
+              select: {
+                followers: true,
+                resources: {
+                  where: getPubliclyVisiblePublishedResourceWhere(),
+                },
+              },
+            },
+            resources: {
+              where: getPubliclyVisiblePublishedResourceWhere(),
+              select: resourceCardSelect,
+              orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
+              take: 3,
+            },
           },
-          resources: {
-            where: getPubliclyVisiblePublishedResourceWhere(),
-            select: resourceCardSelect,
-            orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
-          },
-        },
-      });
+        });
 
-      if (!store || !store.isPublished) {
-        return null;
+        if (!store || !store.isPublished) {
+          return null;
+        }
+
+        const { _count, resources, ...storeData } = store;
+
+        return {
+          ...storeData,
+          followerCount: _count.followers,
+          resourceCount: _count.resources,
+          featuredResources: resources.map(toPublicResourceCard),
+        };
+      } finally {
+        logTimedOperation("query.public.store.page", queryTimer.elapsedMs(), {
+          infoAtMs: 120,
+          warnAtMs: 400,
+          context: { slug },
+        });
       }
-
-      return {
-        ...store,
-        followerCount: store._count.followers,
-        resourceCount: store._count.resources,
-        resources: store.resources.map(toPublicResourceCard),
-      };
     },
     ["public-store-page", slug],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storePage(slug)],
+    }
+  )();
+}
+
+export function getPublishedStoreResourcesPageData(options: {
+  storeId: string;
+  storeSlug: string;
+  page?: string | number;
+}) {
+  const page = normaliseBrowsePage(options.page);
+
+  return unstable_cache(
+    async (): Promise<{
+      resources: PublicResourceCard[];
+      pageInfo: PublicBrowsePageInfo;
+    }> => {
+      const queryTimer = startTimer();
+
+      try {
+        const skip = (page - 1) * PUBLIC_STORE_PAGE_RESOURCE_PAGE_SIZE;
+        const resources = await db.resource.findMany({
+          where: getPubliclyVisiblePublishedResourceWhere({
+            storeId: options.storeId,
+          }),
+          select: resourceCardSelect,
+          orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
+          skip,
+          take: PUBLIC_STORE_PAGE_RESOURCE_PAGE_SIZE + 1,
+        });
+
+        const hasNextPage = resources.length > PUBLIC_STORE_PAGE_RESOURCE_PAGE_SIZE;
+
+        return {
+          resources: resources
+            .slice(0, PUBLIC_STORE_PAGE_RESOURCE_PAGE_SIZE)
+            .map(toPublicResourceCard),
+          pageInfo: createPublicBrowsePageInfo(
+            page,
+            PUBLIC_STORE_PAGE_RESOURCE_PAGE_SIZE,
+            hasNextPage
+          ),
+        };
+      } finally {
+        logTimedOperation("query.public.store.resources", queryTimer.elapsedMs(), {
+          infoAtMs: 120,
+          warnAtMs: 400,
+          context: {
+            storeId: options.storeId,
+            storeSlug: options.storeSlug,
+            page,
+          },
+        });
+      }
+    },
+    ["public-store-page-resources", options.storeId, String(page)],
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storePage(options.storeSlug)],
     }
   )();
 }

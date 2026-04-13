@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { generateCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
 import { jsonError } from "@/lib/http";
+import {
+  applyServerTiming,
+  logTimedOperation,
+  measureAsync,
+  startTimer,
+} from "@/lib/performance";
 import { checkRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
+import { getResourceViewerState } from "@/server/queries/resource-viewer";
 
 type RouteContext = {
   params: Promise<{
@@ -13,15 +18,19 @@ type RouteContext = {
 
 export async function GET(request: Request, { params }: RouteContext) {
   try {
+    const routeTimer = startTimer();
     const clientIP = getClientIP(request);
-    const rateLimitResult = await checkRateLimit(
-      `resource-viewer:${clientIP}`,
-      RATE_LIMITS.viewerState.max,
-      RATE_LIMITS.viewerState.window
+    const { result: rateLimitResult, durationMs: rateLimitDurationMs } = await measureAsync(
+      () =>
+        checkRateLimit(
+          `resource-viewer:${clientIP}`,
+          RATE_LIMITS.viewerState.max,
+          RATE_LIMITS.viewerState.window
+        )
     );
 
     if (!rateLimitResult.success) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           error: "Too many requests. Please slow down and try again shortly.",
           retryAfter: rateLimitResult.resetInSeconds,
@@ -34,27 +43,47 @@ export async function GET(request: Request, { params }: RouteContext) {
           },
         }
       );
+
+      const totalDurationMs = routeTimer.elapsedMs();
+
+      applyServerTiming(response.headers, [
+        { name: "ratelimit", durationMs: rateLimitDurationMs },
+        { name: "total", durationMs: totalDurationMs },
+      ]);
+
+      logTimedOperation("api.resource.viewer", totalDurationMs, {
+        infoAtMs: 100,
+        warnAtMs: 350,
+        context: {
+          rateLimited: true,
+          resourceId: (await params).id,
+          rateLimitDurationMs,
+        },
+      });
+
+      return response;
     }
 
-    const session = await auth();
     const { id } = await params;
 
-    const resource = await db.resource.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        status: true,
-        creatorId: true,
-        store: {
-          select: {
-            ownerId: true,
+    const { result: resource, durationMs: resourceDurationMs } = await measureAsync(() =>
+      db.resource.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          status: true,
+          creatorId: true,
+          store: {
+            select: {
+              ownerId: true,
+            },
           },
         },
-      },
-    });
+      })
+    );
 
     if (!resource || resource.status !== "PUBLISHED") {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: "Resource not found." },
         {
           status: 404,
@@ -63,72 +92,68 @@ export async function GET(request: Request, { params }: RouteContext) {
           },
         }
       );
+
+      const totalDurationMs = routeTimer.elapsedMs();
+
+      applyServerTiming(response.headers, [
+        { name: "ratelimit", durationMs: rateLimitDurationMs },
+        { name: "resource", durationMs: resourceDurationMs },
+        { name: "total", durationMs: totalDurationMs },
+      ]);
+
+      logTimedOperation("api.resource.viewer", totalDurationMs, {
+        infoAtMs: 100,
+        warnAtMs: 350,
+        context: {
+          resourceId: id,
+          found: false,
+          rateLimitDurationMs,
+          resourceDurationMs,
+        },
+      });
+
+      return response;
     }
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        {
-          authenticated: false,
-        },
-        {
-          headers: {
-            "Cache-Control": "no-store",
-          },
-        }
-      );
-    }
+    const { result: viewerState, durationMs: viewerDurationMs } = await measureAsync(() =>
+      getResourceViewerState({
+        resourceId: resource.id,
+        creatorId: resource.creatorId,
+        storeOwnerId: resource.store?.ownerId,
+      })
+    );
 
-    const viewerUserId = session.user.id;
-    const isOwner =
-      resource.creatorId === viewerUserId || resource.store?.ownerId === viewerUserId;
-    const [purchase, review] = await Promise.all([
-      isOwner
-        ? Promise.resolve({ id: "owner" })
-        : db.purchase.findUnique({
-            where: {
-              buyerId_resourceId: {
-                buyerId: viewerUserId,
-                resourceId: resource.id,
-              },
-            },
-            select: {
-              id: true,
-            },
-          }),
-      isOwner
-        ? Promise.resolve(null)
-        : db.review.findUnique({
-            where: {
-              buyerId_resourceId: {
-                buyerId: viewerUserId,
-                resourceId: resource.id,
-              },
-            },
-            select: {
-              rating: true,
-              body: true,
-            },
-          }),
-    ]);
-
-    return NextResponse.json(
-      {
-        authenticated: true,
-        viewer: {
-          userId: viewerUserId,
-          emailVerified: Boolean(session.user.emailVerified),
-          isOwner,
-          hasPurchased: Boolean(purchase),
-          existingReview: review,
-          csrfToken: generateCSRFToken(viewerUserId),
-        },
-      },
+    const response = NextResponse.json(
+      viewerState,
       {
         headers: {
           "Cache-Control": "no-store",
         },
       }
     );
+
+    const totalDurationMs = routeTimer.elapsedMs();
+
+    applyServerTiming(response.headers, [
+      { name: "ratelimit", durationMs: rateLimitDurationMs },
+      { name: "resource", durationMs: resourceDurationMs },
+      { name: "viewer", durationMs: viewerDurationMs },
+      { name: "total", durationMs: totalDurationMs },
+    ]);
+
+    logTimedOperation("api.resource.viewer", totalDurationMs, {
+      infoAtMs: 100,
+      warnAtMs: 350,
+      context: {
+        resourceId: id,
+        authenticated: viewerState.authenticated,
+        rateLimitDurationMs,
+        resourceDurationMs,
+        viewerDurationMs,
+      },
+    });
+
+    return response;
   } catch (error) {
     return jsonError("Unable to load viewer state.", 500, error);
   }

@@ -8,6 +8,7 @@ import { getMarketplacePolicyLinks } from "@/lib/payments";
 import {
   getPublishedStoreMetadata,
   getPublishedStorePageData,
+  getPublishedStoreResourcesPageData,
 } from "@/server/queries/public-content";
 import { getStoreViewerState } from "@/server/queries/store-viewer";
 import { ResourceGrid } from "@/components/resources/resource-grid";
@@ -27,6 +28,9 @@ export function generateStaticParams() {
 type StorePageProps = {
   params: Promise<{
     slug: string;
+  }>;
+  searchParams: Promise<{
+    page?: string | string[];
   }>;
 };
 
@@ -75,20 +79,35 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
   };
 }
 
-export default async function StorePage({ params }: StorePageProps) {
-  const { slug } = await params;
+export default async function StorePage({ params, searchParams }: StorePageProps) {
+  const [{ slug }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+  const page =
+    typeof resolvedSearchParams.page === "string"
+      ? resolvedSearchParams.page
+      : Array.isArray(resolvedSearchParams.page)
+      ? resolvedSearchParams.page[0]
+      : undefined;
   const store = await getPublishedStorePageData(slug);
 
   if (!store) {
     notFound();
   }
 
-  const viewerState = await getStoreViewerState({
-    storeId: store.id,
-    ownerId: store.ownerId,
-  });
+  const storeSlug = store.slug;
 
-  const featuredResources = store.resources.slice(0, 3);
+  const [viewerState, resourcesPage] = await Promise.all([
+    getStoreViewerState({
+      storeId: store.id,
+      ownerId: store.ownerId,
+    }),
+    getPublishedStoreResourcesPageData({
+      storeId: store.id,
+      storeSlug: store.slug,
+      page,
+    }),
+  ]);
+
+  const featuredResources = store.featuredResources;
   const policyLinks = getMarketplacePolicyLinks();
 
   const baseUrl = getAppBaseUrl();
@@ -104,6 +123,12 @@ export default async function StorePage({ params }: StorePageProps) {
     sameAs: [storeUrl],
   };
   const cleanSchema = JSON.parse(JSON.stringify(organizationSchema));
+
+  function buildStorePageHref(nextPage: number) {
+    return nextPage > 1
+      ? `/stores/${storeSlug}?page=${nextPage}#all-resources`
+      : `/stores/${storeSlug}#all-resources`;
+  }
 
   return (
     <StoreViewerProvider initialViewerState={viewerState}>
@@ -236,7 +261,7 @@ export default async function StorePage({ params }: StorePageProps) {
           </section>
         ) : null}
 
-        <section className="defer-section mt-12">
+        <section id="all-resources" className="defer-section mt-12 scroll-mt-28">
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
@@ -255,7 +280,68 @@ export default async function StorePage({ params }: StorePageProps) {
             </Link>
           </div>
 
-          <ResourceGrid resources={store.resources} />
+          <div className="mb-5 text-sm text-[var(--text-muted)]">
+            Showing {resourcesPage.resources.length} resource
+            {resourcesPage.resources.length === 1 ? "" : "s"} on page{" "}
+            {resourcesPage.pageInfo.page} of this store.
+          </div>
+
+          {resourcesPage.resources.length > 0 ? (
+            <ResourceGrid resources={resourcesPage.resources} />
+          ) : store.resourceCount > 0 && resourcesPage.pageInfo.page > 1 ? (
+            <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
+              <h3 className="text-lg font-semibold text-[var(--text)]">
+                That page does not have any resources
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
+                This store still has live resources. Jump back to the first page to keep browsing.
+              </p>
+              <div className="mt-5">
+                <Link
+                  href={buildStorePageHref(1)}
+                  className="inline-flex rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface)]"
+                >
+                  Back to page 1
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <ResourceGrid resources={resourcesPage.resources} />
+          )}
+
+          {resourcesPage.pageInfo.hasPreviousPage || resourcesPage.pageInfo.hasNextPage ? (
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 shadow-sm">
+              {resourcesPage.pageInfo.hasPreviousPage ? (
+                <Link
+                  href={buildStorePageHref(resourcesPage.pageInfo.previousPage || 1)}
+                  className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+                >
+                  Previous page
+                </Link>
+              ) : (
+                <span className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-light)] opacity-60">
+                  Previous page
+                </span>
+              )}
+
+              <div className="text-sm text-[var(--text-muted)]">
+                Page {resourcesPage.pageInfo.page}
+              </div>
+
+              {resourcesPage.pageInfo.hasNextPage ? (
+                <Link
+                  href={buildStorePageHref(resourcesPage.pageInfo.nextPage || resourcesPage.pageInfo.page)}
+                  className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+                >
+                  Next page
+                </Link>
+              ) : (
+                <span className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-light)] opacity-60">
+                  Next page
+                </span>
+              )}
+            </div>
+          ) : null}
         </section>
 
         <section className="defer-section mt-12">

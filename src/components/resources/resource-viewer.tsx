@@ -1,59 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 import { useSearchParams } from "next/navigation";
 import ReviewForm from "@/components/resources/review-form";
 import { ReportResourceForm } from "@/components/resources/report-resource-form";
-
-type ResourceViewerResponse =
-  | {
-      authenticated: false;
-    }
-  | {
-      authenticated: true;
-      viewer: {
-        userId: string;
-        emailVerified: boolean;
-        isOwner: boolean;
-        hasPurchased: boolean;
-        existingReview: {
-          rating: number;
-          body: string | null;
-        } | null;
-        csrfToken: string;
-      };
-    };
+import type { ResourceViewerState } from "@/types/resource-viewer";
 
 type ResourceViewerContextValue = {
-  viewerState: ResourceViewerResponse | null;
+  viewerState: ResourceViewerState;
 };
 
 const ResourceViewerContext = createContext<ResourceViewerContextValue>({
-  viewerState: null,
+  viewerState: { authenticated: false },
 });
-
-function ActionSkeleton({ compact = false }: { compact?: boolean }) {
-  return (
-    <div
-      className={`animate-pulse rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] ${
-        compact ? "h-10 w-32" : "h-12 w-full"
-      }`}
-      aria-hidden="true"
-    />
-  );
-}
-
-function InfoSkeleton({ tall = false }: { tall?: boolean }) {
-  return (
-    <div
-      className={`animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] ${
-        tall ? "h-24" : "h-16"
-      } w-full`}
-      aria-hidden="true"
-    />
-  );
-}
 
 function formatPrice(priceCents: number, isFree?: boolean) {
   if (isFree || priceCents === 0) {
@@ -67,42 +27,14 @@ function formatPrice(priceCents: number, isFree?: boolean) {
 }
 
 export function ResourceViewerProvider({
-  resourceId,
+  initialViewerState,
   children,
 }: {
-  resourceId: string;
+  initialViewerState: ResourceViewerState;
   children: React.ReactNode;
 }) {
-  const [viewerState, setViewerState] = useState<ResourceViewerResponse | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    fetch(`/api/resources/${resourceId}/viewer`, {
-      cache: "no-store",
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error("Failed to load viewer state");
-        }
-
-        return (await response.json()) as ResourceViewerResponse;
-      })
-      .then((payload) => {
-        setViewerState(payload);
-      })
-      .catch(() => {
-        setViewerState({ authenticated: false });
-      });
-
-    return () => {
-      controller.abort();
-    };
-  }, [resourceId]);
-
   return (
-    <ResourceViewerContext.Provider value={{ viewerState }}>
+    <ResourceViewerContext.Provider value={{ viewerState: initialViewerState }}>
       {children}
     </ResourceViewerContext.Provider>
   );
@@ -154,16 +86,7 @@ export function ResourcePurchaseActions({
   checkoutUnavailableReason: "platform" | "creator-payouts" | null;
 }) {
   const viewerState = useResourceViewerState();
-  const viewer = viewerState?.authenticated ? viewerState.viewer : null;
-
-  if (!viewerState) {
-    return (
-      <>
-        <ActionSkeleton />
-        {storeOwnerId ? <ActionSkeleton /> : null}
-      </>
-    );
-  }
+  const viewer = viewerState.authenticated ? viewerState.viewer : null;
 
   if (viewer?.isOwner) {
     return (
@@ -261,13 +184,9 @@ export function ResourceReportBox({
   resourceSlug: string;
 }) {
   const viewerState = useResourceViewerState();
-  const viewer = viewerState?.authenticated ? viewerState.viewer : null;
+  const viewer = viewerState.authenticated ? viewerState.viewer : null;
 
-  if (!viewerState) {
-    return <InfoSkeleton />;
-  }
-
-  if (!viewerState || !viewer) {
+  if (!viewer) {
     return (
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
         <Link
@@ -320,13 +239,9 @@ export function ResourceReviewGate({
   resourceSlug: string;
 }) {
   const viewerState = useResourceViewerState();
-  const viewer = viewerState?.authenticated ? viewerState.viewer : null;
+  const viewer = viewerState.authenticated ? viewerState.viewer : null;
 
-  if (!viewerState) {
-    return <InfoSkeleton tall />;
-  }
-
-  if (!viewerState || !viewer) {
+  if (!viewer) {
     return (
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--text-muted)] shadow-sm">
         <Link
