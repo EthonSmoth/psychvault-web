@@ -36,6 +36,7 @@ export async function requireAuth(options?: {
       email: true,
       name: true,
       role: true,
+      isSuperAdmin: true,
       emailVerified: true,
     },
   });

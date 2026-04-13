@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { jsonError } from "@/lib/http";
-import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
+import {
+  getPubliclyVisiblePublishedResourceWhere,
+  getPubliclyVisibleStoreWhere,
+} from "@/lib/public-resource-visibility";
 import { checkReadRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
 import { getPublicCacheControl } from "@/server/cache/public-cache";
 
@@ -33,10 +36,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     const { slug } = await params;
 
     const store = await db.store.findFirst({
-      where: {
+      where: getPubliclyVisibleStoreWhere({
         slug,
-        isPublished: true,
-      },
+      }),
       select: {
         id: true,
         name: true,

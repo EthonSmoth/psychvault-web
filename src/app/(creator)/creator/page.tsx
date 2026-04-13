@@ -41,9 +41,9 @@ export default async function CreatorDashboardPage() {
   const followerCount = store?.followers.length ?? 0;
   const storeStatus = store?.isPublished ? "Published" : "Draft";
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
-  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user.role);
+  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user);
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
-    role: user.role,
+    user,
     payoutReady,
   });
   const publishedPaidResources =

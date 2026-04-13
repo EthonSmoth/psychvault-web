@@ -6,6 +6,7 @@ import {
   measureAsync,
   startTimer,
 } from "@/lib/performance";
+import { hasAdminAccess } from "@/lib/super-admin";
 
 export async function GET() {
   const routeTimer = startTimer();
@@ -29,6 +30,10 @@ export async function GET() {
               name: session.user.name ?? null,
               email: session.user.email,
               role: session.user.role ?? "BUYER",
+              adminAccess: hasAdminAccess({
+                role: session.user.role,
+                isSuperAdmin: session.user.isSuperAdmin,
+              }),
               emailVerified: Boolean(session.user.emailVerified),
             },
           },

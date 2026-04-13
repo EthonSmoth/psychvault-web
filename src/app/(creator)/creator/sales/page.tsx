@@ -21,10 +21,10 @@ export default async function CreatorSalesPage() {
   const payoutReady = isPayoutAccountReady(payoutAccount);
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { id: true, email: true, role: true, isSuperAdmin: true },
   });
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
-    role: user?.role,
+    user,
     payoutReady,
   });
 

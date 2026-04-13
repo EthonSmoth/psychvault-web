@@ -47,6 +47,7 @@ export default async function CreatorPayoutsPage({
         name: true,
         email: true,
         role: true,
+        isSuperAdmin: true,
         store: {
           select: {
             id: true,
@@ -64,9 +65,9 @@ export default async function CreatorPayoutsPage({
   }
 
   const payoutStatus = await syncCreatorPayoutStatus(user.id);
-  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user.role);
+  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user);
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
-    role: user.role,
+    user,
     payoutReady: payoutStatus.ready,
   });
   const publishedPaidResourceCount = user.store

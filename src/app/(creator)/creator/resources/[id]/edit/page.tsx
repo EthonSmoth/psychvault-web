@@ -84,12 +84,12 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
   const csrfToken = generateCSRFToken(user.id);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
-    role: user.role,
+    user,
     payoutReady,
   });
   const paidResourceNeedsPayouts = resource.priceCents > 0 && !paidResourcePayoutReady;
   const requiresPaidResourcePayoutSetup =
-    !canBypassPaidResourcePayoutRequirement(user.role);
+    !canBypassPaidResourcePayoutRequirement(user);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">

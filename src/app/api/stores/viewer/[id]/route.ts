@@ -8,6 +8,7 @@ import {
   measureAsync,
   startTimer,
 } from "@/lib/performance";
+import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
 import { checkReadRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
 import { getStoreViewerState } from "@/server/queries/store-viewer";
 
@@ -117,11 +118,20 @@ export async function GET(request: Request, { params }: RouteContext) {
           id: true,
           isPublished: true,
           ownerId: true,
+          owner: {
+            select: {
+              isSuperAdmin: true,
+            },
+          },
         },
       })
     );
 
-    if (!store || !store.isPublished) {
+    if (
+      !store ||
+      (!store.isPublished &&
+        !canBypassPaidResourcePayoutRequirement(store.owner))
+    ) {
       const response = NextResponse.json(
         { error: "Store not found." },
         {

@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
   const { slug } = await params;
   const store = await getPublishedStoreMetadata(slug);
 
-  if (!store || !store.isPublished) {
+  if (!store) {
     return {
       title: "Store not found | PsychVault",
       description: "The requested creator store could not be found.",

@@ -57,11 +57,11 @@ export default async function NewCreatorResourcePage() {
   const csrfToken = generateCSRFToken(user.id);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
-    role: user.role,
+    user,
     payoutReady,
   });
   const requiresPaidResourcePayoutSetup =
-    !canBypassPaidResourcePayoutRequirement(user.role);
+    !canBypassPaidResourcePayoutRequirement(user);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">

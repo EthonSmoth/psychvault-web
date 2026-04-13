@@ -1,4 +1,4 @@
-import { UserRole } from "@prisma/client";
+import { isSuperAdminUser } from "@/lib/super-admin";
 
 type PayoutReadyLike =
   | {
@@ -12,13 +12,17 @@ export function isPayoutAccountReady(payoutAccount: PayoutReadyLike) {
   return Boolean(payoutAccount?.payoutsEnabled && payoutAccount?.detailsSubmitted);
 }
 
-export function canBypassPaidResourcePayoutRequirement(role?: UserRole | null) {
-  return role === UserRole.ADMIN;
+export function canBypassPaidResourcePayoutRequirement(user?: {
+  isSuperAdmin?: boolean | null;
+} | null) {
+  return isSuperAdminUser(user);
 }
 
 export function isPaidResourcePayoutReady(options: {
-  role?: UserRole | null;
+  user?: {
+    isSuperAdmin?: boolean | null;
+  } | null;
   payoutReady: boolean;
 }) {
-  return canBypassPaidResourcePayoutRequirement(options.role) || options.payoutReady;
+  return canBypassPaidResourcePayoutRequirement(options.user) || options.payoutReady;
 }

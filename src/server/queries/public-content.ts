@@ -3,7 +3,11 @@ import { Prisma, UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { logTimedOperation, startTimer } from "@/lib/performance";
 import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
-import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
+import {
+  getPubliclyVisiblePublishedResourceWhere,
+  getPubliclyVisibleStoreWhere,
+  PUBLIC_VISIBILITY_CACHE_VERSION,
+} from "@/lib/public-resource-visibility";
 import {
   PUBLIC_CACHE_TAGS,
   PUBLIC_CONTENT_REVALIDATE_SECONDS,
@@ -206,7 +210,7 @@ export function getPublishedResourceMetadata(slug: string) {
         });
       }
     },
-    ["public-resource-metadata", slug],
+    [PUBLIC_VISIBILITY_CACHE_VERSION, "public-resource-metadata", slug],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourcePage(slug)],
@@ -251,7 +255,7 @@ export function getPublishedResourcePageData(slug: string) {
                 logoUrl: true,
                 owner: {
                   select: {
-                    role: true,
+                    isSuperAdmin: true,
                     payoutAccount: {
                       select: {
                         payoutsEnabled: true,
@@ -307,7 +311,9 @@ export function getPublishedResourcePageData(slug: string) {
         });
 
         const creatorCanSellPaidResources = isPaidResourcePayoutReady({
-          role: resource?.store?.owner?.role,
+          user: {
+            isSuperAdmin: resource?.store?.owner?.isSuperAdmin,
+          },
           payoutReady: isPayoutAccountReady(resource?.store?.owner?.payoutAccount),
         });
 
@@ -330,7 +336,7 @@ export function getPublishedResourcePageData(slug: string) {
         });
       }
     },
-    ["public-resource-page", slug],
+    [PUBLIC_VISIBILITY_CACHE_VERSION, "public-resource-page", slug],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourcePage(slug)],
@@ -452,6 +458,7 @@ export function getRelatedPublishedResources(options: {
       }
     },
     [
+      PUBLIC_VISIBILITY_CACHE_VERSION,
       "public-resource-related",
       options.resourceId,
       options.storeId ?? "none",
@@ -471,10 +478,9 @@ export function getPublishedStoreMetadata(slug: string) {
 
       try {
         return await db.store.findFirst({
-          where: {
+          where: getPubliclyVisibleStoreWhere({
             slug,
-            isPublished: true,
-          },
+          }),
           select: {
             name: true,
             bio: true,
@@ -491,7 +497,7 @@ export function getPublishedStoreMetadata(slug: string) {
         });
       }
     },
-    ["public-store-metadata", slug],
+    [PUBLIC_VISIBILITY_CACHE_VERSION, "public-store-metadata", slug],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storePage(slug)],
@@ -505,8 +511,8 @@ export function getPublishedStorePageData(slug: string) {
       const queryTimer = startTimer();
 
       try {
-        const store = await db.store.findUnique({
-          where: { slug },
+        const store = await db.store.findFirst({
+          where: getPubliclyVisibleStoreWhere({ slug }),
           select: {
             id: true,
             slug: true,
@@ -540,7 +546,7 @@ export function getPublishedStorePageData(slug: string) {
           },
         });
 
-        if (!store || !store.isPublished) {
+        if (!store) {
           return null;
         }
 
@@ -560,7 +566,7 @@ export function getPublishedStorePageData(slug: string) {
         });
       }
     },
-    ["public-store-page", slug],
+    [PUBLIC_VISIBILITY_CACHE_VERSION, "public-store-page", slug],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storePage(slug)],
@@ -618,7 +624,12 @@ export function getPublishedStoreResourcesPageData(options: {
         });
       }
     },
-    ["public-store-page-resources", options.storeId, String(page)],
+    [
+      PUBLIC_VISIBILITY_CACHE_VERSION,
+      "public-store-page-resources",
+      options.storeId,
+      String(page),
+    ],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storePage(options.storeSlug)],
@@ -649,7 +660,7 @@ export function getHomepageResourceShowcaseData() {
         recentResources: recentResources.map(toPublicResourceCard),
       };
     },
-    ["homepage-resource-showcase"],
+    [PUBLIC_VISIBILITY_CACHE_VERSION, "homepage-resource-showcase"],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.home, PUBLIC_CACHE_TAGS.resources],
@@ -714,7 +725,7 @@ export function getHomepageStatsData() {
             role: UserRole.CREATOR,
           },
         }),
-        db.store.count({ where: { isPublished: true } }),
+        db.store.count({ where: getPubliclyVisibleStoreWhere() }),
       ]);
 
       return {
@@ -723,7 +734,7 @@ export function getHomepageStatsData() {
         totalStores,
       };
     },
-    ["homepage-stats"],
+    [PUBLIC_VISIBILITY_CACHE_VERSION, "homepage-stats"],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.home, PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.stores],
@@ -904,7 +915,17 @@ export function getPublishedResourcesBrowseData(options: ResourceBrowseOptions) 
         ),
       };
     },
-    ["public-resource-browse-data", q, category, tag, price, store, sort, String(page)],
+    [
+      PUBLIC_VISIBILITY_CACHE_VERSION,
+      "public-resource-browse-data",
+      q,
+      category,
+      tag,
+      price,
+      store,
+      sort,
+      String(page),
+    ],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourceBrowse],
@@ -940,9 +961,8 @@ export function getPublishedStoresBrowseData(options: {
     }> => {
       const skip = (page - 1) * PUBLIC_STORE_BROWSE_PAGE_SIZE;
       const stores = await db.store.findMany({
-        where: {
-          isPublished: true,
-          ...(query
+        where: getPubliclyVisibleStoreWhere(
+          query
             ? {
                 OR: [
                   {
@@ -965,8 +985,8 @@ export function getPublishedStoresBrowseData(options: {
                   },
                 ],
               }
-            : {}),
-        },
+            : {}
+        ),
         select: {
           id: true,
           name: true,
@@ -1019,7 +1039,7 @@ export function getPublishedStoresBrowseData(options: {
         ),
       };
     },
-    ["public-stores-browse", query, sort, String(page)],
+    [PUBLIC_VISIBILITY_CACHE_VERSION, "public-stores-browse", query, sort, String(page)],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
       tags: [PUBLIC_CACHE_TAGS.stores, PUBLIC_CACHE_TAGS.storeBrowse],

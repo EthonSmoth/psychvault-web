@@ -50,6 +50,7 @@ function applyAuthUserStateToToken(
     delete token.email;
     delete token.name;
     delete token.role;
+    delete token.isSuperAdmin;
     delete token.emailVerified;
     delete token.userStateRefreshedAt;
     return token;
@@ -59,6 +60,7 @@ function applyAuthUserStateToToken(
   token.email = authUser.email;
   token.name = authUser.name;
   token.role = authUser.role;
+  token.isSuperAdmin = authUser.isSuperAdmin;
   token.emailVerified = Boolean(authUser.emailVerified);
   token.userStateRefreshedAt = Date.now();
   return token;
@@ -82,6 +84,7 @@ async function getAuthUserState(input: { id?: string | null; email?: string | nu
       email: true,
       name: true,
       role: true,
+      isSuperAdmin: true,
       emailVerified: true,
     },
   });
@@ -119,6 +122,7 @@ const providers = [
             name: true,
             passwordHash: true,
             role: true,
+            isSuperAdmin: true,
             emailVerified: true,
           },
         });
@@ -142,6 +146,7 @@ const providers = [
           email: user.email,
           name: user.name,
           role: user.role,
+          isSuperAdmin: user.isSuperAdmin,
           emailVerified: Boolean(user.emailVerified),
         } as any;
       } catch (error) {
@@ -237,6 +242,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (session.user) {
         (session.user as any).id = token.sub;
         (session.user as any).role = token.role;
+        (session.user as any).isSuperAdmin = Boolean(token.isSuperAdmin);
         (session.user as any).emailVerified = Boolean(token.emailVerified);
       }
       return session;

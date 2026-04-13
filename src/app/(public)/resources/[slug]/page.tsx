@@ -283,7 +283,9 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const paymentAvailability = getPaymentsAvailability();
   const policyLinks = getMarketplacePolicyLinks();
   const creatorPayoutReady = isPaidResourcePayoutReady({
-    role: resourceData.store?.owner?.role,
+    user: {
+      isSuperAdmin: resourceData.store?.owner?.isSuperAdmin,
+    },
     payoutReady: isPayoutAccountReady(resourceData.store?.owner?.payoutAccount),
   });
   const paidCheckoutUnavailable =

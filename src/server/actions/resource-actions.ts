@@ -330,7 +330,7 @@ export async function saveResourceAction(
     isPublished &&
     priceCents !== null &&
     priceCents > 0 &&
-    !canBypassPaidResourcePayoutRequirement(user.role)
+    !canBypassPaidResourcePayoutRequirement(user)
   ) {
     const payoutStatus = await syncCreatorPayoutStatus(user.id);
 

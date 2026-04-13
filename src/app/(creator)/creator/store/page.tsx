@@ -28,9 +28,9 @@ export default async function CreatorStorePage() {
 
   const csrfToken = generateCSRFToken(user.id);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
-  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user.role);
+  const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user);
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
-    role: user.role,
+    user,
     payoutReady,
   });
   const storeChecklist = [

@@ -17,6 +17,7 @@ type NavbarSessionResponse =
         name: string | null;
         email: string;
         role: string;
+        adminAccess: boolean;
         emailVerified: boolean;
       };
     };
@@ -115,11 +116,11 @@ function NavbarSessionSkeleton() {
 }
 
 function AccountMenuContent({
-  role,
+  adminAccess,
   name,
   email,
 }: {
-  role: string;
+  adminAccess: boolean;
   name: string | null;
   email: string;
 }) {
@@ -171,7 +172,7 @@ function AccountMenuContent({
       >
         Payouts
       </Link>
-      {role === "ADMIN" ? (
+      {adminAccess ? (
         <Link
           href="/admin"
           className="block rounded-2xl px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
@@ -291,7 +292,7 @@ export function NavbarSessionControls() {
   }
 
   if (session?.authenticated) {
-    const { email, name, role } = session.user;
+    const { adminAccess, email, name } = session.user;
     const initials = getInitials(name);
 
     return (
@@ -314,7 +315,7 @@ export function NavbarSessionControls() {
               </span>
             }
           >
-            <AccountMenuContent role={role} name={name} email={email} />
+            <AccountMenuContent adminAccess={adminAccess} name={name} email={email} />
           </MobileOverlayMenu>
         </div>
 
@@ -336,7 +337,7 @@ export function NavbarSessionControls() {
 
             <div className="pointer-events-none absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-soft bg-[var(--card)] opacity-0 shadow-lg transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
               <div className="p-2">
-                <AccountMenuContent role={role} name={name} email={email} />
+                <AccountMenuContent adminAccess={adminAccess} name={name} email={email} />
               </div>
             </div>
           </div>

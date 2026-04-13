@@ -197,7 +197,7 @@ export async function POST(request: Request) {
     const platformFeeCents = Math.round((resource.priceCents * feeBps) / 10000);
     const stripeAccountId = resource.store?.owner?.payoutAccount?.stripeAccountId;
     const bypassesPayoutRequirement = canBypassPaidResourcePayoutRequirement(
-      resource.store?.owner?.role
+      resource.store?.owner
     );
     let creatorPayoutReady =
       bypassesPayoutRequirement ||

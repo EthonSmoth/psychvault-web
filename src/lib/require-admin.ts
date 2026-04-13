@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { requireAuth, requireRole } from "@/lib/auth-guards";
+import { requireAuth } from "@/lib/auth-guards";
+import { hasAdminAccess } from "@/lib/super-admin";
 
 export async function requireAdmin() {
   const user = await requireAuth({
@@ -7,9 +8,7 @@ export async function requireAdmin() {
     redirectTo: "/admin",
   });
 
-  try {
-    requireRole(user, "ADMIN");
-  } catch {
+  if (!hasAdminAccess(user)) {
     redirect("/");
   }
 

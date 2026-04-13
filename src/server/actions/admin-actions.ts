@@ -85,7 +85,7 @@ export async function adminPublishResourceAction(formData: FormData) {
       priceCents: true,
       creator: {
         select: {
-          role: true,
+          isSuperAdmin: true,
         },
       },
       mainDownloadUrl: true,
@@ -112,7 +112,7 @@ export async function adminPublishResourceAction(formData: FormData) {
 
   if (
     resource.priceCents > 0 &&
-    !canBypassPaidResourcePayoutRequirement(resource.creator.role)
+    !canBypassPaidResourcePayoutRequirement(resource.creator)
   ) {
     const payoutStatus = await syncCreatorPayoutStatus(resource.creatorId);
 
@@ -297,7 +297,7 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
       priceCents: true,
       creator: {
         select: {
-          role: true,
+          isSuperAdmin: true,
         },
       },
       store: { select: { slug: true } },
@@ -324,7 +324,7 @@ export async function adminApproveQueuedResourceAction(formData: FormData) {
 
   if (
     resource.priceCents > 0 &&
-    !canBypassPaidResourcePayoutRequirement(resource.creator.role)
+    !canBypassPaidResourcePayoutRequirement(resource.creator)
   ) {
     const payoutStatus = await syncCreatorPayoutStatus(resource.creatorId);
 

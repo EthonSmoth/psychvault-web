@@ -68,7 +68,7 @@ export default async function CreatorResourcesPage() {
   ]);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
-    role: user.role,
+    user,
     payoutReady,
   });
   const publishedPaidResources = resources.filter(

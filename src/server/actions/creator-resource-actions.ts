@@ -193,7 +193,7 @@ export async function restoreOwnResourceAndPublishAction(formData: FormData) {
 
   if (
     resource.priceCents > 0 &&
-    !canBypassPaidResourcePayoutRequirement(user.role)
+    !canBypassPaidResourcePayoutRequirement(user)
   ) {
     const payoutStatus = await syncCreatorPayoutStatus(user.id);
 
