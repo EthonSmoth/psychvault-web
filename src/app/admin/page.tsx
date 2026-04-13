@@ -1,5 +1,11 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { getCreatorTrustProfiles } from "@/lib/creator-trust";
+import {
+  formatCreatorTrustTier,
+  getCreatorTrustAppearance,
+  getCreatorTrustProfiles,
+  type CreatorTrustProfile,
+} from "@/lib/creator-trust";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/require-admin";
 import {
@@ -18,11 +24,39 @@ import {
 } from "@/server/actions/admin-actions";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 
+type Tone = "danger" | "warning" | "success" | "info" | "neutral";
+
+const emptyTrustProfile: CreatorTrustProfile = {
+  score: 0,
+  tier: "new",
+  reasons: [],
+  stats: {
+    accountAgeDays: 0,
+    approvedResources: 0,
+    rejectedResources: 0,
+    pendingResources: 0,
+    openReports: 0,
+    resolvedReports: 0,
+    salesCount: 0,
+  },
+};
+
 function formatMoney(cents: number) {
   return new Intl.NumberFormat("en-AU", {
     style: "currency",
     currency: "AUD",
   }).format(cents / 100);
+}
+
+function formatCount(value: number) {
+  return new Intl.NumberFormat("en-AU").format(value);
+}
+
+function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("en-AU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
 }
 
 function formatReportReason(reason: string) {
@@ -31,10 +65,45 @@ function formatReportReason(reason: string) {
 }
 
 function formatModerationStatus(status: string) {
-  return status
-    .toLowerCase()
-    .replaceAll("_", " ")
-    .replace(/^\w/, (char) => char.toUpperCase());
+  return status.toLowerCase().replaceAll("_", " ").replace(/^\w/, (char) => char.toUpperCase());
+}
+
+function getToneStyles(tone: Tone) {
+  switch (tone) {
+    case "danger":
+      return { textColor: "var(--error)", borderColor: "rgba(208, 87, 78, 0.28)", backgroundColor: "rgba(208, 87, 78, 0.12)" };
+    case "warning":
+      return { textColor: "var(--warning)", borderColor: "rgba(217, 126, 59, 0.28)", backgroundColor: "rgba(217, 126, 59, 0.12)" };
+    case "success":
+      return { textColor: "var(--success)", borderColor: "rgba(107, 142, 35, 0.28)", backgroundColor: "rgba(107, 142, 35, 0.12)" };
+    case "info":
+      return { textColor: "var(--primary)", borderColor: "rgba(128, 80, 45, 0.26)", backgroundColor: "rgba(128, 80, 45, 0.10)" };
+    default:
+      return { textColor: "var(--text)", borderColor: "var(--border)", backgroundColor: "var(--surface-alt)" };
+  }
+}
+
+function getMetricBadgeLabel(tone: Tone) {
+  if (tone === "danger") return "Urgent";
+  if (tone === "warning") return "Watch";
+  if (tone === "success") return "Healthy";
+  if (tone === "info") return "Live";
+  return "Active";
+}
+
+function getModerationTone(status: string): Tone {
+  if (["APPROVED", "PUBLISHED", "RESOLVED", "VERIFIED"].includes(status)) return "success";
+  if (["PENDING_REVIEW", "DRAFT"].includes(status)) return "warning";
+  if (["REJECTED", "ARCHIVED"].includes(status)) return "danger";
+  return "neutral";
+}
+
+function getEventTone(action: string): Tone {
+  const normalized = action.toUpperCase();
+  if (/(APPROVE|PUBLISH|VERIFY|RESOLVE)/.test(normalized)) return "success";
+  if (/(REJECT|ARCHIVE|UNPUBLISH)/.test(normalized)) return "danger";
+  if (normalized.includes("DISMISS")) return "neutral";
+  return "info";
 }
 
 function fetchQueuedResources() {
@@ -45,15 +114,8 @@ function fetchQueuedResources() {
     include: {
       store: true,
       creator: true,
-      files: {
-        where: { kind: "MAIN_DOWNLOAD" },
-        select: { id: true },
-        take: 1,
-      },
-      reports: {
-        where: { status: "OPEN" },
-        select: { id: true },
-      },
+      files: { where: { kind: "MAIN_DOWNLOAD" }, select: { id: true }, take: 1 },
+      reports: { where: { status: "OPEN" }, select: { id: true } },
     },
   });
 }
@@ -63,14 +125,7 @@ function fetchOpenReports() {
     where: { status: "OPEN" },
     orderBy: { createdAt: "desc" },
     take: 10,
-    include: {
-      reporter: true,
-      resource: {
-        include: {
-          store: true,
-        },
-      },
-    },
+    include: { reporter: true, resource: { include: { store: true } } },
   });
 }
 
@@ -79,14 +134,7 @@ function fetchOpenStoreReports() {
     where: { status: "OPEN" },
     orderBy: { createdAt: "desc" },
     take: 10,
-    include: {
-      reporter: true,
-      store: {
-        include: {
-          owner: true,
-        },
-      },
-    },
+    include: { reporter: true, store: { include: { owner: true } } },
   });
 }
 
@@ -97,11 +145,7 @@ function fetchRecentResources() {
     include: {
       store: true,
       creator: true,
-      files: {
-        where: { kind: "MAIN_DOWNLOAD" },
-        select: { id: true },
-        take: 1,
-      },
+      files: { where: { kind: "MAIN_DOWNLOAD" }, select: { id: true }, take: 1 },
     },
   });
 }
@@ -112,13 +156,8 @@ function fetchRecentStores() {
     take: 10,
     include: {
       owner: true,
-      resources: {
-        where: { status: "PUBLISHED" },
-        select: { id: true },
-      },
-      followers: {
-        select: { followerId: true },
-      },
+      resources: { where: { status: "PUBLISHED" }, select: { id: true } },
+      followers: { select: { followerId: true } },
     },
   });
 }
@@ -127,55 +166,75 @@ function fetchRecentModerationEvents() {
   return db.moderationEvent.findMany({
     orderBy: { createdAt: "desc" },
     take: 12,
-    include: {
-      actorUser: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-    },
+    include: { actorUser: { select: { name: true, email: true } } },
   });
 }
 
+function StatusBadge({ label, tone }: { label: string; tone: Tone }) {
+  const style = getToneStyles(tone);
+  return (
+    <span className="inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: style.textColor, borderColor: style.borderColor, backgroundColor: style.backgroundColor }}>
+      {label}
+    </span>
+  );
+}
+
+function MetaPill({ children }: { children: ReactNode }) {
+  return <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1 text-[11px] font-medium text-[var(--text-muted)]">{children}</span>;
+}
+
+function SectionCard({ title, subtitle, action, children }: { title: string; subtitle: string; action?: ReactNode; children: ReactNode }) {
+  return (
+    <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[var(--text)]">{title}</h2>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">{subtitle}</p>
+        </div>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function MetricCard({ label, value, note, tone }: { label: string; value: ReactNode; note: string; tone: Tone }) {
+  const style = getToneStyles(tone);
+
+  return (
+    <div className="rounded-[1.75rem] border bg-[var(--card)] p-5 shadow-sm" style={{ borderColor: style.borderColor }}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-sm font-medium text-[var(--text-muted)]">{label}</div>
+          <div className="mt-3 text-3xl font-semibold tracking-tight" style={{ color: style.textColor }}>
+            {value}
+          </div>
+        </div>
+        <StatusBadge label={getMetricBadgeLabel(tone)} tone={tone} />
+      </div>
+      <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">{note}</p>
+    </div>
+  );
+}
+
 type AdminPageProps = {
-  searchParams?: Promise<{
-    view?: string;
-  }>;
+  searchParams?: Promise<{ view?: string }>;
 };
 
-// Renders the moderation dashboard with quick filters for the most common admin workflows.
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   await requireAdmin();
   const resolvedSearchParams = await searchParams;
   const activeView = resolvedSearchParams?.view || "overview";
 
-  const [
-    userCount,
-    storeCount,
-    resourceCount,
-    purchaseCount,
-    pendingReviewCount,
-    openReportCount,
-    openStoreReportCount,
-    revenueAgg,
-  ] = await db.$transaction([
+  const [userCount, storeCount, resourceCount, purchaseCount, pendingReviewCount, openReportCount, openStoreReportCount, revenueAgg] = await db.$transaction([
     db.user.count(),
     db.store.count(),
     db.resource.count(),
     db.purchase.count(),
-    db.resource.count({
-      where: { moderationStatus: "PENDING_REVIEW" },
-    }),
-    db.resourceReport.count({
-      where: { status: "OPEN" },
-    }),
-    db.storeReport.count({
-      where: { status: "OPEN" },
-    }),
-    db.purchase.aggregate({
-      _sum: { amountCents: true },
-    }),
+    db.resource.count({ where: { moderationStatus: "PENDING_REVIEW" } }),
+    db.resourceReport.count({ where: { status: "OPEN" } }),
+    db.storeReport.count({ where: { status: "OPEN" } }),
+    db.purchase.aggregate({ _sum: { amountCents: true } }),
   ]);
 
   let queuedResources: Awaited<ReturnType<typeof fetchQueuedResources>> = [];
@@ -186,10 +245,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   let recentModerationEvents: Awaited<ReturnType<typeof fetchRecentModerationEvents>> = [];
 
   if (activeView === "overview" || activeView === "queue" || activeView === "resource-reports") {
-    [queuedResources, openReports] = await db.$transaction([
-      fetchQueuedResources(),
-      fetchOpenReports(),
-    ]);
+    [queuedResources, openReports] = await db.$transaction([fetchQueuedResources(), fetchOpenReports()]);
   }
 
   if (activeView === "overview" || activeView === "store-reports") {
@@ -197,10 +253,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   if (activeView === "overview" || activeView === "stores") {
-    [recentResources, recentStores] = await db.$transaction([
-      fetchRecentResources(),
-      fetchRecentStores(),
-    ]);
+    [recentResources, recentStores] = await db.$transaction([fetchRecentResources(), fetchRecentStores()]);
   }
 
   if (activeView === "overview" || activeView === "audit") {
@@ -208,570 +261,519 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const grossRevenue = revenueAgg._sum.amountCents ?? 0;
-  const queuedTrustProfiles = await getCreatorTrustProfiles(
-    queuedResources.map((resource) => resource.creator.id)
-  );
+  const totalOpenReports = openReportCount + openStoreReportCount;
+  const itemsNeedingAttention = pendingReviewCount + totalOpenReports;
+  const queuedTrustProfiles = await getCreatorTrustProfiles(queuedResources.map((resource) => resource.creator?.id ?? ""));
+  const viewTabs = [
+    { href: "/admin", label: "Overview", key: "overview" },
+    { href: "/admin?view=queue", label: `Queue (${formatCount(pendingReviewCount)})`, key: "queue" },
+    { href: "/admin?view=resource-reports", label: `Resource reports (${formatCount(openReportCount)})`, key: "resource-reports" },
+    { href: "/admin?view=store-reports", label: `Store reports (${formatCount(openStoreReportCount)})`, key: "store-reports" },
+    { href: "/admin?view=stores", label: "Stores", key: "stores" },
+    { href: "/admin?view=audit", label: "Audit log", key: "audit" },
+  ];
+  const healthState =
+    itemsNeedingAttention === 0
+      ? { label: "Calm inbox", note: "No urgent moderation items are waiting right now.", tone: "success" as const }
+      : itemsNeedingAttention < 6
+      ? { label: "Steady flow", note: "A small queue is forming, but the marketplace is still under control.", tone: "warning" as const }
+      : { label: "High attention", note: "Pending reviews and open reports are stacking up and should be cleared soon.", tone: "danger" as const };
+  const focusCards = [
+    {
+      href: "/admin?view=queue",
+      label: "Pending review",
+      value: formatCount(pendingReviewCount),
+      note: pendingReviewCount > 0 ? "Resources waiting for a publish or reject decision." : "No queued resources right now.",
+      tone: pendingReviewCount > 0 ? ("warning" as const) : ("success" as const),
+    },
+    {
+      href: "/admin?view=resource-reports",
+      label: "Resource reports",
+      value: formatCount(openReportCount),
+      note: openReportCount > 0 ? "Flagged listings that need a moderation pass." : "No unresolved resource reports.",
+      tone: openReportCount > 0 ? ("danger" as const) : ("success" as const),
+    },
+    {
+      href: "/admin?view=store-reports",
+      label: "Store reports",
+      value: formatCount(openStoreReportCount),
+      note: openStoreReportCount > 0 ? "Store-level concerns waiting for follow-up." : "No unresolved store reports.",
+      tone: openStoreReportCount > 0 ? ("danger" as const) : ("success" as const),
+    },
+    {
+      href: "/admin?view=audit",
+      label: "Gross revenue",
+      value: formatMoney(grossRevenue),
+      note: "Useful marketplace signal alongside moderation load.",
+      tone: "info" as const,
+    },
+  ];
+  const metricCards = [
+    { label: "Pending review", value: formatCount(pendingReviewCount), note: "Listings waiting on the admin queue.", tone: pendingReviewCount > 0 ? ("warning" as const) : ("success" as const) },
+    { label: "Open reports", value: formatCount(totalOpenReports), note: "Combined resource and store reports still unresolved.", tone: totalOpenReports > 0 ? ("danger" as const) : ("success" as const) },
+    { label: "Gross revenue", value: formatMoney(grossRevenue), note: "All-time purchase volume across the marketplace.", tone: "info" as const },
+    { label: "Purchases", value: formatCount(purchaseCount), note: "Completed orders processed so far.", tone: "neutral" as const },
+    { label: "Users", value: formatCount(userCount), note: "Registered accounts across creators and buyers.", tone: "neutral" as const },
+    { label: "Stores", value: formatCount(storeCount), note: "Creator storefronts on the platform.", tone: "neutral" as const },
+    { label: "Resources", value: formatCount(resourceCount), note: "Total listings tracked in the catalog.", tone: "neutral" as const },
+  ];
+  const healthTone = getToneStyles(healthState.tone);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700">
-          Admin
-        </span>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)]">
-          Moderation dashboard
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
-          Review flagged resources, handle reports, and keep an eye on marketplace health.
-        </p>
-      </div>
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-7">
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <div className="text-sm font-medium text-[var(--text-muted)]">Users</div>
-          <div className="mt-2 text-3xl font-semibold text-[var(--text)]">{userCount}</div>
-        </div>
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <div className="text-sm font-medium text-[var(--text-muted)]">Stores</div>
-          <div className="mt-2 text-3xl font-semibold text-[var(--text)]">{storeCount}</div>
-        </div>
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <div className="text-sm font-medium text-[var(--text-muted)]">Resources</div>
-          <div className="mt-2 text-3xl font-semibold text-[var(--text)]">{resourceCount}</div>
-        </div>
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <div className="text-sm font-medium text-[var(--text-muted)]">Purchases</div>
-          <div className="mt-2 text-3xl font-semibold text-[var(--text)]">{purchaseCount}</div>
-        </div>
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <div className="text-sm font-medium text-[var(--text-muted)]">Gross revenue</div>
-          <div className="mt-2 text-3xl font-semibold text-[var(--text)]">
-            {formatMoney(grossRevenue)}
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--border-strong)] bg-[var(--card)] shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[minmax(0,1.3fr)_360px]">
+          <div className="p-7 sm:p-8">
+            <span className="inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: healthTone.textColor, borderColor: healthTone.borderColor, backgroundColor: healthTone.backgroundColor }}>
+              Admin control
+            </span>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)] sm:text-4xl">Moderation dashboard</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--text-muted)] sm:text-base">
+              Review flagged resources, resolve reports, and keep an eye on marketplace trust signals without digging through a flat wall of cards.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-2">
+              {viewTabs.map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  className={`inline-flex rounded-full border px-3 py-1.5 text-sm font-medium transition ${
+                    activeView === item.key
+                      ? "border-transparent bg-[var(--text)] text-white"
+                      : "border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-alt)]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <div className="text-sm font-medium text-[var(--text-muted)]">Pending review</div>
-          <div className="mt-2 text-3xl font-semibold text-[var(--text)]">
-            {pendingReviewCount}
-          </div>
-        </div>
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-          <div className="text-sm font-medium text-[var(--text-muted)]">Open reports</div>
-          <div className="mt-2 text-3xl font-semibold text-[var(--text)]">
-            {openReportCount + openStoreReportCount}
+          <div className="border-t border-[var(--border)] bg-[var(--surface)]/70 p-7 sm:p-8 lg:border-l lg:border-t-0">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-light)]">Focus today</div>
+            <div className="mt-3 text-3xl font-semibold tracking-tight" style={{ color: healthTone.textColor }}>
+              {healthState.label}
+            </div>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{healthState.note}</p>
+            <div className="mt-6 grid gap-3">
+              {focusCards.map((card) => {
+                const tone = getToneStyles(card.tone);
+                return (
+                  <Link key={card.label} href={card.href} className="rounded-[1.4rem] border bg-[var(--card)] p-4 shadow-sm transition hover:bg-[var(--surface-alt)]" style={{ borderColor: tone.borderColor }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-medium text-[var(--text-muted)]">{card.label}</div>
+                        <div className="mt-2 text-2xl font-semibold" style={{ color: tone.textColor }}>
+                          {card.value}
+                        </div>
+                      </div>
+                      <StatusBadge label={getMetricBadgeLabel(card.tone)} tone={card.tone} />
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">{card.note}</p>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="mt-6 flex flex-wrap gap-2">
-        {[
-          { href: "/admin", label: "Overview", key: "overview" },
-          { href: "/admin?view=queue", label: `Queue (${pendingReviewCount})`, key: "queue" },
-          {
-            href: "/admin?view=resource-reports",
-            label: `Resource reports (${openReportCount})`,
-            key: "resource-reports",
-          },
-          {
-            href: "/admin?view=store-reports",
-            label: `Store reports (${openStoreReportCount})`,
-            key: "store-reports",
-          },
-          { href: "/admin?view=stores", label: "Stores", key: "stores" },
-          { href: "/admin?view=audit", label: "Audit log", key: "audit" },
-        ].map((item) => (
-          <Link
-            key={item.key}
-            href={item.href}
-            className={`inline-flex rounded-full px-3 py-1.5 text-sm font-medium transition ${
-              activeView === item.key
-                ? "bg-slate-900 text-white"
-                : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            {item.label}
-          </Link>
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-7">
+        {metricCards.map((card) => (
+          <MetricCard key={card.label} label={card.label} value={card.value} note={card.note} tone={card.tone} />
         ))}
       </section>
 
       {(activeView === "overview" || activeView === "queue" || activeView === "resource-reports") ? (
-      <section className="mt-10 grid gap-8 xl:grid-cols-2">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-slate-900">Queued resources</h2>
-            <span className="text-sm text-slate-500">
-              {pendingReviewCount} awaiting moderation
-            </span>
-          </div>
+        <section className="mt-10 grid gap-8 xl:grid-cols-2">
+          <SectionCard
+            title="Queued resources"
+            subtitle={`${formatCount(pendingReviewCount)} resource${pendingReviewCount === 1 ? "" : "s"} awaiting moderation`}
+            action={<StatusBadge label={pendingReviewCount > 0 ? "Queue open" : "Clear"} tone={pendingReviewCount > 0 ? "warning" : "success"} />}
+          >
+            <div className="space-y-4">
+              {queuedResources.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No resources are waiting for review.
+                </div>
+              ) : (
+                queuedResources.map((resource) => {
+                  const trustProfile = (resource.creator?.id && queuedTrustProfiles.get(resource.creator.id)) || emptyTrustProfile;
+                  const trustAppearance = getCreatorTrustAppearance(trustProfile);
+                  const creatorName = resource.creator?.name || resource.creator?.email || "Unknown creator";
+                  const hasMainFile = resource.files.length > 0;
+                  const openReportsLabel = `${resource.reports.length} open report${resource.reports.length === 1 ? "" : "s"}`;
 
-          <div className="space-y-3">
-            {queuedResources.length === 0 ? (
-              <p className="text-sm text-slate-500">No resources are waiting for review.</p>
-            ) : (
-              queuedResources.map((resource) => (
-                <div
-                  key={resource.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  {(() => {
-                    const trustProfile = queuedTrustProfiles.get(resource.creator.id) ?? {
-                      score: 0,
-                      tier: "new" as const,
-                      reasons: [],
-                      stats: {
-                        accountAgeDays: 0,
-                        approvedResources: 0,
-                        rejectedResources: 0,
-                        pendingResources: 0,
-                        openReports: 0,
-                        resolvedReports: 0,
-                        salesCount: 0,
-                      },
-                    };
-
-                    return (
-                      <>
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <div className="font-medium text-slate-900">{resource.title}</div>
-                              <div className="mt-1 text-sm text-slate-600">
-                                {resource.store?.name || "No store"} · {resource.status}
-                              </div>
-                              <div className="mt-1 text-xs text-slate-500">
-                                Creator: {resource.creator?.name || "Unknown"}
-                              </div>
-                              <div className="mt-1 text-xs text-slate-500">
-                                Main file: {resource.files.length > 0 ? "Yes" : "No"} · Open reports:{" "}
-                                {resource.reports.length}
-                              </div>
-                              <div className="mt-2 text-xs text-slate-500">
-                                Trust: {trustProfile.score} · {trustProfile.tier}
-                              </div>
-                              {resource.moderationReason ? (
-                                <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-                                  {resource.moderationReason}
-                                </div>
-                              ) : null}
+                  return (
+                    <div key={resource.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
+                      <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-lg font-semibold text-[var(--text)]">{resource.title}</h3>
+                              <StatusBadge label={formatModerationStatus(resource.status)} tone={getModerationTone(resource.status)} />
+                              <StatusBadge label={formatModerationStatus(resource.moderationStatus)} tone={getModerationTone(resource.moderationStatus)} />
+                              {!hasMainFile ? <StatusBadge label="Missing file" tone="warning" /> : null}
+                              {resource.reports.length > 0 ? <StatusBadge label={openReportsLabel} tone="danger" /> : null}
                             </div>
-
-                            <Link
-                              href={`/resources/${resource.slug}`}
-                              className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                            >
-                              Open
-                            </Link>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <MetaPill>{resource.store?.name || "No store"}</MetaPill>
+                              <MetaPill>{creatorName}</MetaPill>
+                              <MetaPill>Updated {formatDateTime(resource.updatedAt)}</MetaPill>
+                            </div>
+                            <p className="mt-3 text-sm text-[var(--text-muted)]">
+                              Approved {formatCount(trustProfile.stats.approvedResources)} / Sales {formatCount(trustProfile.stats.salesCount)} / Age {formatCount(trustProfile.stats.accountAgeDays)} day{trustProfile.stats.accountAgeDays === 1 ? "" : "s"}
+                            </p>
                           </div>
+                          <Link href={`/resources/${resource.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                            Open listing
+                          </Link>
+                        </div>
 
-                          <div className="flex flex-wrap gap-2">
+                        <div className="rounded-[1.25rem] border px-4 py-4" style={{ borderColor: trustAppearance.borderColor, backgroundColor: trustAppearance.softBackgroundColor }}>
+                          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-light)]">Creator trust</div>
+                              <div className="mt-2 flex flex-wrap items-center gap-3">
+                                <span className="text-3xl font-semibold" style={{ color: trustAppearance.textColor }}>
+                                  {trustProfile.score}
+                                </span>
+                                <span className="rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: trustAppearance.textColor, borderColor: trustAppearance.borderColor, backgroundColor: trustAppearance.backgroundColor }}>
+                                  {formatCreatorTrustTier(trustProfile.tier)}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="w-full max-w-xl">
+                              <div className="h-2.5 overflow-hidden rounded-full bg-[var(--surface)]">
+                                <div className="h-full rounded-full" style={{ width: `${trustProfile.score}%`, background: trustAppearance.meter }} />
+                              </div>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {(trustProfile.reasons.length > 0 ? trustProfile.reasons : ["No trust flags currently recorded"]).map((reason) => (
+                                  <span key={reason} className="rounded-full border bg-white px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]" style={{ borderColor: trustAppearance.borderColor }}>
+                                    {reason}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {resource.moderationReason ? (
+                          <div className="rounded-[1.25rem] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                            {resource.moderationReason}
+                          </div>
+                        ) : null}
+
+                        <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--card)] p-4">
+                          <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                             <form action={adminApproveQueuedResourceAction}>
                               <input type="hidden" name="resourceId" value={resource.id} />
-                              <FormSubmitButton
-                                pendingText="Publishing..."
-                                className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
-                              >
+                              <FormSubmitButton pendingText="Publishing..." className="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
                                 Approve and publish
                               </FormSubmitButton>
                             </form>
-
-                            <form
-                              action={adminRejectQueuedResourceAction}
-                              className="flex min-w-[280px] flex-1 flex-col gap-2"
-                            >
+                            <form action={adminRejectQueuedResourceAction} className="flex min-w-[280px] flex-1 flex-col gap-2">
                               <input type="hidden" name="resourceId" value={resource.id} />
                               <textarea
                                 name="rejectionNote"
                                 rows={2}
                                 placeholder="Optional rejection note shown to the creator."
-                                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500"
+                                className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)]"
                               />
-                              <FormSubmitButton
-                                pendingText="Rejecting..."
-                                className="rounded-xl border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50"
-                              >
+                              <FormSubmitButton pendingText="Rejecting..." className="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50">
                                 Reject to draft
                               </FormSubmitButton>
                             </form>
                           </div>
                         </div>
-                      </>
-                    );
-                  })()}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title="Open resource reports"
+            subtitle={`${formatCount(openReportCount)} unresolved report${openReportCount === 1 ? "" : "s"}`}
+            action={<StatusBadge label={openReportCount > 0 ? "Needs review" : "Quiet"} tone={openReportCount > 0 ? "danger" : "success"} />}
+          >
+            <div className="space-y-4">
+              {openReports.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No active reports right now.
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-slate-900">Open resource reports</h2>
-            <span className="text-sm text-slate-500">{openReportCount} unresolved</span>
-          </div>
-
-          <div className="space-y-3">
-            {openReports.length === 0 ? (
-              <p className="text-sm text-slate-500">No active reports right now.</p>
-            ) : (
-              openReports.map((report) => (
-                <div
-                  key={report.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start justify-between gap-4">
+              ) : (
+                openReports.map((report) => (
+                  <div key={report.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
-                        <div className="font-medium text-slate-900">{report.resource.title}</div>
-                        <div className="mt-1 text-sm text-slate-600">
-                          {formatReportReason(report.reason)}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-semibold text-[var(--text)]">{report.resource.title}</h3>
+                          <StatusBadge label={formatReportReason(report.reason)} tone="danger" />
                         </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          Reported by {report.reporter.name || report.reporter.email}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          Store: {report.resource.store?.name || "No store"}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <MetaPill>{report.resource.store?.name || "No store"}</MetaPill>
+                          <MetaPill>{report.reporter.name || report.reporter.email}</MetaPill>
+                          <MetaPill>{formatDateTime(report.createdAt)}</MetaPill>
                         </div>
                         {report.details ? (
-                          <div className="mt-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
+                          <div className="mt-4 rounded-[1.25rem] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm leading-6 text-[var(--text)]">
                             {report.details}
                           </div>
-                        ) : null}
+                        ) : (
+                          <p className="mt-3 text-sm text-[var(--text-muted)]">No extra detail was included with this report.</p>
+                        )}
                       </div>
-
-                      <Link
-                        href={`/resources/${report.resource.slug}`}
-                        className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                      >
-                        Open
+                      <Link href={`/resources/${report.resource.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                        Open resource
                       </Link>
                     </div>
-
-                    <div className="flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2">
                       <form action={adminResolveResourceReportAction}>
                         <input type="hidden" name="reportId" value={report.id} />
                         <input type="hidden" name="resourceSlug" value={report.resource.slug} />
-                        <FormSubmitButton
-                          pendingText="Resolving..."
-                          className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
-                        >
+                        <FormSubmitButton pendingText="Resolving..." className="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
                           Mark resolved
                         </FormSubmitButton>
                       </form>
-
                       <form action={adminDismissResourceReportAction}>
                         <input type="hidden" name="reportId" value={report.id} />
                         <input type="hidden" name="resourceSlug" value={report.resource.slug} />
-                        <FormSubmitButton
-                          pendingText="Dismissing..."
-                          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                        >
+                        <FormSubmitButton pendingText="Dismissing..." className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
                           Dismiss
                         </FormSubmitButton>
                       </form>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </section>
       ) : null}
 
       {(activeView === "overview" || activeView === "store-reports") ? (
-      <section className="mt-10">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-slate-900">Open store reports</h2>
-            <span className="text-sm text-slate-500">{openStoreReports.length} unresolved</span>
-          </div>
-
-          <div className="space-y-3">
-            {openStoreReports.length === 0 ? (
-              <p className="text-sm text-slate-500">No active store reports right now.</p>
-            ) : (
-              openStoreReports.map((report) => (
-                <div
-                  key={report.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start justify-between gap-4">
+        <section className="mt-10">
+          <SectionCard
+            title="Open store reports"
+            subtitle={`${formatCount(openStoreReportCount)} unresolved report${openStoreReportCount === 1 ? "" : "s"} for storefronts`}
+            action={<StatusBadge label={openStoreReportCount > 0 ? "Needs review" : "Quiet"} tone={openStoreReportCount > 0 ? "danger" : "success"} />}
+          >
+            <div className="space-y-4">
+              {openStoreReports.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No active store reports right now.
+                </div>
+              ) : (
+                openStoreReports.map((report) => (
+                  <div key={report.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
-                        <div className="font-medium text-slate-900">{report.store.name}</div>
-                        <div className="mt-1 text-sm text-slate-600">
-                          {formatReportReason(report.reason)}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-semibold text-[var(--text)]">{report.store.name}</h3>
+                          <StatusBadge label={formatReportReason(report.reason)} tone="danger" />
                         </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          Reported by {report.reporter.name || report.reporter.email}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          Owner: {report.store.owner?.name || report.store.owner?.email || "Unknown"}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <MetaPill>{report.reporter.name || report.reporter.email}</MetaPill>
+                          <MetaPill>{report.store.owner?.name || report.store.owner?.email || "Unknown owner"}</MetaPill>
+                          <MetaPill>{formatDateTime(report.createdAt)}</MetaPill>
                         </div>
                         {report.details ? (
-                          <div className="mt-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
+                          <div className="mt-4 rounded-[1.25rem] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm leading-6 text-[var(--text)]">
                             {report.details}
                           </div>
-                        ) : null}
+                        ) : (
+                          <p className="mt-3 text-sm text-[var(--text-muted)]">No extra detail was included with this store report.</p>
+                        )}
                       </div>
-
-                      <Link
-                        href={`/stores/${report.store.slug}`}
-                        className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                      >
-                        Open
+                      <Link href={`/stores/${report.store.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                        Open store
                       </Link>
                     </div>
-
-                    <div className="flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2">
                       <form action={adminResolveStoreReportAction}>
                         <input type="hidden" name="reportId" value={report.id} />
                         <input type="hidden" name="storeSlug" value={report.store.slug} />
-                        <FormSubmitButton
-                          pendingText="Resolving..."
-                          className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
-                        >
+                        <FormSubmitButton pendingText="Resolving..." className="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
                           Mark resolved
                         </FormSubmitButton>
                       </form>
-
                       <form action={adminDismissStoreReportAction}>
                         <input type="hidden" name="reportId" value={report.id} />
                         <input type="hidden" name="storeSlug" value={report.store.slug} />
-                        <FormSubmitButton
-                          pendingText="Dismissing..."
-                          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                        >
+                        <FormSubmitButton pendingText="Dismissing..." className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
                           Dismiss
                         </FormSubmitButton>
                       </form>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </section>
       ) : null}
 
       {(activeView === "overview" || activeView === "stores") ? (
-      <section className="mt-10 grid gap-8 lg:grid-cols-2">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-slate-900">Recent resources</h2>
-            <Link
-              href="/resources"
-              className="text-sm font-medium text-slate-700 hover:text-slate-900"
-            >
-              View public resources
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            {recentResources.length === 0 ? (
-              <p className="text-sm text-slate-500">No resources yet.</p>
-            ) : (
-              recentResources.map((resource) => (
-                <div
-                  key={resource.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start justify-between gap-4">
+        <section className="mt-10 grid gap-8 lg:grid-cols-2">
+          <SectionCard
+            title="Recent resources"
+            subtitle="Fresh listings and their current publication state"
+            action={
+              <Link href="/resources" className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                View public resources
+              </Link>
+            }
+          >
+            <div className="space-y-4">
+              {recentResources.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No resources yet.
+                </div>
+              ) : (
+                recentResources.map((resource) => (
+                  <div key={resource.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
-                        <div className="font-medium text-slate-900">{resource.title}</div>
-                        <div className="mt-1 text-sm text-slate-600">
-                          {resource.store?.name || "No store"} · {resource.status} ·{" "}
-                          {formatModerationStatus(resource.moderationStatus)}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-semibold text-[var(--text)]">{resource.title}</h3>
+                          <StatusBadge label={formatModerationStatus(resource.status)} tone={getModerationTone(resource.status)} />
+                          <StatusBadge label={formatModerationStatus(resource.moderationStatus)} tone={getModerationTone(resource.moderationStatus)} />
                         </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          Creator: {resource.creator?.name || "Unknown"}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          Main file: {resource.files.length > 0 ? "Yes" : "No"}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <MetaPill>{resource.store?.name || "No store"}</MetaPill>
+                          <MetaPill>{resource.creator?.name || "Unknown creator"}</MetaPill>
+                          <MetaPill>{resource.files.length > 0 ? "Main file ready" : "No main file"}</MetaPill>
                         </div>
                       </div>
-
-                      <Link
-                        href={`/resources/${resource.slug}`}
-                        className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                      >
-                        Open
+                      <Link href={`/resources/${resource.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                        Open resource
                       </Link>
                     </div>
-
-                    <div className="flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2">
                       <form action={adminPublishResourceAction}>
                         <input type="hidden" name="resourceId" value={resource.id} />
-                        <FormSubmitButton
-                          pendingText="Publishing..."
-                          className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
-                        >
+                        <FormSubmitButton pendingText="Publishing..." className="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
                           Publish
                         </FormSubmitButton>
                       </form>
-
                       <form action={adminUnpublishResourceAction}>
                         <input type="hidden" name="resourceId" value={resource.id} />
-                        <FormSubmitButton
-                          pendingText="Unpublishing..."
-                          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                        >
+                        <FormSubmitButton pendingText="Unpublishing..." className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
                           Unpublish
                         </FormSubmitButton>
                       </form>
-
                       <form action={adminArchiveResourceAction}>
                         <input type="hidden" name="resourceId" value={resource.id} />
-                        <FormSubmitButton
-                          pendingText="Archiving..."
-                          className="rounded-xl border border-amber-200 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-50"
-                        >
+                        <FormSubmitButton pendingText="Archiving..." className="rounded-xl border border-amber-200 px-4 py-2.5 text-sm font-medium text-amber-700 transition hover:bg-amber-50">
                           Archive
                         </FormSubmitButton>
                       </form>
                     </div>
                   </div>
+                ))
+              )}
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title="Recent stores"
+            subtitle="New storefronts and their publication status"
+            action={<StatusBadge label={storeCount > 0 ? "Growing" : "Empty"} tone={storeCount > 0 ? "info" : "neutral"} />}
+          >
+            <div className="space-y-4">
+              {recentStores.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No stores yet.
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-slate-900">Recent stores</h2>
-          </div>
-
-          <div className="space-y-3">
-            {recentStores.length === 0 ? (
-              <p className="text-sm text-slate-500">No stores yet.</p>
-            ) : (
-              recentStores.map((store) => (
-                <div
-                  key={store.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start justify-between gap-4">
+              ) : (
+                recentStores.map((store) => (
+                  <div key={store.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium text-slate-900">{store.name}</div>
-                          {store.isVerified ? (
-                            <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
-                              Verified
-                            </span>
-                          ) : null}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-semibold text-[var(--text)]">{store.name}</h3>
+                          <StatusBadge label={store.isPublished ? "Published" : "Hidden"} tone={store.isPublished ? "success" : "warning"} />
+                          <StatusBadge label={formatModerationStatus(store.moderationStatus)} tone={getModerationTone(store.moderationStatus)} />
+                          {store.isVerified ? <StatusBadge label="Verified" tone="info" /> : null}
                         </div>
-
-                        <div className="mt-1 text-sm text-slate-600">
-                          {store.isPublished ? "Published" : "Hidden"} · /stores/{store.slug}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          Moderation: {formatModerationStatus(store.moderationStatus)}
-                        </div>
-
-                        <div className="mt-1 text-xs text-slate-500">
-                          Owner: {store.owner?.name || "Unknown"}
-                        </div>
-
-                        <div className="mt-1 text-xs text-slate-500">
-                          {store.resources.length} published resources · {store.followers.length} followers
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <MetaPill>/{store.slug}</MetaPill>
+                          <MetaPill>{store.owner?.name || "Unknown owner"}</MetaPill>
+                          <MetaPill>{formatCount(store.resources.length)} published resource{store.resources.length === 1 ? "" : "s"}</MetaPill>
+                          <MetaPill>{formatCount(store.followers.length)} follower{store.followers.length === 1 ? "" : "s"}</MetaPill>
                         </div>
                       </div>
-
-                      <Link
-                        href={`/stores/${store.slug}`}
-                        className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                      >
-                        Open
+                      <Link href={`/stores/${store.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                        Open store
                       </Link>
                     </div>
-
-                    <div className="flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2">
                       <form action={adminPublishStoreAction}>
                         <input type="hidden" name="storeId" value={store.id} />
-                        <FormSubmitButton
-                          pendingText="Publishing..."
-                          className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
-                        >
+                        <FormSubmitButton pendingText="Publishing..." className="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
                           Publish
                         </FormSubmitButton>
                       </form>
-
                       <form action={adminArchiveStoreAction}>
                         <input type="hidden" name="storeId" value={store.id} />
-                        <FormSubmitButton
-                          pendingText="Hiding..."
-                          className="rounded-xl border border-amber-200 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-50"
-                        >
+                        <FormSubmitButton pendingText="Hiding..." className="rounded-xl border border-amber-200 px-4 py-2.5 text-sm font-medium text-amber-700 transition hover:bg-amber-50">
                           Hide
                         </FormSubmitButton>
                       </form>
-
                       <form action={adminToggleStoreVerificationAction}>
                         <input type="hidden" name="storeId" value={store.id} />
-                        <FormSubmitButton
-                          pendingText={store.isVerified ? "Removing..." : "Verifying..."}
-                          className="rounded-xl border border-sky-200 px-3 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-50"
-                        >
+                        <FormSubmitButton pendingText={store.isVerified ? "Removing..." : "Verifying..."} className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
                           {store.isVerified ? "Remove verification" : "Verify store"}
                         </FormSubmitButton>
                       </form>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </section>
       ) : null}
 
       {(activeView === "overview" || activeView === "audit") ? (
-      <section className="mt-10">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-slate-900">Moderation audit log</h2>
-            <span className="text-sm text-slate-500">Latest automated and admin decisions</span>
-          </div>
-
-          <div className="space-y-3">
-            {recentModerationEvents.length === 0 ? (
-              <p className="text-sm text-slate-500">No moderation events yet.</p>
-            ) : (
-              recentModerationEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                >
-                  <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">
-                        {formatModerationStatus(event.action)}
+        <section className="mt-10">
+          <SectionCard
+            title="Moderation audit log"
+            subtitle="Latest automated and admin decisions across the marketplace"
+            action={<StatusBadge label="Recent activity" tone="info" />}
+          >
+            <div className="space-y-4">
+              {recentModerationEvents.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No moderation events yet.
+                </div>
+              ) : (
+                recentModerationEvents.map((event) => (
+                  <div key={event.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <StatusBadge label={formatModerationStatus(event.action)} tone={getEventTone(event.action)} />
+                          <MetaPill>{event.targetType} / {event.targetId}</MetaPill>
+                        </div>
+                        {event.message ? (
+                          <div className="mt-3 text-sm leading-6 text-[var(--text)]">{event.message}</div>
+                        ) : (
+                          <div className="mt-3 text-sm text-[var(--text-muted)]">No extra moderation note was recorded for this event.</div>
+                        )}
                       </div>
-                      <div className="mt-1 text-xs text-slate-600">
-                        {event.targetType} · {event.targetId}
-                      </div>
-                      {event.message ? (
-                        <div className="mt-2 text-sm text-slate-700">{event.message}</div>
-                      ) : null}
-                    </div>
-
-                    <div className="text-xs text-slate-500 sm:text-right">
-                      <div>{new Intl.DateTimeFormat("en-AU", { dateStyle: "medium", timeStyle: "short" }).format(event.createdAt)}</div>
-                      <div className="mt-1">
-                        {event.actorUser?.name || event.actorUser?.email || "System"}
+                      <div className="text-xs text-[var(--text-muted)] sm:text-right">
+                        <div>{formatDateTime(event.createdAt)}</div>
+                        <div className="mt-1">{event.actorUser?.name || event.actorUser?.email || "System"}</div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </section>
       ) : null}
     </div>
   );

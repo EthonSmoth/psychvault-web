@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { getCreatorTrustProfile } from "@/lib/creator-trust";
+import {
+  getCreatorTrustAppearance,
+  getCreatorTrustProfile,
+} from "@/lib/creator-trust";
 import { db } from "@/lib/db";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
 import { isPayoutAccountReady } from "@/lib/stripe-connect";
@@ -41,6 +44,7 @@ export default async function CreatorDashboardPage() {
     store?.resources.filter((resource) => resource.status === "PUBLISHED" && resource.priceCents > 0)
       .length ?? 0;
   const trustProfile = await getCreatorTrustProfile(user.id);
+  const trustAppearance = getCreatorTrustAppearance(trustProfile);
   const storeModerationMessage =
     store?.moderationStatus === "PENDING_REVIEW"
       ? store.moderationReason || "Your store is waiting for moderation review before it can go live."
@@ -138,14 +142,43 @@ export default async function CreatorDashboardPage() {
           <p className="mt-2 text-sm text-slate-600">
             {store?.isPublished
               ? "Your store is visible to buyers."
-              : "Publish your store when you’re ready to go live."}
+              : "Publish your store when you're ready to go live."}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div
+          className="rounded-2xl border bg-white p-6 shadow-sm"
+          style={{
+            borderColor: trustAppearance.borderColor,
+            backgroundColor: trustAppearance.softBackgroundColor,
+          }}
+        >
           <div className="text-sm font-medium text-slate-500">Trust score</div>
-          <div className="mt-3 text-3xl font-semibold text-slate-900">{trustProfile.score}</div>
-          <p className="mt-2 text-sm text-slate-600">
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <div className="text-3xl font-semibold" style={{ color: trustAppearance.textColor }}>
+              {trustProfile.score}
+            </div>
+            <span
+              className="rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
+              style={{
+                color: trustAppearance.textColor,
+                borderColor: trustAppearance.borderColor,
+                backgroundColor: trustAppearance.backgroundColor,
+              }}
+            >
+              {trustAppearance.label}
+            </span>
+          </div>
+          <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--surface)]">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${trustProfile.score}%`,
+                background: trustAppearance.meter,
+              }}
+            />
+          </div>
+          <p className="mt-3 text-sm text-slate-600">
             {trustProfile.tier === "trusted"
               ? "Your account can usually publish without manual review."
               : trustProfile.tier === "standard"
@@ -240,31 +273,51 @@ export default async function CreatorDashboardPage() {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 p-4">
+              <div
+                className="rounded-xl border p-4"
+                style={{
+                  borderColor: trustAppearance.borderColor,
+                  backgroundColor: trustAppearance.softBackgroundColor,
+                }}
+              >
                 <div className="text-sm font-medium text-slate-500">Trust summary</div>
-              <div className="mt-2 text-sm text-slate-700">
-                Tier: <span className="font-semibold">{trustProfile.tier}</span>
-              </div>
-              <div className="mt-2 text-sm text-slate-700">
-                Publishing:{" "}
-                <span className="font-semibold">
-                  {trustProfile.tier === "trusted" || trustProfile.tier === "standard"
-                    ? "Usually auto-reviewed"
-                    : "Manual review likely"}
-                </span>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
+                <div className="mt-2 flex items-center gap-3 text-sm text-slate-700">
+                  <span>Tier:</span>
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                    style={{
+                      color: trustAppearance.textColor,
+                      borderColor: trustAppearance.borderColor,
+                      backgroundColor: trustAppearance.backgroundColor,
+                    }}
+                  >
+                    {trustAppearance.label}
+                  </span>
+                </div>
+                <div className="mt-2 text-sm text-slate-700">
+                  Publishing:{" "}
+                  <span className="font-semibold" style={{ color: trustAppearance.textColor }}>
+                    {trustProfile.tier === "trusted" || trustProfile.tier === "standard"
+                      ? "Usually auto-reviewed"
+                      : "Manual review likely"}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
                   {trustProfile.reasons.length > 0 ? (
                     trustProfile.reasons.map((reason) => (
                       <span
                         key={reason}
-                        className="rounded-full bg-white px-2.5 py-1 font-medium"
+                        className="rounded-full border bg-white px-2.5 py-1 font-medium"
+                        style={{ borderColor: trustAppearance.borderColor }}
                       >
                         {reason}
                       </span>
                     ))
                   ) : (
-                    <span className="rounded-full bg-white px-2.5 py-1 font-medium">
+                    <span
+                      className="rounded-full border bg-white px-2.5 py-1 font-medium"
+                      style={{ borderColor: trustAppearance.borderColor }}
+                    >
                       No trust flags
                     </span>
                   )}

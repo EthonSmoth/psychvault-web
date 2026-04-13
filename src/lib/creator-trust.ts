@@ -15,6 +15,15 @@ export type CreatorTrustProfile = {
   };
 };
 
+export type CreatorTrustAppearance = {
+  label: string;
+  textColor: string;
+  backgroundColor: string;
+  borderColor: string;
+  softBackgroundColor: string;
+  meter: string;
+};
+
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
@@ -24,6 +33,79 @@ function getTier(score: number): CreatorTrustProfile["tier"] {
   if (score < 60) return "new";
   if (score < 80) return "standard";
   return "trusted";
+}
+
+function calculateTrustScore(stats: CreatorTrustProfile["stats"]) {
+  let score = 45;
+  score += Math.min(stats.accountAgeDays, 180) / 6;
+  score += stats.approvedResources * 4;
+  score += Math.min(stats.salesCount, 50) * 0.8;
+  score -= stats.rejectedResources * 12;
+  score -= stats.pendingResources * 4;
+  score -= stats.openReports * 8;
+  score -= stats.resolvedReports * 2;
+
+  return clamp(Math.round(score), 0, 100);
+}
+
+function buildTrustReasons(stats: CreatorTrustProfile["stats"]) {
+  const reasons: string[] = [];
+
+  if (stats.accountAgeDays < 14) reasons.push("New creator account");
+  if (stats.approvedResources < 2) reasons.push("Limited approved publishing history");
+  if (stats.openReports > 0) {
+    reasons.push(`${stats.openReports} open report${stats.openReports === 1 ? "" : "s"}`);
+  }
+  if (stats.rejectedResources > 0) {
+    reasons.push(
+      `${stats.rejectedResources} rejected resource${stats.rejectedResources === 1 ? "" : "s"}`
+    );
+  }
+  if (stats.salesCount >= 5) reasons.push("Positive sales history");
+  if (stats.approvedResources >= 3) reasons.push("Multiple approved resources");
+
+  return reasons;
+}
+
+function buildTrustProfile(stats: CreatorTrustProfile["stats"]): CreatorTrustProfile {
+  const score = calculateTrustScore(stats);
+
+  return {
+    score,
+    tier: getTier(score),
+    reasons: buildTrustReasons(stats),
+    stats,
+  };
+}
+
+function getHueForScore(score: number) {
+  return Math.round(8 + (clamp(score, 0, 100) / 100) * 116);
+}
+
+export function formatCreatorTrustTier(tier: CreatorTrustProfile["tier"]) {
+  return tier.charAt(0).toUpperCase() + tier.slice(1);
+}
+
+export function getCreatorTrustAppearance(
+  value: number | Pick<CreatorTrustProfile, "score" | "tier">
+): CreatorTrustAppearance {
+  const score = typeof value === "number" ? value : value.score;
+  const tier = typeof value === "number" ? getTier(score) : value.tier;
+  const hue = getHueForScore(score);
+  const saturation = tier === "restricted" ? 62 : tier === "trusted" ? 52 : 58;
+  const textLightness = tier === "restricted" ? 38 : tier === "trusted" ? 28 : 34;
+
+  return {
+    label: formatCreatorTrustTier(tier),
+    textColor: `hsl(${hue}, ${saturation}%, ${textLightness}%)`,
+    backgroundColor: `hsla(${hue}, 70%, 52%, 0.14)`,
+    borderColor: `hsla(${hue}, 60%, 38%, 0.28)`,
+    softBackgroundColor: `hsla(${hue}, 70%, 52%, 0.08)`,
+    meter: `linear-gradient(90deg, hsla(${Math.max(hue - 10, 0)}, 72%, 58%, 1) 0%, hsla(${Math.min(
+      hue + 8,
+      130
+    )}, 58%, 34%, 1) 100%)`,
+  };
 }
 
 // Builds a lightweight trust profile from creator history so moderation can react to risk.
@@ -54,50 +136,20 @@ export async function getCreatorTrustProfile(userId: string): Promise<CreatorTru
     }),
   ]);
 
-  const accountAgeDays = user
-    ? Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
-
-  const approvedResources = resources.filter((resource) => resource.moderationStatus === "APPROVED").length;
-  const rejectedResources = resources.filter((resource) => resource.moderationStatus === "REJECTED").length;
-  const pendingResources = resources.filter((resource) => resource.moderationStatus === "PENDING_REVIEW").length;
-  const salesCount = resources.reduce((sum, resource) => sum + resource.salesCount, 0);
-  const openReports = reports.filter((report) => report.status === "OPEN").length;
-  const resolvedReports = reports.filter((report) => report.status === "RESOLVED").length;
-
-  let score = 45;
-  score += Math.min(accountAgeDays, 180) / 6;
-  score += approvedResources * 4;
-  score += Math.min(salesCount, 50) * 0.8;
-  score -= rejectedResources * 12;
-  score -= pendingResources * 4;
-  score -= openReports * 8;
-  score -= resolvedReports * 2;
-
-  score = clamp(Math.round(score), 0, 100);
-
-  const reasons: string[] = [];
-  if (accountAgeDays < 14) reasons.push("New creator account");
-  if (approvedResources < 2) reasons.push("Limited approved publishing history");
-  if (openReports > 0) reasons.push(`${openReports} open report${openReports === 1 ? "" : "s"}`);
-  if (rejectedResources > 0) reasons.push(`${rejectedResources} rejected resource${rejectedResources === 1 ? "" : "s"}`);
-  if (salesCount >= 5) reasons.push("Positive sales history");
-  if (approvedResources >= 3) reasons.push("Multiple approved resources");
-
-  return {
-    score,
-    tier: getTier(score),
-    reasons,
-    stats: {
-      accountAgeDays,
-      approvedResources,
-      rejectedResources,
-      pendingResources,
-      openReports,
-      resolvedReports,
-      salesCount,
-    },
+  const stats: CreatorTrustProfile["stats"] = {
+    accountAgeDays: user
+      ? Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+      : 0,
+    approvedResources: resources.filter((resource) => resource.moderationStatus === "APPROVED").length,
+    rejectedResources: resources.filter((resource) => resource.moderationStatus === "REJECTED").length,
+    pendingResources: resources.filter((resource) => resource.moderationStatus === "PENDING_REVIEW")
+      .length,
+    openReports: reports.filter((report) => report.status === "OPEN").length,
+    resolvedReports: reports.filter((report) => report.status === "RESOLVED").length,
+    salesCount: resources.reduce((sum, resource) => sum + resource.salesCount, 0),
   };
+
+  return buildTrustProfile(stats);
 }
 
 export async function getCreatorTrustProfiles(userIds: string[]) {
@@ -174,58 +226,25 @@ export async function getCreatorTrustProfiles(userIds: string[]) {
     const creatorResources = resourcesByCreator.get(userId) ?? [];
     const creatorReports = reportsByCreator.get(userId) ?? [];
 
-    const accountAgeDays = user
-      ? Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
+    const stats: CreatorTrustProfile["stats"] = {
+      accountAgeDays: user
+        ? Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+        : 0,
+      approvedResources: creatorResources.filter(
+        (resource) => resource.moderationStatus === "APPROVED"
+      ).length,
+      rejectedResources: creatorResources.filter(
+        (resource) => resource.moderationStatus === "REJECTED"
+      ).length,
+      pendingResources: creatorResources.filter(
+        (resource) => resource.moderationStatus === "PENDING_REVIEW"
+      ).length,
+      openReports: creatorReports.filter((report) => report.status === "OPEN").length,
+      resolvedReports: creatorReports.filter((report) => report.status === "RESOLVED").length,
+      salesCount: creatorResources.reduce((sum, resource) => sum + resource.salesCount, 0),
+    };
 
-    const approvedResources = creatorResources.filter(
-      (resource) => resource.moderationStatus === "APPROVED"
-    ).length;
-    const rejectedResources = creatorResources.filter(
-      (resource) => resource.moderationStatus === "REJECTED"
-    ).length;
-    const pendingResources = creatorResources.filter(
-      (resource) => resource.moderationStatus === "PENDING_REVIEW"
-    ).length;
-    const salesCount = creatorResources.reduce((sum, resource) => sum + resource.salesCount, 0);
-    const openReports = creatorReports.filter((report) => report.status === "OPEN").length;
-    const resolvedReports = creatorReports.filter(
-      (report) => report.status === "RESOLVED"
-    ).length;
-
-    let score = 45;
-    score += Math.min(accountAgeDays, 180) / 6;
-    score += approvedResources * 4;
-    score += Math.min(salesCount, 50) * 0.8;
-    score -= rejectedResources * 12;
-    score -= pendingResources * 4;
-    score -= openReports * 8;
-    score -= resolvedReports * 2;
-
-    score = clamp(Math.round(score), 0, 100);
-
-    const reasons: string[] = [];
-    if (accountAgeDays < 14) reasons.push("New creator account");
-    if (approvedResources < 2) reasons.push("Limited approved publishing history");
-    if (openReports > 0) reasons.push(`${openReports} open report${openReports === 1 ? "" : "s"}`);
-    if (rejectedResources > 0) reasons.push(`${rejectedResources} rejected resource${rejectedResources === 1 ? "" : "s"}`);
-    if (salesCount >= 5) reasons.push("Positive sales history");
-    if (approvedResources >= 3) reasons.push("Multiple approved resources");
-
-    profiles.set(userId, {
-      score,
-      tier: getTier(score),
-      reasons,
-      stats: {
-        accountAgeDays,
-        approvedResources,
-        rejectedResources,
-        pendingResources,
-        openReports,
-        resolvedReports,
-        salesCount,
-      },
-    });
+    profiles.set(userId, buildTrustProfile(stats));
   }
 
   return profiles;
