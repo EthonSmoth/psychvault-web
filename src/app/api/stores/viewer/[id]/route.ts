@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { jsonError } from "@/lib/http";
 import {
@@ -7,7 +8,7 @@ import {
   measureAsync,
   startTimer,
 } from "@/lib/performance";
-import { checkRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
+import { checkReadRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
 import { getStoreViewerState } from "@/server/queries/store-viewer";
 
 type RouteContext = {
@@ -22,7 +23,7 @@ export async function GET(request: Request, { params }: RouteContext) {
     const clientIP = getClientIP(request);
     const { result: rateLimitResult, durationMs: rateLimitDurationMs } = await measureAsync(
       () =>
-        checkRateLimit(
+        checkReadRateLimit(
           `store-viewer:${clientIP}`,
           RATE_LIMITS.viewerState.max,
           RATE_LIMITS.viewerState.window
@@ -65,6 +66,49 @@ export async function GET(request: Request, { params }: RouteContext) {
     }
 
     const { id } = await params;
+    const { result: sessionResult, durationMs: authDurationMs } = await measureAsync(() =>
+      auth()
+    );
+    const session = sessionResult as {
+      user?: {
+        id?: string | null;
+        emailVerified?: Date | boolean | null;
+      } | null;
+    } | null;
+
+    if (!session?.user?.id) {
+      const response = NextResponse.json(
+        {
+          authenticated: false,
+        },
+        {
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+
+      const totalDurationMs = routeTimer.elapsedMs();
+
+      applyServerTiming(response.headers, [
+        { name: "ratelimit", durationMs: rateLimitDurationMs },
+        { name: "auth", durationMs: authDurationMs },
+        { name: "total", durationMs: totalDurationMs },
+      ]);
+
+      logTimedOperation("api.store.viewer", totalDurationMs, {
+        infoAtMs: 100,
+        warnAtMs: 350,
+        context: {
+          storeId: id,
+          authenticated: false,
+          rateLimitDurationMs,
+          authDurationMs,
+        },
+      });
+
+      return response;
+    }
 
     const { result: store, durationMs: storeDurationMs } = await measureAsync(() =>
       db.store.findUnique({
@@ -92,6 +136,7 @@ export async function GET(request: Request, { params }: RouteContext) {
 
       applyServerTiming(response.headers, [
         { name: "ratelimit", durationMs: rateLimitDurationMs },
+        { name: "auth", durationMs: authDurationMs },
         { name: "store", durationMs: storeDurationMs },
         { name: "total", durationMs: totalDurationMs },
       ]);
@@ -103,6 +148,7 @@ export async function GET(request: Request, { params }: RouteContext) {
           storeId: id,
           found: false,
           rateLimitDurationMs,
+          authDurationMs,
           storeDurationMs,
         },
       });
@@ -114,6 +160,7 @@ export async function GET(request: Request, { params }: RouteContext) {
       getStoreViewerState({
         storeId: store.id,
         ownerId: store.ownerId,
+        session,
       })
     );
 
@@ -130,6 +177,7 @@ export async function GET(request: Request, { params }: RouteContext) {
 
     applyServerTiming(response.headers, [
       { name: "ratelimit", durationMs: rateLimitDurationMs },
+      { name: "auth", durationMs: authDurationMs },
       { name: "store", durationMs: storeDurationMs },
       { name: "viewer", durationMs: viewerDurationMs },
       { name: "total", durationMs: totalDurationMs },
@@ -142,6 +190,7 @@ export async function GET(request: Request, { params }: RouteContext) {
         storeId: id,
         authenticated: viewerState.authenticated,
         rateLimitDurationMs,
+        authDurationMs,
         storeDurationMs,
         viewerDurationMs,
       },

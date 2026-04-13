@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/http";
 import { getPublicCacheControl } from "@/server/cache/public-cache";
 import { getPublishedResourcesBrowseData } from "@/server/queries/public-content";
-import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
+import { checkReadRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 
 // Returns a sanitized list of published resources for public integrations.
 export async function GET(request: Request) {
   try {
     const clientIP = getClientIP(request);
-    const rateLimitResult = await checkRateLimit(
+    const rateLimitResult = await checkReadRateLimit(
       `public-browse:resources:${clientIP}`,
       RATE_LIMITS.publicBrowse.max,
       RATE_LIMITS.publicBrowse.window

@@ -3,12 +3,20 @@ import { generateCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
 import type { ResourceViewerState } from "@/types/resource-viewer";
 
+type ViewerSession = {
+  user?: {
+    id?: string | null;
+    emailVerified?: Date | boolean | null;
+  } | null;
+} | null;
+
 export async function getResourceViewerState(options: {
   resourceId: string;
   creatorId: string;
   storeOwnerId?: string | null;
+  session?: ViewerSession;
 }): Promise<ResourceViewerState> {
-  const session = await auth();
+  const session = options.session ?? ((await auth()) as ViewerSession);
 
   if (!session?.user?.id) {
     return {

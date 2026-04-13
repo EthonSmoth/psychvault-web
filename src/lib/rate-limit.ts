@@ -118,6 +118,16 @@ export async function checkRateLimit(
   }
 }
 
+// Uses an in-memory limiter for low-risk read endpoints so page hydration and browsing
+// do not pay the latency cost of the shared database-backed limiter on every request.
+export async function checkReadRateLimit(
+  key: string,
+  maxAttempts: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  return checkRateLimitMemory(hashRateLimitKey(key), maxAttempts, windowMs);
+}
+
 // Resets the shared limiter after a successful action so legitimate users are not penalized.
 export async function clearRateLimit(key: string) {
   const hashedKey = hashRateLimitKey(key);

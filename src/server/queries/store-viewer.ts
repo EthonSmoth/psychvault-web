@@ -3,11 +3,19 @@ import { generateCSRFToken } from "@/lib/csrf";
 import { db } from "@/lib/db";
 import type { StoreViewerState } from "@/types/store-viewer";
 
+type ViewerSession = {
+  user?: {
+    id?: string | null;
+    emailVerified?: Date | boolean | null;
+  } | null;
+} | null;
+
 export async function getStoreViewerState(options: {
   storeId: string;
   ownerId: string;
+  session?: ViewerSession;
 }): Promise<StoreViewerState> {
-  const session = await auth();
+  const session = options.session ?? ((await auth()) as ViewerSession);
 
   if (!session?.user?.id) {
     return {
