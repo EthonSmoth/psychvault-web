@@ -171,6 +171,16 @@ export default function ResourceForm({
   const previewSlotsRemaining = useMemo(() => 4 - previews.length, [previews.length]);
   const selectedCategoryId = resource?.categories?.[0]?.categoryId || "";
   const selectedTagIds = new Set(resource?.tags?.map((tag) => tag.tagId) ?? []);
+  const [tagQuery, setTagQuery] = useState("");
+  const filteredTags = useMemo(() => {
+    const query = tagQuery.trim().toLowerCase();
+
+    if (!query) {
+      return tags;
+    }
+
+    return tags.filter((tag) => tag.name.toLowerCase().includes(query));
+  }, [tagQuery, tags]);
 
   async function handleThumbnail(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -385,6 +395,10 @@ export default function ResourceForm({
             >
               Category
             </label>
+            <p className="mb-2 text-xs text-[var(--text-light)]">
+              Choose the main home for this listing. Use tags below for profession, funding
+              model, audience, and document type.
+            </p>
             <select
               id="categoryId"
               name="categoryId"
@@ -405,8 +419,23 @@ export default function ResourceForm({
 
           <div>
             <span className="mb-2 block text-sm font-medium text-[var(--text)]">Tags</span>
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-[var(--text-light)]">
+                Layer in profession, scheme, population, and format details.
+              </p>
+              <div className="text-xs text-[var(--text-light)]">
+                {filteredTags.length} of {tags.length} tags
+              </div>
+            </div>
+            <input
+              type="search"
+              value={tagQuery}
+              onChange={(event) => setTagQuery(event.target.value)}
+              placeholder="Search tags by profession, funding, topic, or format"
+              className="mb-3 w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
+            />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
-              {tags.map((tag) => (
+              {filteredTags.map((tag) => (
                 <label
                   key={tag.id}
                   className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] px-3 py-2 text-sm text-[var(--text)] transition hover:bg-[var(--surface)]"
@@ -422,6 +451,11 @@ export default function ResourceForm({
                 </label>
               ))}
             </div>
+            {filteredTags.length === 0 ? (
+              <p className="mt-3 text-xs text-[var(--text-light)]">
+                No tags matched that search yet.
+              </p>
+            ) : null}
           </div>
 
           <label className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3">
