@@ -80,6 +80,30 @@ export function Navbar() {
                   Contact
                 </Link>
                 <Link
+                  href="/faq"
+                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                >
+                  FAQ
+                </Link>
+                <Link
+                  href="/feedback"
+                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                >
+                  Feedback
+                </Link>
+                <Link
+                  href="/careers"
+                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                >
+                  Careers
+                </Link>
+                <Link
+                  href="/templates"
+                  className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
+                >
+                  Templates
+                </Link>
+                <Link
                   href="/resources?category=assessment-tools"
                   className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
                 >

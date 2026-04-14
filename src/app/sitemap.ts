@@ -10,6 +10,7 @@ import {
 import {
   PUBLIC_CACHE_TAGS,
 } from "@/server/cache/public-cache";
+import { TEMPLATE_LANDING_PAGES } from "@/lib/template-landing-pages";
 
 export const runtime = "nodejs";
 export const revalidate = 3600;
@@ -87,6 +88,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
+      url: `${baseUrl}/faq`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/feedback`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/careers`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/templates`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/privacy-policy`,
       lastModified: new Date(),
       changeFrequency: "monthly",
@@ -117,6 +142,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: store.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.7,
+    })),
+
+    ...TEMPLATE_LANDING_PAGES.map((page) => ({
+      url: `${baseUrl}/templates/${page.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
     })),
 
     ...blogPosts.map((post) => ({

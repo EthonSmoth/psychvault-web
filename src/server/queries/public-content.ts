@@ -50,6 +50,15 @@ type ResourceBrowseOptions = {
   page?: string | number;
 };
 
+type TemplateLandingQueryOptions = {
+  query?: string;
+  categorySlugs?: string[];
+  tagSlugs?: string[];
+  price?: string;
+  sort?: string;
+  limit?: number;
+};
+
 type StoreBrowseSort = "newest" | "alphabetical" | "resources";
 type TaxonomyItem = { id: string; name: string; slug: string };
 type HomepageCategoryItem = TaxonomyItem & {
@@ -991,6 +1000,111 @@ export function getPublishedResourcesBrowseData(options: ResourceBrowseOptions) 
       store,
       sort,
       String(page),
+    ],
+    {
+      revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+      tags: [PUBLIC_CACHE_TAGS.resources, PUBLIC_CACHE_TAGS.resourceBrowse],
+    }
+  )();
+}
+
+export function getPublishedTemplateLandingResources(options: TemplateLandingQueryOptions) {
+  const query = normaliseBrowseText(options.query);
+  const categorySlugs = Array.from(
+    new Set((options.categorySlugs || []).map((slug) => normaliseBrowseSlug(slug)).filter(Boolean))
+  );
+  const tagSlugs = Array.from(
+    new Set((options.tagSlugs || []).map((slug) => normaliseBrowseSlug(slug)).filter(Boolean))
+  );
+  const price = normaliseResourceBrowsePrice(options.price);
+  const sort = normaliseResourceBrowseSort(options.sort);
+  const limit = Math.min(Math.max(Number(options.limit) || 12, 1), PUBLIC_RESOURCE_BROWSE_PAGE_SIZE);
+  const andFilters: Prisma.ResourceWhereInput[] = [
+    ...categorySlugs.map((slug) => ({
+      categories: {
+        some: {
+          category: {
+            slug,
+          },
+        },
+      },
+    })),
+    ...tagSlugs.map((slug) => ({
+      tags: {
+        some: {
+          tag: {
+            slug,
+          },
+        },
+      },
+    })),
+  ];
+
+  return unstable_cache(
+    async (): Promise<PublicResourceCard[]> => {
+      const resources = await db.resource.findMany({
+        where: getPubliclyVisiblePublishedResourceWhere({
+          ...(price === "free"
+            ? {
+                isFree: true,
+              }
+            : {}),
+          ...(price === "paid"
+            ? {
+                isFree: false,
+              }
+            : {}),
+          ...(query
+            ? {
+                OR: [
+                  {
+                    title: {
+                      contains: query,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    shortDescription: {
+                      contains: query,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    description: {
+                      contains: query,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    slug: {
+                      contains: query.toLowerCase().replace(/\s+/g, "-"),
+                    },
+                  },
+                ],
+              }
+            : {}),
+          ...(andFilters.length
+            ? {
+                AND: andFilters,
+              }
+            : {}),
+        }),
+        select: resourceCardSelect,
+        orderBy: getResourceBrowseSortOrder(sort),
+        take: limit,
+      });
+
+      return resources.map(toPublicResourceCard);
+    },
+    [
+      PUBLIC_VISIBILITY_CACHE_VERSION,
+      "template-landing-resources",
+      query,
+      categorySlugs.join("|"),
+      tagSlugs.join("|"),
+      price,
+      sort,
+      String(limit),
     ],
     {
       revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,

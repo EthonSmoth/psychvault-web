@@ -11,10 +11,28 @@ type ContactErrorPayload = {
   };
 };
 
-export default function ContactForm() {
+type ContactFormProps = {
+  defaultSubject?: string;
+  submitLabel?: string;
+  successMessage?: string;
+  subjectLabel?: string;
+  messageLabel?: string;
+  subjectPlaceholder?: string;
+  messagePlaceholder?: string;
+};
+
+export default function ContactForm({
+  defaultSubject = "",
+  submitLabel = "Send message",
+  successMessage = "Your message has been sent. We'll respond as soon as possible.",
+  subjectLabel = "Subject",
+  messageLabel = "Message",
+  subjectPlaceholder,
+  messagePlaceholder,
+}: ContactFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(defaultSubject);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<ContactFormState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -44,7 +62,7 @@ export default function ContactForm() {
       setStatus("success");
       setName("");
       setEmail("");
-      setSubject("");
+      setSubject(defaultSubject);
       setMessage("");
       return;
     }
@@ -91,7 +109,7 @@ export default function ContactForm() {
       </div>
 
       <label className="space-y-2 text-sm font-medium text-[var(--text)]">
-        <span>Subject</span>
+        <span>{subjectLabel}</span>
         <input
           type="text"
           value={subject}
@@ -99,6 +117,7 @@ export default function ContactForm() {
           required
           minLength={3}
           maxLength={120}
+          placeholder={subjectPlaceholder}
           className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)] ring-0 transition focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
         />
         {fieldErrors.subject?.[0] ? (
@@ -107,7 +126,7 @@ export default function ContactForm() {
       </label>
 
       <label className="space-y-2 text-sm font-medium text-[var(--text)]">
-        <span>Message</span>
+        <span>{messageLabel}</span>
         <textarea
           value={message}
           onChange={(event) => setMessage(event.target.value)}
@@ -115,6 +134,7 @@ export default function ContactForm() {
           rows={6}
           minLength={10}
           maxLength={5000}
+          placeholder={messagePlaceholder}
           className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)] ring-0 transition focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
         />
         {fieldErrors.message?.[0] ? (
@@ -124,7 +144,7 @@ export default function ContactForm() {
 
       {status === "success" ? (
         <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          Your message has been sent. We’ll respond as soon as possible.
+          {successMessage}
         </div>
       ) : null}
 
@@ -139,7 +159,7 @@ export default function ContactForm() {
         disabled={status === "sending"}
         className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "sending" ? "Sending..." : "Send message"}
+        {status === "sending" ? "Sending..." : submitLabel}
       </button>
     </form>
   );

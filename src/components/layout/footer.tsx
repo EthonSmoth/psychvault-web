@@ -55,6 +55,12 @@ export function Footer() {
                 Blog
               </Link>
               <Link
+                href="/templates"
+                className="block transition-colors hover:text-[var(--accent)]"
+              >
+                Templates
+              </Link>
+              <Link
                 href="/resources?price=free"
                 className="block transition-colors hover:text-[var(--accent)]"
               >
@@ -125,6 +131,15 @@ export function Footer() {
               </Link>
               <Link href="/contact" className="block transition-colors hover:text-[var(--accent)]">
                 Contact
+              </Link>
+              <Link href="/faq" className="block transition-colors hover:text-[var(--accent)]">
+                FAQ
+              </Link>
+              <Link href="/feedback" className="block transition-colors hover:text-[var(--accent)]">
+                Feedback
+              </Link>
+              <Link href="/careers" className="block transition-colors hover:text-[var(--accent)]">
+                Careers
               </Link>
               <Link
                 href="/feed.xml"
