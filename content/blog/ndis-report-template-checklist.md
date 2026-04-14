@@ -1,6 +1,8 @@
 ---
 title: "NDIS report template checklist for psychologists who want faster approvals"
 description: "A practical checklist for writing clearer NDIS psychology reports with stronger functional wording, cleaner recommendations, and less admin drag."
+coverImage: "/blog/NDIS-report-template-checklist-for-psychologists-who-want-faster-approval.jpg"
+coverImageAlt: "NDIS psychology report template pages laid out with notes and clinical prompts"
 publishedAt: "2026-03-14"
 updatedAt: "2026-04-14"
 author: "PsychVault Editorial Team"

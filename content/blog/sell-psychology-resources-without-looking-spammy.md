@@ -1,6 +1,8 @@
 ---
 title: "How to sell psychology resources online without looking spammy"
 description: "A grounded guide for clinicians who want to sell psychology resources online while still sounding credible, helpful, and professionally aligned."
+coverImage: "/blog/How-to-sell-psychology-resources-online-without-looking-spammy.jpg"
+coverImageAlt: "Clinician resource storefront mockup with polished previews and calm branding"
 publishedAt: "2026-01-29"
 updatedAt: "2026-04-14"
 author: "PsychVault Editorial Team"
