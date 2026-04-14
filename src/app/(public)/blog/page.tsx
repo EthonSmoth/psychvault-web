@@ -146,23 +146,23 @@ export default async function BlogIndexPage() {
           <div className="grid gap-10 px-6 py-10 lg:grid-cols-[1.15fr_0.85fr] lg:px-10 lg:py-12">
             <div>
               <span className="inline-flex rounded-full border border-[var(--border-strong)] bg-[var(--surface-alt)] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text)]">
-                PsychVault Editorial
+                For Clinicians
               </span>
               <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-[var(--text)] sm:text-5xl">
-                Articles that help clinicians write better, sell better, and save time.
+                Practical reading for clinicians who want clearer tools and calmer workflows.
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--text-muted)]">
-                The PsychVault blog is built for psychologists, counsellors, and mental
-                health creators who want practical guidance on resources, trust, SEO,
-                NDIS workflows, and digital product quality.
+                Read concise articles on report writing, psychoeducation, NDIS documentation,
+                neurodiversity-affirming practice, and the everyday systems that make
+                clinical work easier.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="/resources"
+                  href={leadPost ? `/blog/${leadPost.slug}` : "#latest-posts"}
                   className="inline-flex rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
                 >
-                  Browse resources
+                  Start reading
                 </Link>
                 <Link
                   href={feedUrl}
@@ -175,21 +175,21 @@ export default async function BlogIndexPage() {
 
             <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
               <div className="rounded-3xl bg-[var(--surface-alt)] p-5">
-                <div className="text-sm font-semibold text-[var(--text)]">SEO-ready structure</div>
+                <div className="text-sm font-semibold text-[var(--text)]">Practical and readable</div>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-                  Clean URLs, metadata, structured data, RSS, and internal linking built in.
+                  Short, skimmable articles grounded in the kinds of questions clinicians ask every week.
                 </p>
               </div>
               <div className="rounded-3xl bg-[var(--surface-alt)] p-5">
-                <div className="text-sm font-semibold text-[var(--text)]">Markdown workflow</div>
+                <div className="text-sm font-semibold text-[var(--text)]">Clinically relevant topics</div>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-                  New posts live in versioned `.md` files, so writing stays lightweight.
+                  Expect report writing, psychoeducation, templates, NDIS wording, and resource ideas.
                 </p>
               </div>
               <div className="rounded-3xl bg-[var(--surface-alt)] p-5">
-                <div className="text-sm font-semibold text-[var(--text)]">High-intent topics</div>
+                <div className="text-sm font-semibold text-[var(--text)]">Made for busy readers</div>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-                  Built around the same clinician search terms that align with your marketplace.
+                  Clear headings, useful examples, and takeaways you can bring into practice quickly.
                 </p>
               </div>
             </div>
@@ -204,7 +204,7 @@ export default async function BlogIndexPage() {
                   Featured article
                 </div>
                 <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--text)]">
-                  Start with the sharpest piece
+                  Start here
                 </h2>
               </div>
             </div>
@@ -221,18 +221,17 @@ export default async function BlogIndexPage() {
           </section>
         ) : null}
 
-        <section className="mt-14 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
+        <section id="latest-posts" className="mt-14 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
           <aside className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-light)]">
-              Coverage
+              What You&apos;ll Find
             </div>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text)]">
-              Topics that map to the marketplace
+              Topics clinicians actually come looking for
             </h2>
             <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
-              These posts are meant to rank for practical questions clinicians actually
-              search, then guide them naturally into your resources, store pages, and
-              creator tools.
+              From report templates and psychoeducation to NDIS wording and client-facing
+              resources, the blog focuses on practical issues that show up in real work.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {categories.map((category) => (
@@ -253,7 +252,7 @@ export default async function BlogIndexPage() {
                   Latest posts
                 </div>
                 <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--text)]">
-                  Keep building topical authority
+                  More recent reads
                 </h2>
               </div>
             </div>
@@ -266,7 +265,7 @@ export default async function BlogIndexPage() {
               </div>
             ) : (
               <div className="rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-8 text-sm text-[var(--text-muted)]">
-                Add markdown files under `content/blog` to publish more articles.
+                More articles are on the way.
               </div>
             )}
           </div>

@@ -334,32 +334,112 @@ function HeroShowcaseFallback() {
 
 function MarketplaceTrustSection() {
   const paymentsAvailability = getPaymentsAvailability();
+  const cards = [
+    {
+      emoji: "🏪",
+      title: "Public marketplace",
+      description: (
+        <>
+          Explore <Link href="/stores" className="font-medium text-[var(--text)] underline">creator stores</Link>, browse{" "}
+          <Link href="/resources" className="font-medium text-[var(--text)] underline">published resources</Link>, and
+          move between live listings on a real public domain.
+        </>
+      ),
+      href: "/stores",
+      linkLabel: "Explore stores",
+    },
+    {
+      emoji: "🛡️",
+      title: "Trust and moderation",
+      description: (
+        <>
+          Buyers can review previews, message creators, and report listings while you
+          discover stronger resources through{" "}
+          <Link
+            href="/resources?sort=rating"
+            className="font-medium text-[var(--text)] underline"
+          >
+            top-rated tools
+          </Link>{" "}
+          and the{" "}
+          <Link href="/blog" className="font-medium text-[var(--text)] underline">
+            clinician blog
+          </Link>
+          .
+        </>
+      ),
+      href: "/resources?sort=rating",
+      linkLabel: "See trusted resources",
+    },
+    {
+      emoji: paymentsAvailability.enabled ? "💳" : "🎁",
+      title: "Checkout status",
+      description: paymentsAvailability.enabled ? (
+        <>
+          Paid and free digital resources can be claimed through the platform, including{" "}
+          <Link
+            href="/resources?sort=popular"
+            className="font-medium text-[var(--text)] underline"
+          >
+            best sellers
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/resources?price=free"
+            className="font-medium text-[var(--text)] underline"
+          >
+            free downloads
+          </Link>
+          .
+        </>
+      ) : (
+        <>
+          Free resources are available now while paid checkout activation is being finalised.
+          You can still browse{" "}
+          <Link
+            href="/resources?price=free"
+            className="font-medium text-[var(--text)] underline"
+          >
+            free resources
+          </Link>{" "}
+          or{" "}
+          <Link href="/creator" className="font-medium text-[var(--text)] underline">
+            start selling
+          </Link>
+          .
+        </>
+      ),
+      href: paymentsAvailability.enabled ? "/resources?sort=popular" : "/resources?price=free",
+      linkLabel: paymentsAvailability.enabled ? "Browse popular resources" : "Browse free resources",
+    },
+  ];
 
   return (
     <section className="defer-section mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-          <div className="text-sm font-semibold text-[var(--text)]">Public marketplace</div>
-          <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-            Explore live creator stores, published psychology resources, and clear public
-            policies on a real production domain.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-          <div className="text-sm font-semibold text-[var(--text)]">Trust and moderation</div>
-          <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-            Buyers can review previews, contact creators, report listings, and rely on
-            marketplace moderation when something looks wrong.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-          <div className="text-sm font-semibold text-[var(--text)]">Checkout status</div>
-          <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-            {paymentsAvailability.enabled
-              ? "Paid and free digital resources can be claimed through the platform."
-              : "Free resources are available now while paid checkout activation is being finalised."}
-          </p>
-        </div>
+        {cards.map((card) => (
+          <div
+            key={card.title}
+            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm"
+          >
+            <div className="flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--surface-alt)] text-xl"
+              >
+                {card.emoji}
+              </span>
+              <div className="text-sm font-semibold text-[var(--text)]">{card.title}</div>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">{card.description}</p>
+            <Link
+              href={card.href}
+              className="mt-4 inline-flex text-sm font-medium text-[var(--text)] underline transition hover:text-[var(--accent)]"
+            >
+              {card.linkLabel}
+            </Link>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -645,6 +725,37 @@ async function HomeBlogSection() {
 }
 
 function HomeValueSection() {
+  const valueCards = [
+    {
+      emoji: "⏱️",
+      title: "Save time",
+      body: "Access templates, handouts, and structured resources that cut admin time.",
+      href: "/resources?sort=popular",
+      label: "Explore popular tools",
+    },
+    {
+      emoji: "✅",
+      title: "Built on trust",
+      body: "Resources made by clinicians, with previews, ratings, and clear descriptions.",
+      href: "/resources?sort=rating",
+      label: "Browse top rated",
+    },
+    {
+      emoji: "💼",
+      title: "Earn from your work",
+      body: "Turn polished templates into a passive income stream alongside your practice.",
+      href: "/creator/resources/new",
+      label: "Upload a resource",
+    },
+    {
+      emoji: "📚",
+      title: "Grow your store",
+      body: "Build a public creator profile with a library that compounds over time.",
+      href: "/creator/store",
+      label: "Set up your store",
+    },
+  ];
+
   return (
     <section className="defer-section mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm lg:p-12">
@@ -674,35 +785,25 @@ function HomeValueSection() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              {
-                title: "Save time",
-                body: "Access templates, handouts, and structured resources that cut admin time.",
-                href: "/resources",
-              },
-              {
-                title: "Built on trust",
-                body: "Resources made by clinicians, with previews, ratings, and clear descriptions.",
-                href: "/resources",
-              },
-              {
-                title: "Earn from your work",
-                body: "Turn polished templates into a passive income stream alongside your practice.",
-                href: "/creator",
-              },
-              {
-                title: "Grow your store",
-                body: "Build a public creator profile with a library that compounds over time.",
-                href: "/creator",
-              },
-            ].map((item) => (
+            {valueCards.map((item) => (
               <Link
                 key={item.title}
                 href={item.href}
-                className="rounded-2xl bg-[var(--surface-alt)] p-5 transition hover:bg-[var(--surface)]"
+                className="group rounded-2xl bg-[var(--surface-alt)] p-5 transition hover:bg-[var(--surface)]"
               >
-                <h3 className="font-semibold text-[var(--text)]">{item.title}</h3>
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--card)] text-lg shadow-sm"
+                  >
+                    {item.emoji}
+                  </span>
+                  <h3 className="font-semibold text-[var(--text)]">{item.title}</h3>
+                </div>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{item.body}</p>
+                <div className="mt-4 text-sm font-medium text-[var(--text)] transition group-hover:text-[var(--accent)]">
+                  {item.label}
+                </div>
               </Link>
             ))}
           </div>

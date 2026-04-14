@@ -37,32 +37,6 @@ export function Footer() {
               ) : null}
             </div>
 
-            <div className="mt-5 flex items-center justify-center gap-4 text-sm text-[var(--text-muted)] lg:justify-start">
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-[var(--accent)]"
-              >
-                Twitter
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-[var(--accent)]"
-              >
-                Instagram
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-[var(--accent)]"
-              >
-                YouTube
-              </a>
-            </div>
           </div>
 
           <div>
