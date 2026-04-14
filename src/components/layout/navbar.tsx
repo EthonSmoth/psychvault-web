@@ -1,55 +1,9 @@
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-
-const NavbarSessionBanner = dynamic(
-  () =>
-    import("@/components/layout/navbar-session").then((module) => module.NavbarSessionBanner),
-  {
-    ssr: false,
-  }
-);
-
-const NavbarSessionControls = dynamic(
-  () =>
-    import("@/components/layout/navbar-session").then((module) => module.NavbarSessionControls),
-  {
-    ssr: false,
-    loading: () => <NavbarSessionControlsFallback />,
-  }
-);
-
-function NavbarSessionControlsFallback() {
-  return (
-    <>
-      <div className="flex items-center gap-2 md:hidden">
-        <div
-          className="h-10 w-18 animate-pulse rounded-xl border border-soft bg-[var(--surface-alt)]"
-          aria-hidden="true"
-        />
-        <div
-          className="h-10 w-18 animate-pulse rounded-xl border border-soft bg-[var(--surface-alt)]"
-          aria-hidden="true"
-        />
-        <div
-          className="h-10 w-14 animate-pulse rounded-2xl border border-soft bg-[var(--surface-alt)]"
-          aria-hidden="true"
-        />
-      </div>
-
-      <div className="hidden items-center gap-3 md:flex">
-        <div
-          className="h-10 w-24 animate-pulse rounded-xl border border-soft bg-[var(--surface-alt)]"
-          aria-hidden="true"
-        />
-        <div
-          className="h-10 w-28 animate-pulse rounded-xl border border-soft bg-[var(--surface-alt)]"
-          aria-hidden="true"
-        />
-      </div>
-    </>
-  );
-}
+import {
+  NavbarSessionBanner,
+  NavbarSessionControls,
+} from "@/components/layout/navbar-session";
 
 export function Navbar() {
   return (
