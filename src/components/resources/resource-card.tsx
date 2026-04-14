@@ -5,6 +5,9 @@ import type { PublicResourceCard } from "@/types/public";
 
 type ResourceCardProps = {
   resource: PublicResourceCard;
+  preferThumbnail?: boolean;
+  imageQuality?: number;
+  imageSizes?: string;
 };
 
 function formatPrice(priceCents: number, isFree?: boolean) {
@@ -16,8 +19,15 @@ function formatPrice(priceCents: number, isFree?: boolean) {
   }).format(priceCents / 100);
 }
 
-export default function ResourceCard({ resource }: ResourceCardProps) {
-  const previewImage = resource.previewImageUrl || resource.thumbnailUrl;
+export default function ResourceCard({
+  resource,
+  preferThumbnail = false,
+  imageQuality,
+  imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px",
+}: ResourceCardProps) {
+  const previewImage = preferThumbnail
+    ? resource.thumbnailUrl || resource.previewImageUrl
+    : resource.previewImageUrl || resource.thumbnailUrl;
   const isFree = resource.isFree || resource.priceCents === 0;
 
   return (
@@ -31,7 +41,8 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
             src={previewImage}
             alt={resource.title}
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+            sizes={imageSizes}
+            quality={imageQuality}
             className="object-cover transition group-hover:scale-[1.02]"
           />
         ) : (

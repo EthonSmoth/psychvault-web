@@ -191,7 +191,8 @@ async function HomeHeroShowcase() {
               fill
               priority
               loading="eager"
-              sizes="(max-width: 1024px) 100vw, 42vw"
+              quality={72}
+              sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 1024px) calc(100vw - 3rem), 42vw"
               className="object-cover transition group-hover:scale-[1.02]"
             />
           ) : (
@@ -393,7 +394,13 @@ async function HomeFeaturedResourcesSection() {
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {visibleResources.map((resource) => (
-          <ResourceCard key={resource.id} resource={resource} />
+          <ResourceCard
+            key={resource.id}
+            resource={resource}
+            preferThumbnail
+            imageQuality={70}
+            imageSizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 1024px) calc(50vw - 2rem), 360px"
+          />
         ))}
         {Array.from({ length: Math.max(0, 3 - visibleResources.length) }).map((_, index) => (
           <ResourceSectionPlaceholder
@@ -440,12 +447,13 @@ async function HomeRecentResourcesSection() {
             className="group block rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
             <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-[var(--surface)]">
-              {resource.previewImageUrl ? (
+              {resource.thumbnailUrl || resource.previewImageUrl ? (
                 <Image
-                  src={resource.previewImageUrl}
+                  src={resource.thumbnailUrl || resource.previewImageUrl!}
                   alt={resource.title}
                   fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 380px"
+                  quality={70}
+                  sizes="(max-width: 768px) calc(100vw - 2rem), (max-width: 1280px) calc(33vw - 2rem), 360px"
                   className="object-cover transition group-hover:scale-[1.02]"
                 />
               ) : (

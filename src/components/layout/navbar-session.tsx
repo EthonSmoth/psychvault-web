@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { resendVerificationEmailFormAction } from "@/server/actions/email-verification-actions";
 import { logoutAction } from "@/server/actions/auth-actions";
 import { MobileOverlayMenu } from "@/components/layout/mobile-overlay-menu";
@@ -22,13 +22,8 @@ type NavbarSessionResponse =
       };
     };
 
-type NavbarSessionContextValue = {
-  session: NavbarSessionResponse | null;
-};
-
-const NavbarSessionContext = createContext<NavbarSessionContextValue>({
-  session: null,
-});
+let navbarSessionCache: NavbarSessionResponse | undefined;
+let navbarSessionRequest: Promise<NavbarSessionResponse> | null = null;
 
 function getInitials(name?: string | null) {
   return (
@@ -41,19 +36,14 @@ function getInitials(name?: string | null) {
   );
 }
 
-export function NavbarSessionProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [session, setSession] = useState<NavbarSessionResponse | null>(null);
+async function fetchNavbarSession() {
+  if (navbarSessionCache) {
+    return navbarSessionCache;
+  }
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    fetch("/api/session/nav", {
+  if (!navbarSessionRequest) {
+    navbarSessionRequest = fetch("/api/session/nav", {
       cache: "no-store",
-      signal: controller.signal,
     })
       .then(async (response) => {
         if (!response.ok) {
@@ -62,28 +52,41 @@ export function NavbarSessionProvider({
 
         return (await response.json()) as NavbarSessionResponse;
       })
-      .then((payload) => {
-        setSession(payload);
-      })
       .catch(() => {
-        setSession({ authenticated: false });
+        return { authenticated: false } satisfies NavbarSessionResponse;
+      })
+      .then((payload) => {
+        navbarSessionCache = payload;
+        return payload;
+      })
+      .finally(() => {
+        navbarSessionRequest = null;
       });
+  }
 
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
-  const value = useMemo(() => ({ session }), [session]);
-
-  return <NavbarSessionContext.Provider value={value}>{children}</NavbarSessionContext.Provider>;
+  return navbarSessionRequest;
 }
 
 function useNavbarSession() {
-  return useContext(NavbarSessionContext).session;
+  const [session, setSession] = useState<NavbarSessionResponse | null>(
+    navbarSessionCache ?? null
+  );
+
+  useEffect(() => {
+    if (navbarSessionCache) {
+      setSession(navbarSessionCache);
+      return;
+    }
+
+    fetchNavbarSession().then((payload) => {
+      setSession(payload);
+    });
+  }, []);
+
+  return session;
 }
 
-function NavbarSessionSkeleton() {
+export function NavbarSessionControlsSkeleton() {
   return (
     <>
       <div className="flex items-center gap-2 md:hidden">
@@ -294,7 +297,7 @@ export function NavbarSessionControls() {
   const session = useNavbarSession();
 
   if (!session) {
-    return <NavbarSessionSkeleton />;
+    return <NavbarSessionControlsSkeleton />;
   }
 
   if (session?.authenticated) {
