@@ -24,14 +24,75 @@ export const metadata: Metadata = {
   },
 };
 
-const CATEGORY_ICONS: Record<string, string> = {
-  "assessment-tools": "Checklist",
-  "report-templates": "Reports",
-  psychoeducation: "Education",
-  "parent-handouts": "Parents",
-  "ndis-resources": "NDIS",
-  "therapy-worksheets": "Worksheets",
+const CATEGORY_PRESENTATION: Record<
+  string,
+  {
+    emoji: string;
+    eyebrow: string;
+    description: string;
+  }
+> = {
+  "assessment-tools": {
+    emoji: "🧪",
+    eyebrow: "Decision support",
+    description: "Checklists, screeners, and structured tools that help clinicians assess clearly.",
+  },
+  "report-templates": {
+    emoji: "📝",
+    eyebrow: "Documentation",
+    description: "Sharper report frameworks, wording packs, and templates that reduce admin drag.",
+  },
+  psychoeducation: {
+    emoji: "🧠",
+    eyebrow: "Client education",
+    description: "Handouts and explainer resources that make complex ideas easier to share well.",
+  },
+  "parent-handouts": {
+    emoji: "👨‍👩‍👧",
+    eyebrow: "Family support",
+    description: "Plain-language resources parents can actually use between sessions.",
+  },
+  "ndis-resources": {
+    emoji: "📋",
+    eyebrow: "NDIS workflow",
+    description: "Resources for clearer functional language, recommendations, and support planning.",
+  },
+  "therapy-worksheets": {
+    emoji: "🧰",
+    eyebrow: "Session tools",
+    description: "Practical worksheets you can bring straight into therapy or reflective work.",
+  },
+  "emotional-regulation-tools": {
+    emoji: "🌿",
+    eyebrow: "Regulation",
+    description: "Supports for noticing overwhelm, tracking cues, and building steadier coping plans.",
+  },
+  "trauma-informed-practice": {
+    emoji: "🛟",
+    eyebrow: "Trauma-aware",
+    description: "Gentle, low-demand tools for safer pacing, stabilisation, and nervous-system support.",
+  },
+  "adhd-supports": {
+    emoji: "⚡",
+    eyebrow: "ADHD practice",
+    description: "Tools for planning, motivation, daily routines, and more sustainable follow-through.",
+  },
+  "autism-and-neurodivergent-practice": {
+    emoji: "🧩",
+    eyebrow: "Neurodiversity",
+    description: "Affirming resources for autistic, ADHD, AuDHD, and otherwise neurodivergent clients.",
+  },
 };
+
+function getCategoryPresentation(slug: string) {
+  return (
+    CATEGORY_PRESENTATION[slug] || {
+      emoji: "🗂️",
+      eyebrow: "Browse resources",
+      description: "Explore practical tools, templates, and supports in this area of practice.",
+    }
+  );
+}
 
 function getHomeSectionResources<T>(items: T[], count: number) {
   return items.slice(0, count);
@@ -315,7 +376,7 @@ async function HomeCategoriesSection() {
             Browse by category
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
-            Find practical resources by the kind of work you&apos;re doing.
+            Find practical resources by workflow, client need, or documentation task.
           </p>
         </div>
         <Link
@@ -326,26 +387,57 @@ async function HomeCategoriesSection() {
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {categories.map((category) => (
-          <Link
-            key={category.id}
-            href={`/resources?category=${category.slug}`}
-            className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-          >
-            <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-light)]">
-              {CATEGORY_ICONS[category.slug] || "Category"}
-            </div>
-            <h3 className="font-semibold text-[var(--text)]">{category.name}</h3>
-            <p className="mt-1 text-sm text-[var(--text-light)]">
-              {category._count.resources}{" "}
-              {category._count.resources === 1 ? "resource" : "resources"}
-            </p>
-            <div className="mt-4 text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
-              Browse
-            </div>
-          </Link>
-        ))}
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {categories.map((category) => {
+          const presentation = getCategoryPresentation(category.slug);
+          const hasLiveResources = category._count.resources > 0;
+
+          return (
+            <Link
+              key={category.id}
+              href={`/resources?category=${category.slug}`}
+              className="group rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--surface)] text-2xl shadow-sm">
+                  <span aria-hidden="true">{presentation.emoji}</span>
+                </div>
+
+                <span
+                  className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                    hasLiveResources
+                      ? "bg-[var(--surface-alt)] text-[var(--text)]"
+                      : "bg-[var(--surface)] text-[var(--text-light)]"
+                  }`}
+                >
+                  {hasLiveResources
+                    ? `${category._count.resources} live`
+                    : "Coming soon"}
+                </span>
+              </div>
+
+              <div className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-light)]">
+                {presentation.eyebrow}
+              </div>
+              <h3 className="mt-3 text-lg font-semibold text-[var(--text)]">{category.name}</h3>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+                {presentation.description}
+              </p>
+              <div className="mt-5 flex items-center justify-between gap-3">
+                <span className="text-xs text-[var(--text-light)]">
+                  {hasLiveResources
+                    ? `${category._count.resources} ${
+                        category._count.resources === 1 ? "resource" : "resources"
+                      } ready`
+                    : "Help shape this lane"}
+                </span>
+                <span className="text-sm font-medium text-[var(--text)] transition group-hover:text-[var(--accent)]">
+                  Browse
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
@@ -354,15 +446,20 @@ async function HomeCategoriesSection() {
 function HomeCategoriesFallback() {
   return (
     <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {[0, 1, 2, 3, 4, 5].map((item) => (
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((item) => (
           <div
             key={item}
-            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm"
+            className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm"
           >
-            <div className="h-4 w-16 animate-pulse rounded bg-[var(--surface)]" />
-            <div className="mt-3 h-5 w-2/3 animate-pulse rounded bg-[var(--surface)]" />
-            <div className="mt-2 h-4 w-24 animate-pulse rounded bg-[var(--surface)]" />
+            <div className="flex items-start justify-between gap-4">
+              <div className="h-12 w-12 animate-pulse rounded-2xl bg-[var(--surface)]" />
+              <div className="h-6 w-20 animate-pulse rounded-full bg-[var(--surface)]" />
+            </div>
+            <div className="mt-5 h-3 w-24 animate-pulse rounded bg-[var(--surface)]" />
+            <div className="mt-3 h-6 w-2/3 animate-pulse rounded bg-[var(--surface)]" />
+            <div className="mt-3 h-4 w-full animate-pulse rounded bg-[var(--surface)]" />
+            <div className="mt-2 h-4 w-4/5 animate-pulse rounded bg-[var(--surface)]" />
           </div>
         ))}
       </div>

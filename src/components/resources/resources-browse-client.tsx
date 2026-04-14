@@ -106,6 +106,11 @@ export function ResourcesBrowseClient({
   const filters = useMemo(() => getFiltersFromSearchParams(searchParams), [searchParams]);
   const isSearchSurface = pathname === "/search";
   const formKey = useMemo(() => buildSearchUrl(filters), [filters]);
+  const categoryLabels = useMemo(
+    () => new Map(categories.map((item) => [item.slug, item.name])),
+    [categories]
+  );
+  const tagLabels = useMemo(() => new Map(tags.map((item) => [item.slug, item.name])), [tags]);
 
   const [resources, setResources] = useState(initialResources);
   const [pageInfo, setPageInfo] = useState(initialPageInfo);
@@ -358,13 +363,13 @@ export function ResourcesBrowseClient({
 
           {filters.category ? (
             <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)]">
-              Category: {filters.category}
+              Category: {categoryLabels.get(filters.category) || filters.category}
             </span>
           ) : null}
 
           {filters.tag ? (
             <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)]">
-              Tag: {filters.tag}
+              Tag: {tagLabels.get(filters.tag) || filters.tag}
             </span>
           ) : null}
 

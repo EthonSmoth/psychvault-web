@@ -4,6 +4,11 @@ import { db } from "@/lib/db";
 import { logTimedOperation, startTimer } from "@/lib/performance";
 import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import {
+  DEFAULT_RESOURCE_CATEGORIES,
+  DEFAULT_RESOURCE_TAGS,
+  HOMEPAGE_FEATURED_CATEGORY_SLUGS,
+} from "@/lib/resource-taxonomy";
+import {
   getPubliclyVisiblePublishedResourceWhere,
   getPubliclyVisibleStoreWhere,
   PUBLIC_VISIBILITY_CACHE_VERSION,
@@ -46,6 +51,12 @@ type ResourceBrowseOptions = {
 };
 
 type StoreBrowseSort = "newest" | "alphabetical" | "resources";
+type TaxonomyItem = { id: string; name: string; slug: string };
+type HomepageCategoryItem = TaxonomyItem & {
+  _count: {
+    resources: number;
+  };
+};
 
 function normaliseBrowseText(value?: string, maxLength = MAX_PUBLIC_QUERY_LENGTH) {
   return value?.trim().slice(0, maxLength) || "";
@@ -78,6 +89,50 @@ function normaliseBrowsePage(value?: string | number) {
   }
 
   return Math.min(Math.floor(page), MAX_PUBLIC_BROWSE_PAGE);
+}
+
+function mergeTaxonomyItems(
+  defaults: { name: string; slug: string }[],
+  records: TaxonomyItem[]
+): TaxonomyItem[] {
+  const recordMap = new Map(records.map((item) => [item.slug, item]));
+  const defaultSlugs = new Set(defaults.map((item) => item.slug));
+
+  const mergedDefaults = defaults.map((item) => {
+    const record = recordMap.get(item.slug);
+
+    return {
+      id: record?.id ?? `default-${item.slug}`,
+      name: record?.name ?? item.name,
+      slug: item.slug,
+    };
+  });
+
+  const recordOnlyItems = records.filter((item) => !defaultSlugs.has(item.slug));
+
+  return [...mergedDefaults, ...recordOnlyItems].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function mergeHomepageCategoryItems(records: HomepageCategoryItem[]) {
+  const recordMap = new Map(records.map((item) => [item.slug, item]));
+  const defaultSlugs = new Set(DEFAULT_RESOURCE_CATEGORIES.map((item) => item.slug));
+
+  const mergedDefaults = DEFAULT_RESOURCE_CATEGORIES.map((item) => {
+    const record = recordMap.get(item.slug);
+
+    return {
+      id: record?.id ?? `default-${item.slug}`,
+      name: record?.name ?? item.name,
+      slug: item.slug,
+      _count: {
+        resources: record?._count.resources ?? 0,
+      },
+    };
+  });
+
+  const recordOnlyItems = records.filter((item) => !defaultSlugs.has(item.slug));
+
+  return [...mergedDefaults, ...recordOnlyItems];
 }
 
 function createPublicBrowsePageInfo(
@@ -689,8 +744,8 @@ export function getHomepageCategoryData() {
         },
       });
 
-      return categories
-        .map((category) => ({
+      const mergedCategories = mergeHomepageCategoryItems(
+        categories.map((category) => ({
           id: category.id,
           name: category.name,
           slug: category.slug,
@@ -698,14 +753,25 @@ export function getHomepageCategoryData() {
             resources: category.resources.length,
           },
         }))
+      );
+
+      const featuredItems = HOMEPAGE_FEATURED_CATEGORY_SLUGS.map((slug) =>
+        mergedCategories.find((category) => category.slug === slug)
+      ).filter(Boolean) as HomepageCategoryItem[];
+
+      const featuredSlugSet = new Set(featuredItems.map((item) => item.slug));
+
+      const remainingItems = mergedCategories
+        .filter((category) => !featuredSlugSet.has(category.slug))
         .sort((a, b) => {
           if (b._count.resources !== a._count.resources) {
             return b._count.resources - a._count.resources;
           }
 
           return a.name.localeCompare(b.name);
-        })
-        .slice(0, 6);
+        });
+
+      return [...featuredItems, ...remainingItems].slice(0, 8);
     },
     ["homepage-categories"],
     {
@@ -766,8 +832,8 @@ export function getResourceBrowseFacets() {
       ]);
 
       return {
-        categories,
-        tags,
+        categories: mergeTaxonomyItems(DEFAULT_RESOURCE_CATEGORIES, categories),
+        tags: mergeTaxonomyItems(DEFAULT_RESOURCE_TAGS, tags),
       };
     },
     ["public-resource-browse-facets"],
