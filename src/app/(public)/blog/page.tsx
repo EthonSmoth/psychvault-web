@@ -11,6 +11,18 @@ const baseUrl = getAppBaseUrl();
 const blogUrl = `${baseUrl}/blog`;
 const feedUrl = `${baseUrl}/feed.xml`;
 
+function resolveBlogImageUrl(src?: string | null) {
+  if (!src) {
+    return `${baseUrl}/opengraph-image`;
+  }
+
+  if (/^https?:\/\//i.test(src)) {
+    return src;
+  }
+
+  return src.startsWith("/") ? `${baseUrl}${src}` : `${baseUrl}/${src}`;
+}
+
 export const metadata: Metadata = {
   title: "PsychVault Blog",
   description:
@@ -89,6 +101,7 @@ export default async function BlogIndexPage() {
       datePublished: post.publishedAt.toISOString(),
       dateModified: (post.updatedAt ?? post.publishedAt).toISOString(),
       url: `${blogUrl}/${post.slug}`,
+      image: resolveBlogImageUrl(post.coverImage),
       keywords: post.tags,
       articleSection: post.category,
       author: {

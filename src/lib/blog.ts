@@ -20,6 +20,8 @@ export type BlogPostListItem = {
   author: string;
   category: string;
   tags: string[];
+  coverImage: string | null;
+  coverImageAlt: string | null;
   publishedAt: Date;
   updatedAt: Date | null;
   featured: boolean;
@@ -274,6 +276,10 @@ function normaliseBlogPost(raw: string, slug: string): BlogPost {
   const category =
     parseOptionalTextField(data, "category", 48) || "Practice";
   const author = parseOptionalTextField(data, "author", 80) || DEFAULT_AUTHOR;
+  const coverImage = parseOptionalTextField(data, "coverImage", 320);
+  const coverImageAlt =
+    parseOptionalTextField(data, "coverImageAlt", 180) ||
+    (coverImage ? title : null);
   const publishedAt = parseDateField(data, "publishedAt", slug, true) as Date;
   const updatedAt = parseDateField(data, "updatedAt", slug, false);
   const featured = data.featured === true;
@@ -288,6 +294,8 @@ function normaliseBlogPost(raw: string, slug: string): BlogPost {
     author,
     category,
     tags,
+    coverImage,
+    coverImageAlt,
     publishedAt,
     updatedAt,
     featured,

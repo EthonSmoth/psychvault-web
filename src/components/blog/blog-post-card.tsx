@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { formatBlogDate, type BlogPostListItem } from "@/lib/blog";
 
@@ -17,27 +18,49 @@ export function BlogPostCard({
       }`}
     >
       <div className="relative overflow-hidden bg-[var(--surface-alt)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(128,80,45,0.18),transparent_44%),linear-gradient(135deg,rgba(247,239,226,1),rgba(226,205,178,0.95))]" />
+        {post.coverImage ? (
+          <>
+            <Image
+              src={post.coverImage}
+              alt={post.coverImageAlt || post.title}
+              fill
+              sizes={
+                featured
+                  ? "(max-width: 1024px) 100vw, 48vw"
+                  : "(max-width: 1024px) 100vw, 33vw"
+              }
+              className="object-cover transition duration-300 group-hover:scale-[1.02]"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(63,45,31,0.12),rgba(63,45,31,0.52))]" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(128,80,45,0.18),transparent_44%),linear-gradient(135deg,rgba(247,239,226,1),rgba(226,205,178,0.95))]" />
+        )}
+
         <div className="relative flex h-full min-h-[220px] flex-col justify-between p-6">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[var(--card)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text)]">
               {post.category}
             </span>
             {post.featured ? (
-              <span className="rounded-full border border-[var(--border-strong)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+              <span className="rounded-full border border-[var(--border-strong)] bg-[rgba(251,246,238,0.88)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
                 Featured
               </span>
             ) : null}
           </div>
 
           <div>
-            <div className="text-sm text-[var(--text-light)]">
-              {formatBlogDate(post.publishedAt)} · {post.readingTimeMinutes} min read
+            <div
+              className={`text-sm ${
+                post.coverImage ? "text-white/85" : "text-[var(--text-light)]"
+              }`}
+            >
+              {formatBlogDate(post.publishedAt)} / {post.readingTimeMinutes} min read
             </div>
             <h2
-              className={`mt-3 font-semibold tracking-tight text-[var(--text)] ${
-                featured ? "text-3xl sm:text-4xl" : "text-2xl"
-              }`}
+              className={`mt-3 font-semibold tracking-tight ${
+                post.coverImage ? "text-white" : "text-[var(--text)]"
+              } ${featured ? "text-3xl sm:text-4xl" : "text-2xl"}`}
             >
               {post.title}
             </h2>

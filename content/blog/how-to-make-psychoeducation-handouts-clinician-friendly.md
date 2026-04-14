@@ -1,6 +1,8 @@
 ---
 title: "How to make psychoeducation handouts clinicians actually want to use"
 description: "A practical guide to creating psychoeducation handouts that feel credible in session, read clearly for clients, and perform better as digital products."
+coverImage: "/blog/How-to-make-psychoeducation-handouts-clinicians-actually-want-to-use.jpg"
+coverImageAlt: "Psychoeducation handouts laid out as polished clinician-ready resources"
 publishedAt: "2026-02-21"
 updatedAt: "2026-04-14"
 author: "PsychVault Editorial Team"

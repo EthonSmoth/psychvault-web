@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -23,6 +24,18 @@ export function generateStaticParams() {
   return [];
 }
 
+function resolveBlogImageUrl(baseUrl: string, src?: string | null) {
+  if (!src) {
+    return `${baseUrl}/opengraph-image`;
+  }
+
+  if (/^https?:\/\//i.test(src)) {
+    return src;
+  }
+
+  return src.startsWith("/") ? `${baseUrl}${src}` : `${baseUrl}/${src}`;
+}
+
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
@@ -42,6 +55,7 @@ export async function generateMetadata({
 
   const baseUrl = getAppBaseUrl();
   const url = `${baseUrl}/blog/${post.slug}`;
+  const imageUrl = resolveBlogImageUrl(baseUrl, post.coverImage);
 
   return {
     title: post.title,
@@ -58,10 +72,10 @@ export async function generateMetadata({
       description: post.description,
       images: [
         {
-          url: "/opengraph-image",
+          url: imageUrl,
           width: 1200,
           height: 630,
-          alt: post.title,
+          alt: post.coverImageAlt || post.title,
         },
       ],
       publishedTime: post.publishedAt.toISOString(),
@@ -74,7 +88,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: post.title,
       description: post.description,
-      images: ["/opengraph-image"],
+      images: [imageUrl],
     },
     robots: {
       index: true,
@@ -94,6 +108,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const [relatedPosts] = await Promise.all([getRelatedBlogPosts(post.slug, 3)]);
   const baseUrl = getAppBaseUrl();
   const postUrl = `${baseUrl}/blog/${post.slug}`;
+  const imageUrl = resolveBlogImageUrl(baseUrl, post.coverImage);
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -131,6 +146,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     timeRequired: `PT${post.readingTimeMinutes}M`,
     mainEntityOfPage: postUrl,
     url: postUrl,
+    image: imageUrl,
     inLanguage: "en-AU",
     author: {
       "@type": "Person",
@@ -174,6 +190,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </nav>
 
             <header className="overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--card)] shadow-sm">
+              {post.coverImage ? (
+                <div className="relative aspect-[16/8] overflow-hidden border-b border-[var(--border)] bg-[var(--surface-alt)]">
+                  <Image
+                    src={post.coverImage}
+                    alt={post.coverImageAlt || post.title}
+                    fill
+                    priority
+                    sizes="(max-width: 1280px) 100vw, 1100px"
+                    className="object-cover"
+                  />
+                </div>
+              ) : null}
               <div className="bg-[radial-gradient(circle_at_top_left,rgba(128,80,45,0.18),transparent_38%),linear-gradient(135deg,rgba(251,246,238,1),rgba(237,220,197,0.92))] px-6 py-10 sm:px-8 lg:px-10">
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full bg-[var(--card)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text)]">

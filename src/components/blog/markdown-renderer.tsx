@@ -11,8 +11,52 @@ function isExternalUrl(href: string) {
   return /^https?:\/\//i.test(href);
 }
 
+function renderMarkdownImage({
+  alt,
+  src,
+  title,
+  key,
+  inline = false,
+}: {
+  alt: string;
+  src: string;
+  title?: string;
+  key: string;
+  inline?: boolean;
+}) {
+  const image = (
+    <img
+      key={`${key}-img`}
+      src={src}
+      alt={alt}
+      loading="lazy"
+      className={
+        inline
+          ? "inline-block max-h-64 rounded-2xl border border-[var(--border)] align-middle shadow-sm"
+          : "w-full rounded-[1.75rem] border border-[var(--border)] bg-[var(--surface-alt)] object-cover shadow-sm"
+      }
+    />
+  );
+
+  if (inline) {
+    return image;
+  }
+
+  return (
+    <figure key={key} className="space-y-3">
+      {image}
+      {title ? (
+        <figcaption className="px-1 text-sm text-[var(--text-light)]">
+          {title}
+        </figcaption>
+      ) : null}
+    </figure>
+  );
+}
+
 function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
   const tokens = [
+    { type: "image", regex: /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]+)")?\)/ },
     { type: "code", regex: /`([^`]+)`/ },
     { type: "link", regex: /\[([^\]]+)\]\(([^)]+)\)/ },
     { type: "strong", regex: /\*\*([^*\n]+)\*\*/ },
@@ -58,9 +102,19 @@ function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
     }
 
     const key = `${keyPrefix}-${index}`;
-    const [fullMatch, firstGroup, secondGroup] = earliest.match;
+    const [fullMatch, firstGroup, secondGroup, thirdGroup] = earliest.match;
 
-    if (earliest.type === "code") {
+    if (earliest.type === "image") {
+      parts.push(
+        renderMarkdownImage({
+          alt: firstGroup || "Blog image",
+          src: secondGroup.trim(),
+          title: thirdGroup?.trim(),
+          key,
+          inline: true,
+        })
+      );
+    } else if (earliest.type === "code") {
       parts.push(
         <code
           key={key}
@@ -169,6 +223,25 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
             <code>{codeLines.join("\n")}</code>
           </pre>
         </div>
+      );
+
+      key += 1;
+      index += 1;
+      continue;
+    }
+
+    const imageMatch = /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]+)")?\)$/.exec(trimmed);
+
+    if (imageMatch) {
+      const [, alt, src, title] = imageMatch;
+
+      blocks.push(
+        renderMarkdownImage({
+          alt: alt || "Blog image",
+          src: src.trim(),
+          title: title?.trim(),
+          key: `block-${key}`,
+        })
       );
 
       key += 1;
