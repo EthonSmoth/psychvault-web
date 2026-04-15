@@ -688,6 +688,34 @@ function HomeRecentFallback() {
   );
 }
 
+function HomeBlogFallback() {
+  return (
+    <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mb-8 flex items-end justify-between gap-6">
+        <div>
+          <div className="h-7 w-36 animate-pulse rounded-xl bg-[var(--surface-alt)]" />
+          <div className="mt-2 h-4 w-64 animate-pulse rounded-full bg-[var(--surface-alt)]" />
+        </div>
+      </div>
+      <div className="grid gap-5 lg:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm"
+          >
+            <div className="min-h-[220px] animate-pulse rounded-t-3xl bg-[var(--surface-alt)]" />
+            <div className="p-6">
+              <div className="h-4 w-3/4 animate-pulse rounded bg-[var(--surface-alt)]" />
+              <div className="mt-3 h-4 w-full animate-pulse rounded bg-[var(--surface-alt)]" />
+              <div className="mt-6 h-9 w-28 animate-pulse rounded-xl bg-[var(--surface-alt)]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 async function HomeBlogSection() {
   const posts = await getFeaturedBlogPosts(3);
 
@@ -830,7 +858,7 @@ export default function HomePage() {
         <HomeRecentResourcesSection />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<HomeBlogFallback />}>
         <HomeBlogSection />
       </Suspense>
 

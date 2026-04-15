@@ -261,7 +261,7 @@ export function StoresBrowseClient({
         ) : (
           <>
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {stores.map((store) => (
+              {stores.map((store, index) => (
                 <article
                   key={store.id}
                   className="overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--card)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_50px_rgba(63,45,31,0.12)]"
@@ -273,6 +273,7 @@ export function StoresBrowseClient({
                           src={store.bannerUrl}
                           alt={`${store.name} banner`}
                           fill
+                          priority={index < 3}
                           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 400px"
                           className="object-cover"
                         />
