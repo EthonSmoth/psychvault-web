@@ -151,6 +151,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
                   src={store.bannerUrl}
                   alt={`${store.name} banner`}
                   fill
+                  priority
                   sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1280px"
                   className="object-cover"
                 />
