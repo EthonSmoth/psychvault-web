@@ -244,6 +244,9 @@ export async function saveResourceAction(
 
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const tagIds = dedupe(formData.getAll("tagIds").map(String));
+  const customTagNameInputs = dedupe(formData.getAll("customTagName").map(String))
+    .map((n) => sanitizeUserText(n, { maxLength: 48 }))
+    .filter(Boolean);
 
   const isPublished = formData.get("isPublished") === "on";
   const creatorAttestation = String(formData.get("creatorAttestation") ?? "").trim() === "yes";
@@ -404,6 +407,24 @@ export async function saveResourceAction(
     return { error: "One or more selected tags were not found. Please refresh and try again." };
   }
 
+  let customTagIds: string[] = [];
+  if (customTagNameInputs.length > 0 && trustProfile.tier === "trusted") {
+    customTagIds = await Promise.all(
+      customTagNameInputs.map(async (name) => {
+        const slug = slugify(name);
+        const tag = await db.tag.upsert({
+          where: { slug },
+          create: { name, slug },
+          update: {},
+          select: { id: true },
+        });
+        return tag.id;
+      })
+    );
+  }
+
+  const allTagIds = dedupe([...tagIds, ...customTagIds]);
+
   try {
     if (isEditMode) {
       const existing = await db.resource.findFirst({
@@ -494,9 +515,9 @@ export async function saveResourceAction(
           where: { resourceId: existing.id },
         });
 
-        if (tagIds.length) {
+        if (allTagIds.length) {
           await tx.resourceTag.createMany({
-            data: tagIds.map((tagId) => ({
+            data: allTagIds.map((tagId) => ({
               resourceId: existing.id,
               tagId,
             })),
@@ -657,9 +678,9 @@ export async function saveResourceAction(
           categories: {
             create: [{ categoryId }],
           },
-          tags: tagIds.length
+          tags: allTagIds.length
             ? {
-                create: tagIds.map((tagId) => ({ tagId })),
+                create: allTagIds.map((tagId) => ({ tagId })),
               }
             : undefined,
         },

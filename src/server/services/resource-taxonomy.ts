@@ -94,6 +94,7 @@ export async function getCreatorResourceTaxonomy() {
       select: {
         id: true,
         name: true,
+        slug: true,
       },
     }),
   ]);

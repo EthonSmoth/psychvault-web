@@ -193,6 +193,75 @@ export const DEFAULT_RESOURCE_TAGS = [
   { name: "Pain Management", slug: "pain-management" },
 ] satisfies { name: string; slug: string }[];
 
+export const TAG_GROUPS: { label: string; slugs: readonly string[] }[] = [
+  {
+    label: "Profession",
+    slugs: [
+      "psychologist", "provisional-psychologist", "clinical-psychologist",
+      "developmental-psychologist", "educational-and-developmental-psychologist",
+      "organisational-psychologist", "occupational-therapist", "speech-pathologist",
+      "physiotherapist", "positive-behaviour-support-practitioner",
+      "behaviour-support-practitioner", "practice-manager",
+    ],
+  },
+  {
+    label: "Conditions & Presentations",
+    slugs: [
+      "adhd", "autism", "audhd", "alexithymia", "trauma", "anxiety", "depression",
+      "ocd", "grief", "sleep", "burnout", "attachment", "pda", "sensory",
+      "sensory-processing", "interoception", "executive-functioning",
+      "emotional-regulation", "social-skills", "communication", "social-communication",
+      "daily-living", "behaviour-support", "functional-impact", "school-refusal",
+      "relationships", "demand-avoidance", "developmental-delay", "learning-difficulties",
+      "emotional-literacy",
+    ],
+  },
+  {
+    label: "Population & Age",
+    slugs: [
+      "child", "adolescent", "adults", "older-adults", "parent", "family",
+      "teacher", "paediatric", "early-intervention",
+    ],
+  },
+  {
+    label: "Setting",
+    slugs: ["school-based", "workplace", "allied-health", "neurodiversity-affirming"],
+  },
+  {
+    label: "Therapy Approach",
+    slugs: [
+      "cbt", "dbt", "act", "motivational-interviewing", "mindfulness", "self-compassion",
+      "behavioural-activation", "goal-setting", "case-formulation", "feedback-sessions",
+      "session-planning", "therapist-tools", "assessment",
+    ],
+  },
+  {
+    label: "Funding & System",
+    slugs: ["ndis", "medicare", "mental-health-treatment-plan", "gp-referral", "private-practice"],
+  },
+  {
+    label: "Document Type",
+    slugs: [
+      "template", "worksheet", "handout", "checklist", "screener", "questionnaire",
+      "report-writing", "assessment-report", "progress-report",
+      "functional-capacity-assessment", "letter", "support-letters", "referral-letter",
+      "intake-form", "consent-form", "informed-consent", "service-agreement", "policy",
+      "practice-policy", "session-notes", "progress-notes", "treatment-plan", "goal-plan",
+      "home-program", "behaviour-support-plan", "risk-assessment", "safety-plan",
+      "clinical-documentation", "printable", "editable", "invoice", "receipt", "supervision",
+    ],
+  },
+  {
+    label: "Allied Health Specialty",
+    slugs: [
+      "fine-motor", "gross-motor", "handwriting", "aac", "articulation", "language",
+      "feeding", "voice", "stuttering", "mobility", "exercise-program", "rehabilitation",
+      "pain-management", "psychology", "occupational-therapy", "speech-pathology",
+      "physiotherapy", "positive-behaviour-support",
+    ],
+  },
+];
+
 export const HOMEPAGE_FEATURED_CATEGORY_SLUGS = [
   "psychoeducation",
   "report-templates",

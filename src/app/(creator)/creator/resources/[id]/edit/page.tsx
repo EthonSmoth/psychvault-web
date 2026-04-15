@@ -6,6 +6,7 @@ import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
 import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
 import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import { getCreatorResourceTaxonomy } from "@/server/services/resource-taxonomy";
+import { getCreatorTrustProfile } from "@/lib/creator-trust";
 import ResourceForm from "@/components/forms/resource-form";
 
 type EditResourcePageProps = {
@@ -34,8 +35,9 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
 
   await requireVerifiedEmailOrRedirect(user.id, `/creator/resources/${id}/edit`);
 
-  const [{ categories, tags }, resource] = await Promise.all([
+  const [{ categories, tags }, trustProfile, resource] = await Promise.all([
     getCreatorResourceTaxonomy(),
+    getCreatorTrustProfile(user.id),
     db.resource.findFirst({
       where: {
         id,
@@ -117,6 +119,7 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
         resource={resource}
         csrfToken={csrfToken}
         paidResourcePayoutRequired={requiresPaidResourcePayoutSetup}
+        isTrusted={trustProfile.tier === "trusted"}
       />
     </main>
   );

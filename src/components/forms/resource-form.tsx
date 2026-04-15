@@ -6,11 +6,12 @@ import {
   saveResourceAction,
   type ResourceFormState,
 } from "@/server/actions/resource-actions";
+import { TAG_GROUPS } from "@/lib/resource-taxonomy";
 
 const initialState: ResourceFormState = {};
 
 type Category = { id: string; name: string };
-type Tag = { id: string; name: string };
+type Tag = { id: string; name: string; slug: string };
 
 type ResourceTag = {
   tagId: string;
@@ -54,6 +55,7 @@ type Props = {
   resource?: ResourceData;
   csrfToken: string;
   paidResourcePayoutRequired?: boolean;
+  isTrusted?: boolean;
 };
 
 type UploadedFile = {
@@ -93,6 +95,7 @@ export default function ResourceForm({
   resource,
   csrfToken,
   paidResourcePayoutRequired = true,
+  isTrusted = false,
 }: Props) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
@@ -169,18 +172,49 @@ export default function ResourceForm({
   }, [router, state.success]);
 
   const previewSlotsRemaining = useMemo(() => 4 - previews.length, [previews.length]);
-  const selectedCategoryId = resource?.categories?.[0]?.categoryId || "";
-  const selectedTagIds = new Set(resource?.tags?.map((tag) => tag.tagId) ?? []);
+
+  // Controlled field state — persists across form action failures (React 19 resets defaultValue)
+  const [title, setTitle] = useState(resource?.title ?? "");
+  const [shortDescription, setShortDescription] = useState(resource?.shortDescription ?? "");
+  const [description, setDescription] = useState(resource?.description ?? "");
+  const [price, setPrice] = useState(
+    resource ? (resource.priceCents / 100).toFixed(2) : "0.00"
+  );
+  const [categoryId, setCategoryId] = useState(
+    resource?.categories?.[0]?.categoryId ?? ""
+  );
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(
+    new Set(resource?.tags?.map((tag) => tag.tagId) ?? [])
+  );
+  const [customTags, setCustomTags] = useState<{ name: string; tempId: string }[]>([]);
   const [tagQuery, setTagQuery] = useState("");
+
+  const tagsBySlug = useMemo(
+    () => new Map(tags.map((tag) => [tag.slug, tag])),
+    [tags]
+  );
+
+  function toggleTag(tagId: string) {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  }
+
   const filteredTags = useMemo(() => {
     const query = tagQuery.trim().toLowerCase();
-
-    if (!query) {
-      return tags;
-    }
-
+    if (!query) return tags;
     return tags.filter((tag) => tag.name.toLowerCase().includes(query));
   }, [tagQuery, tags]);
+
+  const exactTagMatch =
+    tagQuery.trim().length > 0 &&
+    filteredTags.some(
+      (t) => t.name.toLowerCase() === tagQuery.trim().toLowerCase()
+    );
+  const showAddTagButton = isTrusted && tagQuery.trim().length > 0 && !exactTagMatch;
 
   async function handleThumbnail(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -324,7 +358,8 @@ export default function ResourceForm({
               id="title"
               name="title"
               required
-              defaultValue={resource?.title || ""}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. CBT Thought Record Worksheet"
               className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
             />
@@ -340,7 +375,8 @@ export default function ResourceForm({
             <input
               id="shortDescription"
               name="shortDescription"
-              defaultValue={resource?.shortDescription || ""}
+              value={shortDescription}
+              onChange={(e) => setShortDescription(e.target.value)}
               placeholder="One sentence summary shown on browse cards"
               className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
             />
@@ -358,7 +394,8 @@ export default function ResourceForm({
               name="description"
               required
               rows={6}
-              defaultValue={resource?.description || ""}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe what's included, who it's for, and how to use it."
               className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
             />
@@ -377,7 +414,8 @@ export default function ResourceForm({
               type="number"
               step="0.01"
               min="0"
-              defaultValue={resource ? (resource.priceCents / 100).toFixed(2) : "0.00"}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
               placeholder="0.00 for free"
               className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
             />
@@ -403,7 +441,8 @@ export default function ResourceForm({
               id="categoryId"
               name="categoryId"
               required
-              defaultValue={selectedCategoryId}
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
               className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
             >
               <option value="" disabled>
@@ -424,9 +463,20 @@ export default function ResourceForm({
                 Layer in profession, scheme, population, and format details.
               </p>
               <div className="text-xs text-[var(--text-light)]">
-                {filteredTags.length} of {tags.length} tags
+                {selectedTagIds.size} selected
               </div>
             </div>
+
+            {/* Hidden inputs to submit selected tags */}
+            {Array.from(selectedTagIds).map((tagId) => (
+              <input key={tagId} type="hidden" name="tagIds" value={tagId} />
+            ))}
+
+            {/* Hidden inputs for custom tags (trusted users only) */}
+            {customTags.map((tag) => (
+              <input key={tag.tempId} type="hidden" name="customTagName" value={tag.name} />
+            ))}
+
             <input
               type="search"
               value={tagQuery}
@@ -434,35 +484,139 @@ export default function ResourceForm({
               placeholder="Search tags by profession, funding, topic, or format"
               className="mb-3 w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
             />
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
-              {filteredTags.map((tag) => (
-                <label
-                  key={tag.id}
-                  className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] px-3 py-2 text-sm text-[var(--text)] transition hover:bg-[var(--surface)]"
-                >
-                  <input
-                    type="checkbox"
-                    name="tagIds"
-                    value={tag.id}
-                    defaultChecked={selectedTagIds.has(tag.id)}
-                    className="h-4 w-4 rounded border-[var(--border-strong)]"
-                  />
-                  {tag.name}
-                </label>
-              ))}
-            </div>
-            {filteredTags.length === 0 ? (
-              <p className="mt-3 text-xs text-[var(--text-light)]">
-                No tags matched that search yet.
-              </p>
+
+            {/* Custom tag badges */}
+            {customTags.length > 0 ? (
+              <div className="mb-3 flex flex-wrap gap-2">
+                {customTags.map((tag) => (
+                  <span
+                    key={tag.tempId}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[var(--primary)] bg-[var(--card)] px-3 py-1 text-xs font-medium text-[var(--primary)]"
+                  >
+                    {tag.name}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCustomTags((prev) => prev.filter((t) => t.tempId !== tag.tempId))
+                      }
+                      className="ml-0.5 text-[var(--primary)] hover:text-[var(--primary-dark)]"
+                      aria-label={`Remove custom tag ${tag.name}`}
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
             ) : null}
+
+            {tagQuery ? (
+              // Flat filtered list when searching
+              <>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+                  {filteredTags.map((tag) => (
+                    <label
+                      key={tag.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] px-3 py-2 text-sm text-[var(--text)] transition hover:bg-[var(--surface)]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTagIds.has(tag.id)}
+                        onChange={() => toggleTag(tag.id)}
+                        className="h-4 w-4 rounded border-[var(--border-strong)]"
+                      />
+                      {tag.name}
+                    </label>
+                  ))}
+                </div>
+                {filteredTags.length === 0 ? (
+                  <p className="mt-3 text-xs text-[var(--text-light)]">
+                    No tags matched that search.
+                  </p>
+                ) : null}
+                {showAddTagButton ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const name = tagQuery.trim();
+                      if (!name) return;
+                      setCustomTags((prev) => [
+                        ...prev,
+                        { name, tempId: crypto.randomUUID() },
+                      ]);
+                      setTagQuery("");
+                    }}
+                    className="mt-3 inline-flex items-center rounded-xl border border-dashed border-[var(--primary)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--primary)] transition hover:bg-[var(--surface-alt)]"
+                  >
+                    + Add tag &ldquo;{tagQuery.trim()}&rdquo;
+                  </button>
+                ) : null}
+              </>
+            ) : (
+              // Grouped accordion when not searching
+              <div className="space-y-1.5">
+                {TAG_GROUPS.map((group) => {
+                  const groupTags = group.slugs
+                    .map((slug) => tagsBySlug.get(slug))
+                    .filter((t): t is Tag => t !== undefined);
+                  if (groupTags.length === 0) return null;
+                  const selectedCount = groupTags.filter((t) =>
+                    selectedTagIds.has(t.id)
+                  ).length;
+                  return (
+                    <details
+                      key={group.label}
+                      open={selectedCount > 0}
+                      className="group rounded-xl border border-[var(--border)] bg-[var(--surface-alt)]"
+                    >
+                      <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 [&::-webkit-details-marker]:hidden">
+                        <span className="text-sm font-medium text-[var(--text)]">
+                          {group.label}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {selectedCount > 0 ? (
+                            <span className="rounded-full bg-[var(--primary)] px-2 py-0.5 text-[11px] font-semibold text-white">
+                              {selectedCount} selected
+                            </span>
+                          ) : null}
+                          <svg
+                            className="h-4 w-4 text-[var(--text-muted)] transition-transform group-open:rotate-180"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </summary>
+                      <div className="grid grid-cols-2 gap-2 px-4 pb-4 pt-1 sm:grid-cols-3 xl:grid-cols-4">
+                        {groupTags.map((tag) => (
+                          <label
+                            key={tag.id}
+                            className="flex cursor-pointer items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] transition hover:bg-[var(--surface)]"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedTagIds.has(tag.id)}
+                              onChange={() => toggleTag(tag.id)}
+                              className="h-4 w-4 rounded border-[var(--border-strong)]"
+                            />
+                            {tag.name}
+                          </label>
+                        ))}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <label className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3">
             <input
               type="checkbox"
               name="isPublished"
-              defaultChecked={resource ? resource.status === "PUBLISHED" : true}
+              checked={publishResource}
               onChange={(event) => setPublishResource(event.target.checked)}
               className="h-4 w-4 rounded border-[var(--border-strong)]"
             />

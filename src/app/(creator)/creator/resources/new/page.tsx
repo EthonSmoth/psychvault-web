@@ -6,6 +6,7 @@ import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification
 import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
 import { redirect } from "next/navigation";
 import { getCreatorResourceTaxonomy } from "@/server/services/resource-taxonomy";
+import { getCreatorTrustProfile } from "@/lib/creator-trust";
 import ResourceForm from "@/components/forms/resource-form";
 
 export default async function NewCreatorResourcePage() {
@@ -33,7 +34,10 @@ export default async function NewCreatorResourcePage() {
     redirect("/creator/store");
   }
 
-  const { categories, tags } = await getCreatorResourceTaxonomy();
+  const [{ categories, tags }, trustProfile] = await Promise.all([
+    getCreatorResourceTaxonomy(),
+    getCreatorTrustProfile(user.id),
+  ]);
   const csrfToken = generateCSRFToken(user.id);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
@@ -75,6 +79,7 @@ export default async function NewCreatorResourcePage() {
           tags={tags}
           csrfToken={csrfToken}
           paidResourcePayoutRequired={requiresPaidResourcePayoutSetup}
+          isTrusted={trustProfile.tier === "trusted"}
         />
       </div>
     </div>
