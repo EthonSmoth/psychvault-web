@@ -18,11 +18,9 @@ import {
 } from "@/components/stores/store-viewer";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 
-export const revalidate = 300;
-
-export function generateStaticParams() {
-  return [];
-}
+// force-dynamic because searchParams (pagination) is a request-time API.
+// Data is still cached at query level via unstable_cache (300s), so DB is not hit per-request.
+export const dynamic = "force-dynamic";
 
 type StorePageProps = {
   params: Promise<{
