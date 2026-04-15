@@ -182,18 +182,18 @@ async function HomeStats() {
 
   return (
     <div className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--border)] pt-8">
-      <div className="rounded-2xl bg-[var(--surface-alt)] p-4">
+      <Link href="/resources" className="rounded-2xl bg-[var(--surface-alt)] p-4 transition hover:bg-[var(--surface)]">
         <div className="text-2xl font-bold text-[var(--text)]">{totalResources}</div>
         <div className="mt-1 text-sm text-[var(--text-muted)]">Resources</div>
-      </div>
-      <div className="rounded-2xl bg-[var(--surface-alt)] p-4">
+      </Link>
+      <Link href="/stores" className="rounded-2xl bg-[var(--surface-alt)] p-4 transition hover:bg-[var(--surface)]">
         <div className="text-2xl font-bold text-[var(--text)]">{totalCreators}</div>
         <div className="mt-1 text-sm text-[var(--text-muted)]">Creators</div>
-      </div>
-      <div className="rounded-2xl bg-[var(--surface-alt)] p-4">
+      </Link>
+      <Link href="/stores" className="rounded-2xl bg-[var(--surface-alt)] p-4 transition hover:bg-[var(--surface)]">
         <div className="text-2xl font-bold text-[var(--text)]">{totalStores}</div>
         <div className="mt-1 text-sm text-[var(--text-muted)]">Stores</div>
-      </div>
+      </Link>
     </div>
   );
 }
@@ -846,16 +846,16 @@ export default function HomePage() {
       <HomeHero />
       <MarketplaceTrustSection />
 
-      <Suspense fallback={<HomeCategoriesFallback />}>
-        <HomeCategoriesSection />
-      </Suspense>
-
       <Suspense fallback={<HomeRecentFallback />}>
         <HomeFeaturedResourcesSection />
       </Suspense>
 
       <Suspense fallback={<HomeRecentFallback />}>
         <HomeRecentResourcesSection />
+      </Suspense>
+
+      <Suspense fallback={<HomeCategoriesFallback />}>
+        <HomeCategoriesSection />
       </Suspense>
 
       <Suspense fallback={<HomeBlogFallback />}>

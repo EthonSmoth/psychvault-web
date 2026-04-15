@@ -65,8 +65,9 @@ export function Navbar() {
               More
             </button>
 
-            <div className="pointer-events-none absolute left-0 z-20 mt-3 w-56 overflow-hidden rounded-3xl border border-soft bg-[var(--card)] opacity-0 shadow-lg transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
-              <div className="flex flex-col px-3 py-3">
+            <div className="pointer-events-none absolute left-0 top-full z-20 w-56 pt-2 opacity-0 transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+              <div className="overflow-hidden rounded-3xl border border-soft bg-[var(--card)] shadow-lg">
+                <div className="flex flex-col px-3 py-3">
                 <Link
                   href="/about"
                   className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
@@ -109,6 +110,7 @@ export function Navbar() {
                 >
                   Categories
                 </Link>
+                </div>
               </div>
             </div>
           </div>
