@@ -21,7 +21,7 @@ The hesitation is usually this:
 
 That concern is actually a good sign. It means you care about trust, tone, and professional identity. Those are the exact things that make a psychology resource store feel credible.
 
-## The real goal is not hype. It is trust.
+## The real goal is not hype — it is trust
 
 People do not usually buy clinical resources because the copy sounds exciting. They buy because the listing feels clear, specific, and low risk.
 
@@ -97,6 +97,8 @@ The goal is not to sound clever. It is to sound concrete.
 
 ## Why previews matter more than persuasion
 
+![Multiple pages of a polished psychology resource PDF spread out, showing clean clinical design and structured layout](/blog/psychology-resource-preview-spread.jpg)
+
 If you only improve one part of a listing, improve the preview experience.
 
 Sample pages, thumbnails, and clean screenshots do more trust work than clever copy ever will. They show that:
@@ -124,6 +126,8 @@ That is one reason [public store pages](/stores) matter. They let buyers see tha
 
 ## Trust signals that usually improve conversion
 
+![A clean psychology resource store page on a laptop screen, showing a complete creator bio, polished resource thumbnails, and professional branding](/blog/creator-store-trust-signals.jpg "A store that looks maintained and coherent reduces buyer hesitation before they read a single description.")
+
 Here are the signals that often make the biggest difference:
 
 - complete creator bio
@@ -140,15 +144,17 @@ On PsychVault, those trust signals also help discovery because stronger listings
 
 ## How content marketing can stay clinically aligned
 
-One of the best ways to market without looking spammy is to publish genuinely useful educational content around the same themes as your products.
+One of the most effective ways to build a presence without sounding promotional is to publish genuinely useful content in the same areas your products address.
 
-For example, a creator selling report templates or handouts might publish:
+A creator selling report templates or psychoeducation handouts might write:
 
-- a guide to [NDIS report template structure](/blog/ndis-report-template-checklist)
-- an article on [psychoeducation handouts clinicians actually want to use](/blog/how-to-make-psychoeducation-handouts-clinician-friendly)
-- a practical post about store trust signals and conversion
+- a practical guide to [NDIS report structure and functional wording](/blog/ndis-report-template-checklist)
+- an article on [what makes psychoeducation handouts clinicians actually want to use](/blog/how-to-make-psychoeducation-handouts-clinician-friendly)
+- a post about a clinical topic that sits adjacent to the resources they offer
 
-Then those articles can link naturally into the [resource library](/resources) or the [creator dashboard](/creator). That approach feels more consistent with professional identity because it teaches first and sells second.
+This approach works because it demonstrates expertise before asking for anything. It also means that when a clinician searches for guidance on a clinical problem and finds a useful article, they arrive at your store with existing trust — not as a cold visitor encountering a product page for the first time.
+
+The goal is to teach first and let the products support the teaching, not the other way around.
 
 ## A simple check before publishing any listing
 

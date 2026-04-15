@@ -25,6 +25,8 @@ If you build, buy, or sell NDIS report resources, this is the standard worth aim
 
 ## What a strong NDIS psychology report needs to achieve
 
+![Structured NDIS psychology report pages open on a clinical desk with handwritten notes alongside](/blog/ndis-report-structure-desk.jpg)
+
 The most useful templates help the clinician answer five questions in a logical order:
 
 1. Why was this report requested?
@@ -116,6 +118,8 @@ This kind of check saves time because it catches the most common weaknesses befo
 
 ## What better functional wording sounds like
 
+![Close-up of a psychology report being annotated with a pen, highlighting functional impact phrases being revised](/blog/ndis-functional-wording-edit.jpg "Specific, observable language makes the link between impairment and recommendation impossible to miss.")
+
 Templates are most useful when they push the clinician toward cleaner language. In practice, that often means replacing soft abstractions with more grounded statements.
 
 Less helpful wording:
@@ -152,17 +156,20 @@ When appropriate, this section gives weight to the recommendation. It helps show
 
 ---
 
-## How this topic supports marketplace SEO
+## When to review and update your template
 
-This kind of article is useful because it sits between information intent and buying intent. Someone searching for help with NDIS report structure may not be ready to purchase immediately, but they are already highly relevant to a marketplace like [PsychVault](/resources).
+An NDIS report template is not a set-and-forget document. It is worth reviewing yours when:
 
-That is why strong blog content should connect naturally to:
+- NDIS policy or planning guidelines change
+- You notice a recurring pattern of reviewer feedback on your reports
+- You start working with a new population where your existing structure does not quite fit
+- A colleague reviews your report and has trouble following the logic
 
-- your [resource catalogue](/resources)
-- your [creator dashboard](/creator)
-- related educational posts such as [how to sell psychology resources online without looking spammy](/blog/sell-psychology-resources-without-looking-spammy)
+Even small updates — tightening a functional wording prompt, reordering two sections, clarifying a recommendation scaffold — can make a meaningful difference to writing speed and report quality over time.
 
-This creates a cleaner topical cluster than relying on product pages alone to rank.
+If you work in a practice with other clinicians, aligning on a shared template is usually worth the effort. It improves consistency across the team and makes peer review easier when reports need a second read before going out.
+
+You can browse NDIS report templates and related psychology documentation resources in the [PsychVault resource library](/resources).
 
 ## Final takeaway
 

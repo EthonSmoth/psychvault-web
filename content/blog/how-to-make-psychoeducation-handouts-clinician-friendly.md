@@ -21,6 +21,8 @@ When a resource is strong, it helps the clinician teach a concept quickly, gives
 
 ## Start with the session moment, not the layout
 
+![A psychologist reviewing a psychoeducation handout with a client across a calm clinical desk](/blog/psychoeducation-handout-in-session.jpg)
+
 Before thinking about colors, icons, or formatting, ask one question:
 
 *At what exact point in therapy would I hand this over?*
@@ -89,6 +91,8 @@ If the handout does all of those things, it is usually already ahead of most gen
 
 ## Design choices that build trust quickly
 
+![Two psychoeducation handouts side by side — one cluttered and hard to read, one clean and well-structured](/blog/psychoeducation-handout-design-comparison.jpg "Clinicians often judge content quality by visual quality before reading a single word.")
+
 You do not need flashy design. You do need design that feels intentional.
 
 Strong handout design usually means:
@@ -121,25 +125,21 @@ A handout should leave the client with a clearer understanding or next step. If 
 
 ---
 
-## SEO lessons from psychoeducation content
+## Adapting handouts for different client contexts
 
-Psychoeducation is a strong content category because adjacent search intent is broad and persistent. Clinicians and clients regularly search phrases like:
+Not every handout works the same way across different populations. A resource that lands well with an adult in individual therapy may need significant adjustment for use with adolescents, families, or group settings.
 
-- anxiety psychoeducation handout
-- autism handout for parents
-- trauma response handout
-- CBT worksheet explanation
-- emotional regulation handout
+A few practical adjustments worth considering:
 
-That does **not** mean stuffing keywords into every paragraph. It means building genuinely useful resources and pairing them with titles, descriptions, and supporting articles that match the way people already search.
+**For children and adolescents:** Shorter sentences, larger print, and concrete examples from daily life. Avoid metaphors that assume adult experience. Visual cues often help.
 
-For a marketplace, that content can naturally lead into:
+**For parents and support people:** Focus on how the concept shows up in behaviour they can observe, and what they can do practically. Avoid language that sounds clinical or evaluative.
 
-- a relevant [resource page](/resources)
-- a creator's [public store](/stores)
-- or a related post like [how to sell psychology resources online without looking spammy](/blog/sell-psychology-resources-without-looking-spammy)
+**For group settings:** Streamline the content so a handout can stand alone without extensive explanation. White space matters more here because the clinician cannot always pause to clarify.
 
-This is how blog content becomes an acquisition channel instead of just a nice extra.
+**For culturally diverse clients:** Where possible, review whether the assumptions built into the handout are culturally relevant. Generic wellbeing language can sometimes feel disconnected from specific community contexts.
+
+The best handouts tend to be built for one specific moment and one specific audience, then adapted carefully for others rather than designed to serve everyone at once.
 
 ## A practical readiness check before you publish
 
