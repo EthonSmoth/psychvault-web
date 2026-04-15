@@ -334,6 +334,19 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   // Filter out undefined values
   const cleanSchema = JSON.parse(JSON.stringify(productSchema));
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+      { "@type": "ListItem", position: 2, name: "Resources", item: `${baseUrl}/resources` },
+      ...(primaryCategory
+        ? [{ "@type": "ListItem", position: 3, name: primaryCategory.name, item: `${baseUrl}/resources?category=${primaryCategory.slug}` }]
+        : []),
+      { "@type": "ListItem", position: primaryCategory ? 4 : 3, name: resource.title, item: resourceUrl },
+    ],
+  };
+
   function renderPurchasePanel(extraClassName = "") {
     return (
       <aside className={extraClassName}>
@@ -481,6 +494,10 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(cleanSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbSchema) }}
       />
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <Suspense fallback={null}>

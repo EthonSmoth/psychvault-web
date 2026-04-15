@@ -1,5 +1,28 @@
+import type { Metadata } from "next";
 import ContactForm from "@/components/forms/contact-form";
-import { getBusinessAddress, getSupportEmail, getSupportPhone } from "@/lib/env";
+import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from "@/lib/env";
+
+const baseUrl = getAppBaseUrl();
+
+export const metadata: Metadata = {
+  title: "Contact PsychVault",
+  description:
+    "Get in touch with the PsychVault team for support, creator enquiries, or general questions.",
+  alternates: {
+    canonical: `${baseUrl}/contact`,
+  },
+  openGraph: {
+    title: "Contact PsychVault",
+    description:
+      "Get in touch with the PsychVault team for support, creator enquiries, or general questions.",
+    url: `${baseUrl}/contact`,
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 function toTelephoneHref(phone: string) {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;

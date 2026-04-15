@@ -1,4 +1,28 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getAppBaseUrl } from "@/lib/env";
+
+const baseUrl = getAppBaseUrl();
+
+export const metadata: Metadata = {
+  title: "About PsychVault",
+  description:
+    "PsychVault is a clinician-built marketplace for psychology resources — templates, handouts, report tools, and more, made by practitioners for real clinical work.",
+  alternates: {
+    canonical: `${baseUrl}/about`,
+  },
+  openGraph: {
+    title: "About PsychVault",
+    description:
+      "PsychVault is a clinician-built marketplace for psychology resources — templates, handouts, report tools, and more, made by practitioners for real clinical work.",
+    url: `${baseUrl}/about`,
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 // Explains what PsychVault is, who it serves, and how the marketplace operates.
 export default function AboutPage() {

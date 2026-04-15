@@ -21,6 +21,7 @@ export async function GET() {
           <link>${htmlEscape(url)}</link>
           <guid>${htmlEscape(url)}</guid>
           <description>${htmlEscape(post.description)}</description>
+          <author>${htmlEscape(post.author || "PsychVault Editorial Team")}</author>
           <pubDate>${post.publishedAt.toUTCString()}</pubDate>
           <category>${htmlEscape(post.category)}</category>
         </item>

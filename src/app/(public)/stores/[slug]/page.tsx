@@ -117,6 +117,16 @@ export default async function StorePage({ params, searchParams }: StorePageProps
   };
   const cleanSchema = JSON.parse(JSON.stringify(organizationSchema));
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+      { "@type": "ListItem", position: 2, name: "Stores", item: `${baseUrl}/stores` },
+      { "@type": "ListItem", position: 3, name: store.name, item: storeUrl },
+    ],
+  };
+
   function buildStorePageHref(nextPage: number) {
     return nextPage > 1
       ? `/stores/${storeSlug}?page=${nextPage}#all-resources`
@@ -128,6 +138,10 @@ export default async function StorePage({ params, searchParams }: StorePageProps
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(cleanSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbSchema) }}
       />
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

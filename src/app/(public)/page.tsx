@@ -250,7 +250,7 @@ async function HomeHeroShowcase() {
               src={heroResource.previewImageUrl}
               alt={heroResource.title}
               fill
-              priority
+              priority={true}
               loading="eager"
               quality={72}
               sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 1024px) calc(100vw - 3rem), 42vw"
