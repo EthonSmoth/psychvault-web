@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { generateCSRFToken } from "@/lib/csrf";
+import { RefundRequestForm } from "@/components/library/refund-request-form";
 
 function formatPrice(cents: number | null | undefined) {
   const safe = typeof cents === "number" ? cents : 0;
@@ -35,6 +37,8 @@ export default async function LibraryPage() {
       email: true,
     },
   });
+
+  const csrfToken = user ? generateCSRFToken(user.id) : "";
 
   if (!user) {
     return (
@@ -105,6 +109,9 @@ export default async function LibraryPage() {
           },
         },
       },
+      refundRequest: {
+        select: { id: true, status: true },
+      },
     },
   });
 
@@ -124,9 +131,17 @@ export default async function LibraryPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)]">
-            <span className="font-semibold text-[var(--text)]">{totalPurchases}</span>{" "}
-            {totalPurchases === 1 ? "resource" : "resources"}
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)]">
+              <span className="font-semibold text-[var(--text)]">{totalPurchases}</span>{" "}
+              {totalPurchases === 1 ? "resource" : "resources"}
+            </div>
+            <Link
+              href="/account"
+              className="inline-flex rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+            >
+              Account settings
+            </Link>
           </div>
         </div>
       </div>
@@ -161,6 +176,10 @@ export default async function LibraryPage() {
                     resource.reviews.length
                   ).toFixed(1)
                 : null;
+
+            const isPaid = purchase.amountCents > 0;
+            const hasRefundRequest = Boolean(purchase.refundRequest);
+            const refundStatus = purchase.refundRequest?.status ?? null;
 
             return (
               <div
@@ -247,25 +266,49 @@ export default async function LibraryPage() {
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 flex-wrap gap-3">
-                    <Link
-                      href={`/resources/${resource.slug}`}
-                      className="inline-flex items-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                    >
-                      View resource
-                    </Link>
-
-                    {mainDownload ? (
-                      <a
-                        href={`/api/downloads/${resource.id}`}
-                        className="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                  <div className="flex shrink-0 flex-col gap-3">
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        href={`/resources/${resource.slug}`}
+                        className="inline-flex items-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                       >
-                        Download
-                      </a>
-                    ) : (
-                      <span className="inline-flex items-center rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800">
-                        No download
-                      </span>
+                        View resource
+                      </Link>
+
+                      {mainDownload ? (
+                        <a
+                          href={`/api/downloads/${resource.id}`}
+                          className="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                        >
+                          Download
+                        </a>
+                      ) : (
+                        <span className="inline-flex items-center rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800">
+                          No download
+                        </span>
+                      )}
+                    </div>
+
+                    {isPaid && (
+                      refundStatus === "APPROVED" ? (
+                        <span className="inline-flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                          Refund approved
+                        </span>
+                      ) : refundStatus === "REJECTED" ? (
+                        <span className="inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                          Refund declined
+                        </span>
+                      ) : hasRefundRequest ? (
+                        <span className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+                          Refund pending review
+                        </span>
+                      ) : (
+                        <RefundRequestForm
+                          purchaseId={purchase.id}
+                          resourceTitle={resource.title}
+                          csrfToken={csrfToken}
+                        />
+                      )
                     )}
                   </div>
                 </div>

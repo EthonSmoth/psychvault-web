@@ -13,6 +13,7 @@ import { ensureAllowedOrigin } from "@/lib/request-security";
 import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
 import { isPayoutAccountReady, syncCreatorPayoutStatus } from "@/lib/stripe-connect";
+import { trySendPurchaseConfirmationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -167,16 +168,40 @@ export async function POST(request: Request) {
     }
 
     if (resource.isFree || resource.priceCents === 0) {
-      await db.purchase.create({
-        data: {
-          buyerId: userId,
-          resourceId,
-          amountCents: 0,
-          platformFeeCents: 0,
-          creatorShareCents: 0,
-          currency: "AUD",
-        },
+      await db.$transaction([
+        db.purchase.create({
+          data: {
+            buyerId: userId,
+            resourceId,
+            amountCents: 0,
+            platformFeeCents: 0,
+            creatorShareCents: 0,
+            currency: "AUD",
+          },
+        }),
+        db.resource.update({
+          where: { id: resourceId },
+          data: { salesCount: { increment: 1 } },
+        }),
+      ]);
+
+      // Send confirmation email — fire and forget
+      const buyer = await db.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
       });
+      if (buyer) {
+        trySendPurchaseConfirmationEmail({
+          buyerEmail: buyer.email,
+          buyerName: buyer.name,
+          resourceTitle: resource.title,
+          resourceSlug: resource.slug,
+          storeName: resource.store?.name ?? "PsychVault creator",
+          amountCents: 0,
+          isFree: true,
+          appBaseUrl: getAppBaseUrl(),
+        });
+      }
 
       return NextResponse.redirect(
         new URL(`/api/downloads/${resourceId}`, request.url),

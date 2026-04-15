@@ -140,6 +140,12 @@ function AccountMenuContent({
         My library
       </Link>
       <Link
+        href="/account"
+        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+      >
+        Account settings
+      </Link>
+      <Link
         href="/following"
         className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
       >
@@ -255,6 +261,18 @@ function MobileMenuLinks({ authenticated }: { authenticated: boolean }) {
             Messages
           </Link>
           <Link
+            href="/library"
+            className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+          >
+            My library
+          </Link>
+          <Link
+            href="/account"
+            className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+          >
+            Account settings
+          </Link>
+          <Link
             href="/following"
             className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
           >
@@ -344,9 +362,11 @@ export function NavbarSessionControls() {
               </div>
             </button>
 
-            <div className="pointer-events-none absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-soft bg-[var(--card)] opacity-0 shadow-lg transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
-              <div className="p-2">
-                <AccountMenuContent adminAccess={adminAccess} name={name} email={email} />
+            <div className="pointer-events-none absolute right-0 top-full z-20 w-64 pt-2 opacity-0 transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+              <div className="overflow-hidden rounded-2xl border border-soft bg-[var(--card)] shadow-lg">
+                <div className="p-2">
+                  <AccountMenuContent adminAccess={adminAccess} name={name} email={email} />
+                </div>
               </div>
             </div>
           </div>

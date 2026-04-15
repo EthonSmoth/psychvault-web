@@ -1,4 +1,6 @@
 import { db } from "@/lib/db";
+import { trySendMessageNotificationEmail } from "@/lib/email";
+import { getAppBaseUrl } from "@/lib/env";
 
 export type ConversationSummary = {
   id: string;
@@ -235,7 +237,18 @@ export async function createMessage(
   senderId: string,
   body: string
 ) {
-  return db.conversation.update({
+  // Fetch participants before updating so we can notify the recipient
+  const participants = await db.conversationParticipant.findMany({
+    where: { conversationId },
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+    },
+  });
+
+  const sender = participants.find((p) => p.userId === senderId)?.user;
+  const recipient = participants.find((p) => p.userId !== senderId)?.user;
+
+  const result = await db.conversation.update({
     where: { id: conversationId },
     data: {
       messages: {
@@ -263,6 +276,20 @@ export async function createMessage(
       },
     },
   });
+
+  // Notify recipient — fire and forget, never block the response
+  if (recipient && sender) {
+    trySendMessageNotificationEmail({
+      recipientEmail: recipient.email,
+      recipientName: recipient.name ?? recipient.email,
+      senderName: sender.name ?? sender.email,
+      messagePreview: body,
+      conversationId,
+      appBaseUrl: getAppBaseUrl(),
+    });
+  }
+
+  return result;
 }
 
 export async function markConversationRead(conversationId: string, userId: string) {

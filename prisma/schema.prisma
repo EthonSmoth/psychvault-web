@@ -32,6 +32,12 @@ enum ResourceReportStatus {
   DISMISSED
 }
 
+enum RefundRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ResourceReportReason {
   INAPPROPRIATE_CONTENT
   COPYRIGHT
@@ -101,6 +107,7 @@ model User {
   moderationEvents         ModerationEvent[]
   conversationParticipants ConversationParticipant[]
   sentMessages             Message[]
+  refundRequests           RefundRequest[]
 }
 
 model Conversation {
@@ -382,12 +389,31 @@ model Purchase {
   stripePaymentId   String?  @unique
   createdAt         DateTime @default(now())
 
-  buyer    User     @relation("BuyerPurchases", fields: [buyerId], references: [id])
-  resource Resource @relation(fields: [resourceId], references: [id])
+  buyer         User           @relation("BuyerPurchases", fields: [buyerId], references: [id])
+  resource      Resource       @relation(fields: [resourceId], references: [id])
+  refundRequest RefundRequest?
 
   @@unique([buyerId, resourceId])
   @@index([buyerId])
   @@index([resourceId])
+}
+
+model RefundRequest {
+  id         String              @id @default(cuid())
+  purchaseId String              @unique
+  buyerId    String
+  reason     String
+  message    String?
+  status     RefundRequestStatus @default(PENDING)
+  adminNotes String?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id])
+  buyer    User     @relation(fields: [buyerId], references: [id])
+
+  @@index([buyerId])
+  @@index([status, createdAt])
 }
 
 model Review {
