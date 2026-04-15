@@ -64,10 +64,10 @@ export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }
             Password
           </label>
           <Link
-            href="/signup"
+            href="/forgot-password"
             className="text-xs font-medium text-[var(--text-light)] hover:text-[var(--text)]"
           >
-            Need an account?
+            Forgot password?
           </Link>
         </div>
 

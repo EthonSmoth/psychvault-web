@@ -160,6 +160,8 @@ export const RATE_LIMITS = {
   viewerState: { max: 90, window: 10 * 60 * 1000 },
   publicDetail: { max: 180, window: 60 * 1000 },
   download: { max: 60, window: 15 * 60 * 1000 },
+  passwordResetRequest: { max: 3, window: 60 * 60 * 1000 },
+  passwordResetConsume: { max: 5, window: 15 * 60 * 1000 },
   publicBrowse: { max: 120, window: 60 * 1000 },
 } as const;
 

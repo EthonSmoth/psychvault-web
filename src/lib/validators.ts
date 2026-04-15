@@ -29,6 +29,15 @@ export const resourceSchema = z.object({
   downloadUrl: z.string().url().optional().or(z.literal(""))
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address."),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Missing reset token."),
+  password: z.string().min(8, "Password must be at least 8 characters.").max(128, "Password is too long."),
+});
+
 export const contactSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters.").max(80, "Name is too long."),
   email: z.string().trim().email("Enter a valid email address."),

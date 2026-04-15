@@ -191,6 +191,51 @@ function buildVerificationEmail(options: VerificationEmailOptions) {
   };
 }
 
+type PasswordResetEmailOptions = {
+  email: string;
+  name: string;
+  resetUrl: string;
+};
+
+function buildPasswordResetEmail(options: PasswordResetEmailOptions) {
+  const html = `
+    <h2>Reset your PsychVault password</h2>
+    <p>Hi ${htmlEscape(options.name)},</p>
+    <p>We received a request to reset your password. Click the link below to choose a new one.</p>
+    <p><a href="${htmlEscape(options.resetUrl)}">Reset my password</a></p>
+    <p>If the button does not work, copy and paste this URL into your browser:</p>
+    <p>${htmlEscape(options.resetUrl)}</p>
+    <p>This link expires in 1 hour. If you did not request a password reset, you can safely ignore this email.</p>
+  `;
+
+  const text = [
+    `Hi ${options.name},`,
+    "",
+    "We received a request to reset your PsychVault password.",
+    "Open this link to choose a new password:",
+    options.resetUrl,
+    "",
+    "This link expires in 1 hour.",
+    "If you did not request this, you can ignore this email.",
+  ].join("\n");
+
+  return {
+    to: options.email,
+    subject: "Reset your PsychVault password",
+    html,
+    text,
+    tags: [{ name: "type", value: "password-reset" }] as EmailTag[],
+  };
+}
+
+export async function sendPasswordResetEmail(options: PasswordResetEmailOptions) {
+  return sendEmail(buildPasswordResetEmail(options));
+}
+
+export async function trySendPasswordResetEmail(options: PasswordResetEmailOptions) {
+  return trySendEmail(buildPasswordResetEmail(options));
+}
+
 export async function sendVerificationEmail(options: VerificationEmailOptions) {
   return sendEmail(buildVerificationEmail(options));
 }

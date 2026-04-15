@@ -1,595 +1,167 @@
-# Security Audit - Critical Issues Action Plan
+# Security Review — PsychVault
 
-## 🚨 STOP: Do NOT Deploy Without Fixing These
-
-### Critical Issues (Must Fix First)
+Last audited: April 2026. Site is live on Vercel.
 
 ---
 
-## 1. HTML Injection in Contact Email - CRITICAL
+## Original Audit — Status of All 5 Issues
 
-**Risk:** Attackers can inject malicious code into support emails, compromise support staff
-
-**File to Fix:** `src/lib/email.ts`
-
-**Quick Fix:**
-```bash
-npm install escape-goat
-```
-
-Replace lines 23-29 in `src/lib/email.ts`:
-
-```typescript
-// ❌ BEFORE (VULNERABLE)
-const html = `
-  <h2>PsychVault contact form</h2>
-  <p><strong>Name:</strong> ${options.name}</p>
-  <p><strong>Email:</strong> ${options.email}</p>
-  <p><strong>Subject:</strong> ${options.subject}</p>
-  <hr />
-  <p>${options.message.replace(/\n/g, "<br/>")}</p>
-`;
-
-// ✅ AFTER (FIXED)
-import { escapeHtml } from 'escape-goat';
-
-const html = `
-  <h2>PsychVault contact form</h2>
-  <p><strong>Name:</strong> ${escapeHtml(options.name)}</p>
-  <p><strong>Email:</strong> ${escapeHtml(options.email)}</p>
-  <p><strong>Subject:</strong> ${escapeHtml(options.subject)}</p>
-  <hr />
-  <p>${escapeHtml(options.message).replace(/\n/g, "<br/>")}</p>
-`;
-```
-
-**Verification:**
-- Test with payload: `<img src=x onerror="alert('XSS')">`
-- Verify HTML is escaped in received email
+All five critical issues from the original audit have been resolved. Details below.
 
 ---
 
-## 2. No CSRF Protection - CRITICAL
+### 1. HTML Injection in Contact Email — ✅ RESOLVED
 
-**Risk:** Attackers can trick logged-in users into deleting stores, creating resources, etc.
-
-**Files Affected:** All `src/server/actions/*.ts` files
-
-**Step 1: Create CSRF utilities**
-
-Create `src/lib/csrf.ts`:
-```typescript
-import { cookies } from 'next/headers';
-import crypto from 'crypto';
-
-export async function generateCSRFToken(): Promise<string> {
-  const token = crypto.randomBytes(32).toString('hex');
-  const cookieStore = await cookies();
-  cookieStore.set('csrf-token', token, { 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 24 * 60 * 60 // 24 hours
-  });
-  return token;
-}
-
-export async function verifyCSRFToken(token: string | null): Promise<boolean> {
-  if (!token) return false;
-  const cookieStore = await cookies();
-  const stored = cookieStore.get('csrf-token')?.value;
-  return stored === token && stored !== undefined;
-}
-```
-
-**Step 2: Protect server actions**
-
-Update `src/server/actions/store-actions.ts`:
-```typescript
-import { verifyCSRFToken } from "@/lib/csrf";
-
-export async function saveStoreAction(
-  _prevState: StoreFormState,
-  formData: FormData
-): Promise<StoreFormState> {
-  // ADD THIS - Verify CSRF token
-  const csrfToken = formData.get('csrf-token') as string;
-  if (!await verifyCSRFToken(csrfToken)) {
-    return { error: "Invalid request. Please refresh and try again." };
-  }
-
-  // ... rest of function
-}
-```
-
-**Step 3: Add token to forms**
-
-Update form components - e.g., `src/components/forms/store-form.tsx`:
-```typescript
-'use client';
-
-import { generateCSRFToken } from '@/lib/csrf';
-import { useEffect, useState } from 'react';
-
-export function StoreForm({ store }: StoreFormProps) {
-  const [csrfToken, setCSRFToken] = useState('');
-
-  useEffect(() => {
-    generateCSRFToken().then(setCSRFToken);
-  }, []);
-
-  return (
-    <form action={formAction} className="space-y-6">
-      <input type="hidden" name="csrf-token" value={csrfToken} />
-      {/* rest of form */}
-    </form>
-  );
-}
-```
+`src/lib/email.ts` now imports `htmlEscape` from `escape-goat` and applies it to all user-controlled fields (`name`, `email`, `subject`, `message`) before building the HTML email body. The `escape-goat` package is in production dependencies. Verification emails also escape the recipient name and verification URL.
 
 ---
 
-## 3. Unauthorized API Data Access - CRITICAL
+### 2. CSRF Protection — ✅ RESOLVED
 
-**Risk:** Anyone can access store data including owner emails, password hash hints, all resource files
-
-**File to Fix:** `src/app/api/stores/[slug]/route.ts`
-
-Replace entire GET function with:
-```typescript
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
-
-export async function GET(_: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-
-  const store = await db.store.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      bio: true,
-      bannerUrl: true,
-      logoUrl: true,
-      location: true,
-      isVerified: true,
-      // ✅ NEVER expose owner email or password fields
-      owner: {
-        select: {
-          id: true,
-          name: true,
-          avatarUrl: true,
-        }
-      },
-      resources: {
-        where: { status: "PUBLISHED" },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          description: true,
-          shortDescription: true,
-          priceCents: true,
-          isFree: true,
-          thumbnailUrl: true,
-          imageUrl: true,
-          averageRating: true,
-          reviewCount: true,
-          salesCount: true,
-          categories: {
-            select: { categoryId: true, category: { select: { name: true } } }
-          },
-          tags: {
-            select: { tagId: true, tag: { select: { name: true } } }
-          }
-          // ✅ Don't include raw files array - too much internal data
-        },
-        orderBy: { createdAt: 'desc' }
-      }
-    }
-  });
-
-  if (!store) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(store);
-}
-```
-
-**Also fix:** `src/app/api/resources/[id]/route.ts` - Add auth check:
-```typescript
-import { auth } from "@/lib/auth";
-
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const session = await auth();
-
-  const resource = await db.resource.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      description: true,
-      shortDescription: true,
-      priceCents: true,
-      isFree: true,
-      status: true,
-      thumbnailUrl: true,
-      averageRating: true,
-      reviewCount: true,
-      creator: { select: { id: true, name: true } },
-      store: { select: { id: true, slug: true, name: true } },
-    }
-  });
-
-  if (!resource) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  // ✅ Only show published, or if user is the creator
-  if (resource.status !== "PUBLISHED" && resource.creator.id !== session?.user?.id) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(resource);
-}
-```
+`src/lib/csrf.ts` implements a stateless, HMAC-SHA256 signed CSRF token tied to the authenticated user's session ID. Tokens include a nonce, expiry timestamp, and signature verified with `crypto.timingSafeEqual`. This is stronger than the cookie-comparison approach suggested in the original audit — it requires no server state and is bound to the authenticated session. `CSRF_SECRET` is a required env variable in production.
 
 ---
 
-## 4. No Rate Limiting - CRITICAL
+### 3. Unauthorized API Data Access — ✅ RESOLVED
 
-**Risk:** Brute force attacks on login, registration, email flooding, webhook spam
+Both endpoints now use tight, explicit `select` objects and filter-helper functions:
 
-**Setup:**
-```bash
-npm install @upstash/ratelimit @upstash/redis
-```
-
-Go to [Upstash Console](https://console.upstash.com/) and create Redis database
-
-Add to `.env`:
-```
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
-```
-
-Create `src/lib/ratelimit.ts`:
-```typescript
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-
-export const authLimiter = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, "15 m"), // 5 attempts per 15 min
-  analytics: true,
-  prefix: "auth",
-});
-
-export const registerLimiter = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(3, "1 h"), // 3 attempts per hour
-  analytics: true,
-  prefix: "register",
-});
-
-export const uploadLimiter = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, "1 h"),
-  analytics: true,
-  prefix: "upload",
-});
-
-export const contactLimiter = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, "1 h"),
-  analytics: true,
-  prefix: "contact",
-});
-```
-
-**Apply to login:** Update `src/lib/auth.ts`:
-```typescript
-import { authLimiter } from "@/lib/ratelimit";
-
-Credentials({
-  credentials: { /* ... */ },
-  authorize: async (credentials) => {
-    const email = credentials?.email as string | undefined;
-    if (!email) return null;
-
-    // ✅ Check rate limit BEFORE database query
-    const { limit, remaining } = await authLimiter.limit(email);
-    if (!limit) return null; // Too many attempts
-
-    const user = await db.user.findUnique({ where: { email } });
-    if (!user?.passwordHash) return null;
-
-    const matches = await bcrypt.compare(password, user.passwordHash);
-    if (!matches) return null;
-
-    return { /* ... */ };
-  }
-})
-```
-
-**Apply to registration:** Update `src/app/api/register/route.ts`:
-```typescript
-import { registerLimiter } from "@/lib/ratelimit";
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const parsed = registerSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
-    }
-
-    // ✅ Rate limit registration by email
-    const { limit, remaining } = await registerLimiter.limit(parsed.data.email);
-    if (!limit) {
-      return NextResponse.json(
-        { error: "Too many registration attempts. Try again in an hour." },
-        { status: 429 }
-      );
-    }
-
-    // ... rest of function
-  } catch (error) {
-    logger.error("Failed to register user", error);
-    return jsonError();
-  }
-}
-```
-
-**Apply to contact form:** Update `src/app/api/contact/route.ts`:
-```typescript
-import { contactLimiter } from "@/lib/ratelimit";
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const parsed = contactSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid contact request." }, { status: 400 });
-    }
-
-    // ✅ Rate limit by IP for unauthenticated requests
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const { limit } = await contactLimiter.limit(ip);
-    if (!limit) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        { status: 429 }
-      );
-    }
-
-    await sendContactEmail(parsed.data);
-    return NextResponse.json({ message: "Contact message sent." }, { status: 201 });
-  } catch (error) {
-    return jsonError("Unable to send contact message.", 500, error);
-  }
-}
-```
+- `GET /api/stores/[slug]` — uses `getPubliclyVisibleStoreWhere` and selects only public-safe owner fields (`id`, `name`, `image`, `avatarUrl`). No email, password hash, or internal fields are exposed. Files are filtered to `THUMBNAIL` and `PREVIEW` kinds only.
+- `GET /api/resources/[id]` — uses `getPubliclyVisiblePublishedResourceWhere`, which enforces published status. No owner PII is included. The old write endpoint (`PUT`) has been retired with a `410 Gone` response.
 
 ---
 
-## 5. Weak File Upload Security - CRITICAL
+### 4. Rate Limiting — ✅ RESOLVED
 
-**Risk:** Malware upload, arbitrary code execution, storage exhaustion
+Rate limiting is fully implemented using a Postgres-backed store (`RateLimitState` model via Prisma) with an in-memory fallback if the database is temporarily unavailable. Keys are SHA-256 hashed before storage so raw emails and IPs are not persisted in plaintext.
 
-**Setup:**
+Applied to:
+
+| Endpoint / Action | Key Strategy | Limits |
+| --- | --- | --- |
+| Login (`loginAction`) | email + IP (both checked) | 5 / 15 min |
+| Registration (`/api/register`) | IP + email (both checked) | 5/hr per IP, 3/hr per email |
+| Contact form (`/api/contact`) | IP + email (both checked) | 3/hr each |
+| Uploads (`/api/upload`) | IP + user ID (both checked) | 20/hr per IP, 25/hr per user |
+| Downloads | IP | 60 / 15 min |
+| Checkout | IP + user | 10/hr per IP, 15/hr per user |
+| Messages (send) | user | 30 / 10 min |
+| Email verification | user | 3 send / hr, 10 attempts / 15 min |
+| Public browse/detail | IP (in-memory) | 120–180 / min |
+
+---
+
+### 5. File Upload Security — ✅ RESOLVED
+
+`/api/upload` now enforces:
+
+- **Auth gate** — requires authenticated session
+- **Email verification gate** — unverified users cannot upload
+- **Rate limiting** — both IP and per-user limits
+- **Origin check** — `ensureAllowedOrigin` rejects cross-origin requests
+- **Upload kind enforcement** — `uploadKind` must be one of `thumbnail`, `preview`, `main`
+- **File size limits** — per-kind limits via `UPLOAD_RULES` (10 MB images, 50 MB documents)
+- **Extension blocklist** — rejects `.php`, `.exe`, `.dll`, `.sh`, `.bat`, `.js`, `.ts`, `.py`, `.rb`, `.jar`, `.asp`, `.aspx`, `.jsp`, `.cgi`
+- **MIME + extension validation** — `validateUpload` in `src/lib/resource-moderation.ts` checks declared MIME against allowed patterns per upload kind
+- **Image optimization** — thumbnails and previews are transcoded to WebP via Sharp before storage, stripping metadata
+- **Safe filename generation** — strips path traversal characters, limits length to 240 chars
+
+---
+
+## Remaining Issues (Live Site)
+
+---
+
+### A. No Password Reset Flow — HIGH
+
+**Risk:** Users who lose access to their password have no self-service recovery path. On a live site this creates support overhead and user trust problems.
+
+**What to build:**
+
+1. Add a `PasswordResetToken` model (or reuse `VerificationToken` with a `type` discriminator)
+2. Build `POST /api/auth/forgot-password` — validates the email, creates a token, sends a reset link via Resend
+3. Build a `/reset-password?token=...` page — validates the token, accepts a new password, hashes with bcrypt, clears the token
+4. Apply rate limiting (`checkRateLimit`) to the forgot-password endpoint (3 requests/hr per email)
+
+---
+
+### B. Incomplete Content Security Policy — MEDIUM
+
+**Risk:** The CSP in `next.config.js` only covers `base-uri`, `frame-ancestors`, `object-src`, and `form-action`. Without a `script-src` directive, the browser falls back to allowing all scripts including inline, which means the CSP provides no XSS protection beyond the React rendering layer.
+
+**Current CSP:**
+```
+base-uri 'self'; frame-ancestors 'none'; object-src 'none';
+form-action 'self' https://checkout.stripe.com https://appleid.apple.com
+```
+
+**Suggested additions for `next.config.js`:**
+
+```js
+"default-src 'self'",
+"script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://js.stripe.com",
+"style-src 'self' 'unsafe-inline'",
+"img-src 'self' data: blob: https:",
+"font-src 'self' data:",
+"connect-src 'self' https://www.google-analytics.com https://api.stripe.com",
+"frame-src https://js.stripe.com https://hooks.stripe.com",
+"worker-src blob:",
+```
+
+Note: `'unsafe-inline'` on `script-src` is needed while Next.js inlines scripts. A proper nonce-based CSP would require Next.js middleware to inject nonces — viable but more involved.
+
+---
+
+### C. Google OAuth `allowDangerousEmailAccountLinking` — MEDIUM
+
+**Risk:** In `src/lib/auth.ts`, the Google provider is configured with `allowDangerousEmailAccountLinking: true`. This allows a Google account to link to an existing PsychVault credentials account purely by matching the email address. If an attacker controls a Google account with the same email as a PsychVault user, they can take over that account without the user's password.
+
+**File:** `src/lib/auth.ts:99`
+
+**Mitigation options:**
+
+1. Remove `allowDangerousEmailAccountLinking: true` (simplest — Google sign-in to an email that already has a password account would require the user to first add Google via account settings)
+2. Keep it but add an email verification check on the Google `signIn` callback — only allow linking if the PsychVault account's email is already verified (it currently auto-verifies on Google sign-in, which is the right move)
+
+Option 2 is the more user-friendly path. The current code already calls `db.user.updateMany({ where: { email, emailVerified: null }, data: { emailVerified: new Date() } })` on Google sign-in, which is reasonable. But the underlying account-linking risk remains.
+
+---
+
+### D. Upload File Content Not Verified by Magic Bytes — LOW
+
+**Risk:** Upload validation checks the declared MIME type and file extension but does not inspect the actual file bytes. A user could rename a disallowed file type (e.g. `.html` to `.pdf`) and bypass the extension check. Supabase Storage does not execute uploaded files, so this is low exploitability, but malformed files could cause issues downstream (e.g. a ZIP bomb or corrupted PDF sent through the platform).
+
+**Suggested fix:** Add the `file-type` package to inspect actual file magic bytes before accepting the upload:
+
 ```bash
 npm install file-type
 ```
 
-Replace `src/app/api/upload/route.ts`:
+In `src/app/api/upload/route.ts`, after reading the file buffer (which already happens for image optimization), add:
 
-```typescript
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
-import { uploadLimiter } from "@/lib/ratelimit";
-import { FileTypeResult } from 'file-type';
-import FileType from 'file-type';
-import crypto from 'crypto';
+```ts
+import { fileTypeFromBuffer } from "file-type";
 
-// ✅ Define allowed MIME types - only safe formats
-const ALLOWED_MIMETYPES = [
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'text/plain',
-  'application/zip',
-  'application/x-zip-compressed',
-];
+const buffer = Buffer.from(await file.arrayBuffer());
+const detected = await fileTypeFromBuffer(buffer);
 
-// ✅ Strict size limits per type
-const MAX_SIZES: Record<string, number> = {
-  'image/jpeg': 5 * 1024 * 1024,       // 5MB
-  'image/png': 5 * 1024 * 1024,
-  'image/webp': 5 * 1024 * 1024,
-  'application/pdf': 50 * 1024 * 1024, // 50MB
-  'text/plain': 10 * 1024 * 1024,      // 10MB
-  'application/zip': 100 * 1024 * 1024, // 100MB
-};
-
-function getSafeFileName(name: string) {
-  return (
-    name
-      .split(/[/\\]/)
-      .pop()
-      ?.replace(/[^a-zA-Z0-9._-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^\.+/, "")
-      .substring(0, 240) || "upload-file"
-  );
-}
-
-export async function POST(req: NextRequest) {
-  const session = await auth();
-
-  if (!session?.user?.id || !session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // ✅ Rate limit uploads per user
-  const { limit, remaining } = await uploadLimiter.limit(session.user.id);
-  if (!limit) {
-    return NextResponse.json(
-      { error: "Upload limit exceeded. Max 10 uploads per hour." },
-      { status: 429 }
-    );
-  }
-
-  const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-
-  if (!file) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
-  }
-
-  // ✅ Validate actual file content, not just extension
-  const fileBuffer = Buffer.from(await file.arrayBuffer());
-  const detectedType: FileTypeResult | undefined = await FileType.fromBuffer(fileBuffer);
-
-  if (!detectedType || !ALLOWED_MIMETYPES.includes(detectedType.mime)) {
-    return NextResponse.json(
-      { error: "File type not allowed. Accept: PDF, JPEG, PNG, WEBP, TXT, ZIP" },
-      { status: 400 }
-    );
-  }
-
-  // ✅ Verify declared MIME type matches actual content
-  if (file.type && file.type !== detectedType.mime) {
-    return NextResponse.json(
-      { error: "File MIME type mismatch. File content doesn't match extension." },
-      { status: 400 }
-    );
-  }
-
-  // ✅ Enforce size limits per type
-  const maxSize = MAX_SIZES[detectedType.mime] || 1024 * 1024;
-  if (file.size > maxSize) {
-    return NextResponse.json(
-      { error: `File exceeds max size of ${Math.round(maxSize / 1024 / 1024)}MB` },
-      { status: 413 }
-    );
-  }
-
-  // ✅ Generate truly random filename (prevent enumeration)
-  const randomName = crypto.randomBytes(16).toString('hex');
-  const timestamp = Date.now();
-  const safeName = getSafeFileName(file.name);
-  const path = `uploads/${session.user.id}/${timestamp}-${randomName}-${safeName}`;
-
-  // ✅ Upload to PRIVATE bucket
-  const { data, error } = await supabase.storage
-    .from("psychvault-resources-private") // Private bucket!
-    .upload(path, fileBuffer, {
-      contentType: detectedType.mime,
-      upsert: false,
-    });
-
-  if (error || !data?.path) {
-    return NextResponse.json(
-      { error: error?.message || "Unable to upload file." },
-      { status: 500 }
-    );
-  }
-
-  // ✅ Return SIGNED URL valid for limited time, not public URL
-  try {
-    const { data: signedUrl } = await supabase.storage
-      .from("psychvault-resources-private")
-      .createSignedUrl(data.path, 3600); // 1 hour validity
-
-    if (!signedUrl?.signedUrl) {
-      return NextResponse.json(
-        { error: "Unable to generate file URL." },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      url: signedUrl.signedUrl, // Use signed URL, not public URL
-      name: safeName,
-      mime: detectedType.mime,
-      size: file.size,
-    });
-  } catch (err) {
-    return NextResponse.json(
-      { error: "Unable to generate secure file URL." },
-      { status: 500 }
-    );
-  }
+if (!detected || !ALLOWED_MIME_TYPES.includes(detected.mime)) {
+  return NextResponse.json({ error: "File content does not match allowed types." }, { status: 400 });
 }
 ```
 
-**Update Supabase:** Create private bucket in Supabase console:
-- Create new bucket: `psychvault-resources-private`
-- Set to PRIVATE (not public)
-- Update code to use this bucket instead
+---
+
+### E. No Bot Protection on Auth Endpoints — LOW
+
+**Risk:** Rate limiting protects against brute-force from a single IP or email, but an attacker using a distributed botnet can still enumerate accounts and attempt credential stuffing across many IPs. There is no CAPTCHA or proof-of-work challenge on login, registration, or the contact form.
+
+**Recommended:** Cloudflare Turnstile is the lowest-friction option (invisible by default, challenge on suspicion). Cloudflare is already in the planned infrastructure stack so the site is behind CF — enabling Bot Fight Mode or adding Turnstile to login and signup would add meaningful protection with minimal UX impact.
 
 ---
 
-## Verification Checklist
+## Not Applicable / Out of Scope
 
-After applying fixes, verify:
-
-```bash
-# 1. Test CSRF protection
-- Try submitting form without csrf-token ❌ Should fail
-- Submit with valid token ✅ Should work
-
-# 2. Test HTML injection fix
-- Send contact: `<img src=x onerror="alert('xss')">` 
-- Check email - should be escaped/HTML encoded ✅
-
-# 3. Test rate limiting
-curl -X POST http://localhost:3000/api/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com", "password":"test", "name":"test"}' \
-  # Run 4 times quickly
-# 4th request should get 429 status ✅
-
-# 4. Test upload validation
-- Try uploading renamed .exe file → Should reject ✅
-- Try uploading oversized file → Should reject ✅
-- Upload valid PDF → Should work ✅
-
-# 5. Test API authorization
-curl http://localhost:3000/api/resources/nonexistent-id
-# Should return 404 with minimal data ✅
-```
-
----
-
-## Timeline
-
-- **Hour 1:** Implement CSRF protection (`src/lib/csrf.ts` + update all forms)
-- **Hour 1:** Fix HTML injection in email
-- **Hour 2:** Add rate limiting (Upstash setup + implementation)
-- **Hour 2:** Fix vulnerable API endpoints (data selection + auth checks)
-- **Hour 2:** Replace file upload validation with content-based checking
-
-**Total: 8 hours of focused work**
-
----
-
-## Next Steps After Critical Fixes
-
-1. Add session security headers (middleware)
-2. Fix remaining HIGH severity issues
-3. Add password complexity validation
-4. Implement comprehensive security headers
-5. Set up security logging
-
-See `SECURITY_AUDIT.md` for complete details on all vulnerabilities.
+- **Apple OAuth** — not implemented and not required yet. Add when demand warrants it.
+- **Password complexity rules** — 8-character minimum is enforced. Consider adding a complexity requirement (e.g. require at least one non-letter character) if credential stuffing becomes a concern.
+- **HSTS preloading** — HSTS `max-age=63072000; includeSubDomains; preload` is set in production. Submit `psychvault.com.au` to the HSTS preload list once you are confident the domain and all subdomains will always serve HTTPS.
