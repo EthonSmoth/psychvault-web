@@ -13,11 +13,11 @@ export function BlogPostCard({
 }: BlogPostCardProps) {
   return (
     <article
-      className={`group h-full overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+      className={`group flex h-full flex-col overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
         featured ? "lg:grid lg:grid-cols-[1.15fr_0.85fr]" : ""
       }`}
     >
-      <div className="relative overflow-hidden bg-[var(--surface-alt)]">
+      <Link href={`/blog/${post.slug}`} className="relative block overflow-hidden bg-[var(--surface-alt)]" tabIndex={-1} aria-hidden="true">
         {post.coverImage ? (
           <>
             <Image
@@ -66,9 +66,9 @@ export function BlogPostCard({
             </h2>
           </div>
         </div>
-      </div>
+      </Link>
 
-      <div className="flex h-full flex-col p-6">
+      <div className="flex flex-1 flex-col p-6">
         <p
           className={`text-[var(--text-muted)] ${
             featured ? "text-base leading-7" : "text-sm leading-6"
