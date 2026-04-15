@@ -2,11 +2,12 @@
 
 PsychVault is a clinician-focused marketplace for psychology resources. It combines public resource discovery, creator storefronts, buyer libraries, trust-aware moderation, Stripe checkout, protected downloads, messaging, reviews, and a markdown-backed blog for SEO and content marketing.
 
-The app is structured for production deployment on Vercel with Cloudflare in front, Supabase for Postgres and Storage, Stripe for payments, and Resend for transactional email.
+The app is structured for production deployment on Vercel with Cloudflare in front, Supabase for Postgres and Storage, Stripe for payments, and Resend for transactional email. The canonical domain is `psychvault.com.au` and pricing is in AUD.
 
 ## What Ships Today
 
-- Public homepage, resource browse, store browse, resource detail, store detail, and blog surfaces
+- Public homepage, resource browse, store browse, search, resource detail, store detail, and blog surfaces
+- Template SEO landing pages grouped by clinical workflow and search intent
 - Creator dashboard with store settings, resource creation/editing, sales, analytics, and payouts
 - Buyer account flows including library access, purchases, reviews, follows, and creator messaging
 - Admin moderation for queued resources, marketplace reports, recent activity, and creator trust context
@@ -14,6 +15,8 @@ The app is structured for production deployment on Vercel with Cloudflare in fro
 - Stripe Checkout plus webhook-based fulfilment for paid resources
 - Optimized image uploads for thumbnails, previews, logos, and banners
 - SEO metadata, sitemap, structured data, RSS feed, and crawlable public content
+- Legal, support, and informational pages (about, contact, FAQ, help, careers, privacy policy, terms of service, refund policy)
+- Warm clinical design system built on CSS custom properties (warm beige/amber palette, WCAG AA contrast)
 
 ## Public Architecture
 
@@ -24,6 +27,7 @@ The public site is designed to stay lean and crawlable:
 - viewer-specific state is fetched separately on the client
 - logged-in actions use neutral loading states instead of flashing incorrect logged-out CTAs
 - blog posts are authored in markdown and rendered as public content
+- template landing pages group resources by clinical intent for SEO content clustering
 
 ## Blog And Content Workflow
 
@@ -62,15 +66,24 @@ Optional caption:
 ![Helpful alt text](/blog/example-inline.webp "Optional caption")
 ```
 
+## Template Landing Pages
+
+Template SEO landing pages live at `/templates` and `/templates/[slug]`. Each page is defined in `src/lib/template-landing-pages.ts` and groups existing marketplace resources by clinical intent, tag, and category. They are designed to rank for high-intent clinician searches and link naturally into the browse catalog.
+
+Examples: CBT thought record templates, NDIS report templates, therapy intake forms, treatment plans, and more.
+
 ## Core Product Areas
 
 ### Public marketplace
 
 - browse resources by category, tag, and search
+- search page at `/search` with full filter support
 - browse creator stores
 - view resource detail pages with previews, reviews, related content, and trust context
 - view store pages with follow, message, and report entry points
+- following feed for logged-in users at `/following`
 - read blog content that links naturally into marketplace pages
+- template SEO landing pages at `/templates`
 
 ### Buyer experience
 
@@ -84,8 +97,9 @@ Optional caption:
 
 - public store profile with logo, banner, bio, and publishing controls
 - resource creation and editing with taxonomy, previews, pricing, and main-download uploads
+- resource archiving and draft management
 - sales and analytics views
-- payout readiness and Stripe onboarding flow
+- payout readiness and Stripe Connect onboarding flow
 
 ### Admin and trust
 
@@ -94,19 +108,88 @@ Optional caption:
 - creator trust scoring and moderation context
 - recent resource and store visibility into marketplace health
 
+### Legal and support pages
+
+| Route | Purpose |
+|---|---|
+| `/about` | About PsychVault |
+| `/contact` | Contact form (Resend-backed) |
+| `/faq` | Frequently asked questions |
+| `/help` | Help centre |
+| `/feedback` | User feedback |
+| `/careers` | Careers page |
+| `/join-the-team` | Team recruitment |
+| `/privacy-policy` | Privacy policy |
+| `/terms-of-service` | Terms of service |
+| `/refund-policy` | Refund policy |
+
+Note: `/privacy` and `/terms` also exist as alternate routes pointing to the same legal content.
+
 ## Stack
 
 | Layer | Tech |
 |---|---|
 | Framework | Next.js 16 App Router |
 | Language | TypeScript |
+| Runtime | React 19 |
 | Auth | Auth.js / NextAuth v5 beta |
 | Database | PostgreSQL on Supabase |
 | ORM | Prisma 6 |
 | Storage | Supabase Storage |
 | Payments | Stripe Checkout + Webhooks |
 | Email | Resend |
-| Styling | Tailwind CSS |
+| Styling | Tailwind CSS v4 |
+| Rate Limiting | Database-backed (Prisma) with in-memory fallback |
+
+## Source Layout
+
+```
+src/
+  app/
+    (creator)/creator/      Creator dashboard routes (store, resources, analytics, sales, payouts)
+    (protected)/messages/   Auth-required messaging routes
+    (public)/               Public routes (homepage, resources, stores, blog, library, login, signup...)
+    admin/                  Admin moderation panel
+    api/                    API routes (auth, checkout, downloads, messages, resources, stores, stripe, upload, webhook)
+    templates/              SEO template landing pages
+    about/ contact/ faq/    Informational pages
+    privacy-policy/ terms-of-service/ refund-policy/  Legal pages
+  components/
+    analytics/              Google Analytics integration
+    auth/                   Login, signup, Google auth button
+    blog/                   Blog post card, markdown renderer
+    forms/                  Contact, login, resource, signup, store forms
+    layout/                 Navbar, footer, mobile menu
+    legal/                  Privacy, terms, refund policy content components
+    messages/               Conversation list, message thread, composer
+    resources/              Resource card, grid, gallery, viewer, browse client, review and report forms
+    stores/                 Store header, viewer, browse client, report form
+    ui/                     Shared UI primitives (verified badge, form submit button)
+  lib/                      Utility modules (auth, CSRF, rate limiting, storage, email, payments, validators, etc.)
+  server/
+    actions/                Server actions by domain (admin, auth, creator resources, follow, messages, reports, reviews, stores)
+    cache/                  Public content cache helpers
+    queries/                Database query functions (resources, stores, public content, viewer state)
+    services/               Service layer (reviews, resource taxonomy)
+  types/                    TypeScript type definitions
+```
+
+## Design System
+
+The app uses a warm clinical design system built on CSS custom properties in `src/app/globals.css`. All components use semantic tokens rather than hardcoded Tailwind color classes.
+
+Key tokens:
+
+| Token | Value | Use |
+|---|---|---|
+| `--background` | `#fbf0e4` | App canvas (warm beige) |
+| `--card` | `#faf6f0` | Card and panel backgrounds |
+| `--primary` | `#c47f2c` | Primary actions (warm amber) |
+| `--text` | `#4c3523` | Primary text (warm charcoal) |
+| `--text-muted` | `#6b4f3a` | Secondary text |
+| `--border` | `rgba(136,88,40,0.2)` | Subtle warm border |
+
+Text contrast ratios meet WCAG AA (primary text on main background ~8.5:1).
 
 ## Environment
 
@@ -171,7 +254,7 @@ Current app behavior:
 
 ## Security Posture
 
-Implemented today:
+Implemented:
 
 - credentials auth with bcrypt password hashes
 - optional Google OAuth
@@ -179,19 +262,20 @@ Implemented today:
 - throttled auth-user refreshes to reduce unnecessary Prisma reads
 - secure cookies in production
 - email verification gating for sensitive actions
-- CSRF protection on state-changing form submissions
+- CSRF protection on state-changing form submissions (`src/lib/csrf.ts`)
 - redirect validation
 - origin validation on state-changing API routes
-- database-backed rate limiting with fallback behavior
+- database-backed rate limiting with in-memory fallback (`src/lib/rate-limit.ts`)
+- HTML-escaped contact and verification emails via `escape-goat`
 - server-side authorization checks for ownership and role-protected actions
 - Stripe webhook signature verification
-- security headers via Next.js config
+- security headers via Next.js config (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, CSP, HSTS in production)
 
 Not implemented yet:
 
 - Apple OAuth
 - CAPTCHA / Turnstile
-- password reset flow
+- Password reset flow
 
 ## Getting Started
 
@@ -240,6 +324,7 @@ npm run dev
 | `npm run dev` | Start local development |
 | `npm run build` | Generate Prisma client and build the app |
 | `npm run start` | Start the production server |
+| `npm run lint` | Run ESLint |
 | `npm run db:generate` | Generate Prisma client |
 | `npm run db:push` | Push schema changes |
 | `npm run db:migrate` | Run Prisma migrations in development |
@@ -253,6 +338,7 @@ npm run dev
 - Stripe webhook fulfilment is the server-side source of truth for paid access
 - keep secrets and OAuth credentials out of version control
 - if Prisma build steps fail on Windows because the query engine DLL is locked, stop running dev processes and retry
+- rate limiting uses the shared Postgres database as its primary store so limits apply across serverless instances; in-memory fallback applies if the database is temporarily unreachable
 
 ## Documentation Vault
 
@@ -277,6 +363,7 @@ Git note:
 - keep trust, moderation, and admin workflows aligned with real marketplace risk
 - expand the blog and content cluster around high-intent clinician searches
 - continue improving creator listing quality, trust signals, and conversion
+- implement password reset flow
 - keep docs, setup notes, and infrastructure guidance aligned with the shipped app
 
 ## License
