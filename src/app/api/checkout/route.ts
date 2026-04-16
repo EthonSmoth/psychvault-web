@@ -188,12 +188,13 @@ export async function POST(request: Request) {
       // Send confirmation email — fire and forget
       const buyer = await db.user.findUnique({
         where: { id: userId },
-        select: { email: true, name: true },
+        select: { id: true, email: true, name: true, emailNotifications: true },
       });
-      if (buyer) {
+      if (buyer?.emailNotifications) {
         trySendPurchaseConfirmationEmail({
           buyerEmail: buyer.email,
           buyerName: buyer.name,
+          buyerId: buyer.id,
           resourceTitle: resource.title,
           resourceSlug: resource.slug,
           storeName: resource.store?.name ?? "PsychVault creator",

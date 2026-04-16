@@ -547,3 +547,59 @@ export async function adminDismissStoreReportAction(formData: FormData) {
 
   revalidateAdminAndPublicPaths(storeSlug ? [`/stores/${storeSlug}`] : []);
 }
+
+// ─── Refund request actions ───────────────────────────────────────────────────
+
+export async function adminApproveRefundAction(formData: FormData) {
+  const admin = await requireAdmin();
+
+  const refundRequestId = String(formData.get("refundRequestId") ?? "").trim();
+  const adminNotes = String(formData.get("adminNotes") ?? "").trim();
+  if (!refundRequestId) throw new Error("Missing refund request id.");
+
+  await db.refundRequest.update({
+    where: { id: refundRequestId },
+    data: {
+      status: "APPROVED",
+      adminNotes: adminNotes || null,
+      updatedAt: new Date(),
+    },
+  });
+
+  await logModerationEvent({
+    targetType: ModerationTargetType.REPORT,
+    targetId: refundRequestId,
+    action: ModerationActionType.ADMIN_RESOLVED_REPORT,
+    message: adminNotes || "Refund request approved by admin.",
+    actorUserId: admin.id,
+  });
+
+  revalidateAdminAndPublicPaths(["/library"]);
+}
+
+export async function adminRejectRefundAction(formData: FormData) {
+  const admin = await requireAdmin();
+
+  const refundRequestId = String(formData.get("refundRequestId") ?? "").trim();
+  const adminNotes = String(formData.get("adminNotes") ?? "").trim();
+  if (!refundRequestId) throw new Error("Missing refund request id.");
+
+  await db.refundRequest.update({
+    where: { id: refundRequestId },
+    data: {
+      status: "REJECTED",
+      adminNotes: adminNotes || null,
+      updatedAt: new Date(),
+    },
+  });
+
+  await logModerationEvent({
+    targetType: ModerationTargetType.REPORT,
+    targetId: refundRequestId,
+    action: ModerationActionType.ADMIN_DISMISSED_REPORT,
+    message: adminNotes || "Refund request rejected by admin.",
+    actorUserId: admin.id,
+  });
+
+  revalidateAdminAndPublicPaths(["/library"]);
+}

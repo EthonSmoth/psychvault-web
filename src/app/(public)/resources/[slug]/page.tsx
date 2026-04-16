@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { generateCSRFToken } from "@/lib/csrf";
 import { getAppBaseUrl } from "@/lib/env";
 import { serializeJsonLd } from "@/lib/input-safety";
 import { getMarketplacePolicyLinks, getPaymentsAvailability } from "@/lib/payments";
@@ -13,6 +15,7 @@ import {
   getPublishedResourcePageData,
   getRelatedPublishedResources,
 } from "@/server/queries/public-content";
+import { FlagReviewButton } from "@/components/resources/flag-review-button";
 import { ResourceGallery } from "@/components/resources/resource-gallery";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import {
@@ -120,9 +123,11 @@ type ResourcePageProps = {
 async function ResourceReviewsSection({
   resourceId,
   resourceSlug,
+  csrfToken,
 }: {
   resourceId: string;
   resourceSlug: string;
+  csrfToken?: string;
 }) {
   const reviews = await getPublishedResourceReviews({
     resourceId,
@@ -152,8 +157,13 @@ async function ResourceReviewsSection({
                   </div>
                 </div>
 
-                <div className="text-xs text-[var(--text-light)]">
-                  {formatDate(review.createdAt)}
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-[var(--text-light)]">
+                    {formatDate(review.createdAt)}
+                  </div>
+                  {csrfToken && (
+                    <FlagReviewButton reviewId={review.id} csrfToken={csrfToken} />
+                  )}
                 </div>
               </div>
 
@@ -199,12 +209,18 @@ async function RelatedResourcesSection({
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
-            Related resources
+            You might also like
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
             Similar resources from this creator or the same category.
           </p>
         </div>
+        <Link
+          href="/resources"
+          className="shrink-0 text-sm font-medium text-[var(--primary)] hover:underline"
+        >
+          Browse all
+        </Link>
       </div>
 
       <ResourceGrid resources={relatedResources} />
@@ -274,6 +290,10 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const relatedCategoryIds = resource.categories
     .map((item) => item.categoryId)
     .slice(0, 2);
+  const session = await auth();
+  const reviewCsrfToken = session?.user?.id
+    ? generateCSRFToken(session.user.id)
+    : undefined;
   const paymentAvailability = getPaymentsAvailability();
   const policyLinks = getMarketplacePolicyLinks();
   const creatorPayoutReady = isPaidResourcePayoutReady({
@@ -696,6 +716,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
               <ResourceReviewsSection
                 resourceId={resourceData.id}
                 resourceSlug={resourceData.slug}
+                csrfToken={reviewCsrfToken}
               />
             </Suspense>
           </div>

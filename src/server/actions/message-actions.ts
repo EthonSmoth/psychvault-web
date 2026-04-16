@@ -277,16 +277,35 @@ export async function createMessage(
     },
   });
 
-  // Notify recipient — fire and forget, never block the response
+  // Notify recipient — only if not unsubscribed and no notification sent in last 30 min
   if (recipient && sender) {
-    trySendMessageNotificationEmail({
-      recipientEmail: recipient.email,
-      recipientName: recipient.name ?? recipient.email,
-      senderName: sender.name ?? sender.email,
-      messagePreview: body,
-      conversationId,
-      appBaseUrl: getAppBaseUrl(),
+    const recipientUser = await db.user.findUnique({
+      where: { id: recipient.id },
+      select: { emailNotifications: true },
     });
+
+    if (recipientUser?.emailNotifications) {
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+      const recentCount = await db.message.count({
+        where: {
+          conversationId,
+          createdAt: { gte: thirtyMinutesAgo },
+          senderId: { not: recipient.id },
+        },
+      });
+
+      if (recentCount <= 1) {
+        trySendMessageNotificationEmail({
+          recipientEmail: recipient.email,
+          recipientName: recipient.name ?? recipient.email,
+          recipientId: recipient.id,
+          senderName: sender.name ?? sender.email,
+          messagePreview: body,
+          conversationId,
+          appBaseUrl: getAppBaseUrl(),
+        });
+      }
+    }
   }
 
   return result;

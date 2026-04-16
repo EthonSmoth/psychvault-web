@@ -287,6 +287,13 @@ export default async function LibraryPage() {
                           No download
                         </span>
                       )}
+
+                      <Link
+                        href={`/purchases/${purchase.id}/receipt`}
+                        className="inline-flex items-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                      >
+                        Receipt
+                      </Link>
                     </div>
 
                     {isPaid && (

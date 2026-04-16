@@ -1,6 +1,7 @@
 import { htmlEscape } from "escape-goat";
 import { Resend } from "resend";
 import { logger } from "@/lib/logger";
+import { buildUnsubscribeUrl } from "@/lib/unsubscribe";
 
 type EmailTag = {
   name: string;
@@ -249,6 +250,7 @@ export async function trySendVerificationEmail(options: VerificationEmailOptions
 type PurchaseConfirmationEmailOptions = {
   buyerEmail: string;
   buyerName: string;
+  buyerId: string;
   resourceTitle: string;
   resourceSlug: string;
   storeName: string;
@@ -265,6 +267,7 @@ function buildPurchaseConfirmationEmail(options: PurchaseConfirmationEmailOption
       );
   const libraryUrl = `${options.appBaseUrl}/library`;
   const resourceUrl = `${options.appBaseUrl}/resources/${htmlEscape(options.resourceSlug)}`;
+  const unsubscribeUrl = buildUnsubscribeUrl(options.buyerId);
 
   const html = `
     <h2>Your PsychVault purchase is confirmed</h2>
@@ -277,6 +280,8 @@ function buildPurchaseConfirmationEmail(options: PurchaseConfirmationEmailOption
     </table>
     <p><a href="${htmlEscape(libraryUrl)}" style="display:inline-block;background:#0f172a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Go to my library</a></p>
     <p style="font-size:13px;color:#6b7280">You can also <a href="${htmlEscape(resourceUrl)}">view the resource page</a> or reply to this email if you have any questions.</p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+    <p style="font-size:11px;color:#9ca3af">PsychVault &mdash; <a href="${htmlEscape(unsubscribeUrl)}" style="color:#9ca3af">Unsubscribe from notification emails</a></p>
   `;
 
   const text = [
@@ -311,6 +316,7 @@ export async function trySendPurchaseConfirmationEmail(
 type MessageNotificationEmailOptions = {
   recipientEmail: string;
   recipientName: string;
+  recipientId: string;
   senderName: string;
   messagePreview: string;
   conversationId: string;
@@ -319,6 +325,7 @@ type MessageNotificationEmailOptions = {
 
 function buildMessageNotificationEmail(options: MessageNotificationEmailOptions) {
   const inboxUrl = `${options.appBaseUrl}/messages/${htmlEscape(options.conversationId)}`;
+  const unsubscribeUrl = buildUnsubscribeUrl(options.recipientId);
   const preview =
     options.messagePreview.length > 120
       ? options.messagePreview.slice(0, 120) + "…"
@@ -330,7 +337,8 @@ function buildMessageNotificationEmail(options: MessageNotificationEmailOptions)
     <p><strong>${htmlEscape(options.senderName)}</strong> sent you a message:</p>
     <blockquote style="border-left:3px solid #e2e8f0;margin:12px 0;padding:8px 16px;color:#374151;font-size:14px">${htmlEscape(preview)}</blockquote>
     <p><a href="${htmlEscape(inboxUrl)}" style="display:inline-block;background:#0f172a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Reply</a></p>
-    <p style="font-size:12px;color:#9ca3af">You are receiving this because you have an account on PsychVault. You can manage notifications in your account settings.</p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+    <p style="font-size:11px;color:#9ca3af">PsychVault &mdash; <a href="${htmlEscape(unsubscribeUrl)}" style="color:#9ca3af">Unsubscribe from notification emails</a></p>
   `;
 
   const text = [

@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/require-admin";
 import {
   adminApproveQueuedResourceAction,
+  adminApproveRefundAction,
   adminArchiveResourceAction,
   adminArchiveStoreAction,
   adminDismissResourceReportAction,
@@ -17,11 +18,16 @@ import {
   adminPublishResourceAction,
   adminPublishStoreAction,
   adminRejectQueuedResourceAction,
+  adminRejectRefundAction,
   adminResolveResourceReportAction,
   adminResolveStoreReportAction,
   adminToggleStoreVerificationAction,
   adminUnpublishResourceAction,
 } from "@/server/actions/admin-actions";
+import {
+  adminApproveCreatorApplicationAction,
+  adminRejectCreatorApplicationAction,
+} from "@/server/actions/creator-application-actions";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 
 type Tone = "danger" | "warning" | "success" | "info" | "neutral";
@@ -162,6 +168,33 @@ function fetchRecentStores() {
   });
 }
 
+function fetchPendingCreatorApplications() {
+  return db.creatorApplication.findMany({
+    where: { status: "PENDING" },
+    orderBy: { createdAt: "asc" },
+    take: 50,
+    include: {
+      user: { select: { id: true, name: true, email: true, createdAt: true } },
+    },
+  });
+}
+
+function fetchPendingRefundRequests() {
+  return db.refundRequest.findMany({
+    where: { status: "PENDING" },
+    orderBy: { createdAt: "asc" },
+    take: 50,
+    include: {
+      buyer: { select: { id: true, name: true, email: true } },
+      purchase: {
+        include: {
+          resource: { select: { id: true, title: true, slug: true, priceCents: true } },
+        },
+      },
+    },
+  });
+}
+
 function fetchRecentModerationEvents() {
   return db.moderationEvent.findMany({
     orderBy: { createdAt: "desc" },
@@ -226,7 +259,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeView = resolvedSearchParams?.view || "overview";
 
-  const [userCount, storeCount, resourceCount, purchaseCount, pendingReviewCount, openReportCount, openStoreReportCount, revenueAgg] = await db.$transaction([
+  const [userCount, storeCount, resourceCount, purchaseCount, pendingReviewCount, openReportCount, openStoreReportCount, pendingRefundCount, pendingCreatorApplicationCount, revenueAgg] = await db.$transaction([
     db.user.count(),
     db.store.count(),
     db.resource.count(),
@@ -234,6 +267,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     db.resource.count({ where: { moderationStatus: "PENDING_REVIEW" } }),
     db.resourceReport.count({ where: { status: "OPEN" } }),
     db.storeReport.count({ where: { status: "OPEN" } }),
+    db.refundRequest.count({ where: { status: "PENDING" } }),
+    db.creatorApplication.count({ where: { status: "PENDING" } }),
     db.purchase.aggregate({ _sum: { amountCents: true } }),
   ]);
 
@@ -243,6 +278,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   let recentResources: Awaited<ReturnType<typeof fetchRecentResources>> = [];
   let recentStores: Awaited<ReturnType<typeof fetchRecentStores>> = [];
   let recentModerationEvents: Awaited<ReturnType<typeof fetchRecentModerationEvents>> = [];
+  let pendingRefundRequests: Awaited<ReturnType<typeof fetchPendingRefundRequests>> = [];
+  let pendingCreatorApplications: Awaited<ReturnType<typeof fetchPendingCreatorApplications>> = [];
 
   if (activeView === "overview" || activeView === "queue" || activeView === "resource-reports") {
     [queuedResources, openReports] = await db.$transaction([fetchQueuedResources(), fetchOpenReports()]);
@@ -254,6 +291,14 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   if (activeView === "overview" || activeView === "stores") {
     [recentResources, recentStores] = await db.$transaction([fetchRecentResources(), fetchRecentStores()]);
+  }
+
+  if (activeView === "overview" || activeView === "refunds") {
+    pendingRefundRequests = await fetchPendingRefundRequests();
+  }
+
+  if (activeView === "overview" || activeView === "creator-applications") {
+    pendingCreatorApplications = await fetchPendingCreatorApplications();
   }
 
   if (activeView === "overview" || activeView === "audit") {
@@ -269,6 +314,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     { href: "/admin?view=queue", label: `Queue (${formatCount(pendingReviewCount)})`, key: "queue" },
     { href: "/admin?view=resource-reports", label: `Resource reports (${formatCount(openReportCount)})`, key: "resource-reports" },
     { href: "/admin?view=store-reports", label: `Store reports (${formatCount(openStoreReportCount)})`, key: "store-reports" },
+    { href: "/admin?view=refunds", label: `Refunds (${formatCount(pendingRefundCount)})`, key: "refunds" },
+    { href: "/admin?view=creator-applications", label: `Applications (${formatCount(pendingCreatorApplicationCount)})`, key: "creator-applications" },
     { href: "/admin?view=stores", label: "Stores", key: "stores" },
     { href: "/admin?view=audit", label: "Audit log", key: "audit" },
   ];
@@ -299,6 +346,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       value: formatCount(openStoreReportCount),
       note: openStoreReportCount > 0 ? "Store-level concerns waiting for follow-up." : "No unresolved store reports.",
       tone: openStoreReportCount > 0 ? ("danger" as const) : ("success" as const),
+    },
+    {
+      href: "/admin?view=refunds",
+      label: "Refund requests",
+      value: formatCount(pendingRefundCount),
+      note: pendingRefundCount > 0 ? "Buyer refund requests waiting for a decision." : "No pending refund requests.",
+      tone: pendingRefundCount > 0 ? ("warning" as const) : ("success" as const),
     },
     {
       href: "/admin?view=audit",
@@ -725,6 +779,138 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         <input type="hidden" name="storeId" value={store.id} />
                         <FormSubmitButton pendingText={store.isVerified ? "Removing..." : "Verifying..."} className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
                           {store.isVerified ? "Remove verification" : "Verify store"}
+                        </FormSubmitButton>
+                      </form>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </section>
+      ) : null}
+
+      {(activeView === "overview" || activeView === "refunds") ? (
+        <section className="mt-10">
+          <SectionCard
+            title="Refund requests"
+            subtitle={`${formatCount(pendingRefundCount)} pending refund request${pendingRefundCount === 1 ? "" : "s"}`}
+            action={<StatusBadge label={pendingRefundCount > 0 ? "Needs action" : "Clear"} tone={pendingRefundCount > 0 ? "warning" : "success"} />}
+          >
+            <div className="space-y-4">
+              {pendingRefundRequests.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No pending refund requests.
+                </div>
+              ) : (
+                pendingRefundRequests.map((req) => (
+                  <div key={req.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-semibold text-[var(--text)]">{req.purchase.resource.title}</h3>
+                          <StatusBadge label={req.reason.replaceAll("_", " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())} tone="warning" />
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <MetaPill>{req.buyer.name || req.buyer.email}</MetaPill>
+                          <MetaPill>{formatMoney(req.purchase.amountCents)}</MetaPill>
+                          <MetaPill>Submitted {formatDateTime(req.createdAt)}</MetaPill>
+                        </div>
+                        {req.message ? (
+                          <div className="mt-4 rounded-[1.25rem] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm leading-6 text-[var(--text)]">
+                            {req.message}
+                          </div>
+                        ) : (
+                          <p className="mt-3 text-sm text-[var(--text-muted)]">No message was included with this request.</p>
+                        )}
+                      </div>
+                      <Link
+                        href={`/resources/${req.purchase.resource.slug}`}
+                        className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+                      >
+                        View resource
+                      </Link>
+                    </div>
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                      <form action={adminApproveRefundAction} className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                        <input type="hidden" name="refundRequestId" value={req.id} />
+                        <textarea
+                          name="adminNotes"
+                          rows={2}
+                          placeholder="Optional admin notes (visible internally)."
+                          className="w-full min-w-[220px] rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)]"
+                        />
+                        <FormSubmitButton pendingText="Approving..." className="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
+                          Approve
+                        </FormSubmitButton>
+                      </form>
+                      <form action={adminRejectRefundAction}>
+                        <input type="hidden" name="refundRequestId" value={req.id} />
+                        <FormSubmitButton pendingText="Rejecting..." className="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50">
+                          Reject
+                        </FormSubmitButton>
+                      </form>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </section>
+      ) : null}
+
+      {(activeView === "overview" || activeView === "creator-applications") ? (
+        <section className="mt-10">
+          <SectionCard
+            title="Creator applications"
+            subtitle={`${formatCount(pendingCreatorApplicationCount)} application${pendingCreatorApplicationCount === 1 ? "" : "s"} waiting for a decision`}
+            action={<StatusBadge label={pendingCreatorApplicationCount > 0 ? "Needs review" : "Clear"} tone={pendingCreatorApplicationCount > 0 ? "warning" : "success"} />}
+          >
+            <div className="space-y-4">
+              {pendingCreatorApplications.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No pending creator applications.
+                </div>
+              ) : (
+                pendingCreatorApplications.map((app) => (
+                  <div key={app.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-semibold text-[var(--text)]">
+                          {app.user.name || app.user.email}
+                        </h3>
+                        <StatusBadge label="Pending" tone="warning" />
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <MetaPill>{app.user.email}</MetaPill>
+                        <MetaPill>Applied {formatDateTime(app.createdAt)}</MetaPill>
+                        <MetaPill>Joined {formatDateTime(app.user.createdAt)}</MetaPill>
+                      </div>
+                      {app.message ? (
+                        <div className="mt-4 rounded-[1.25rem] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm leading-6 text-[var(--text)]">
+                          {app.message}
+                        </div>
+                      ) : (
+                        <p className="mt-3 text-sm text-[var(--text-muted)]">No message was included with this application.</p>
+                      )}
+                    </div>
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                      <form action={adminApproveCreatorApplicationAction}>
+                        <input type="hidden" name="applicationId" value={app.id} />
+                        <FormSubmitButton pendingText="Approving..." className="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
+                          Approve
+                        </FormSubmitButton>
+                      </form>
+                      <form action={adminRejectCreatorApplicationAction} className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                        <input type="hidden" name="applicationId" value={app.id} />
+                        <textarea
+                          name="adminNotes"
+                          rows={2}
+                          placeholder="Rejection reason shown to the applicant (optional)."
+                          className="w-full min-w-[220px] rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)]"
+                        />
+                        <FormSubmitButton pendingText="Rejecting..." className="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50">
+                          Reject
                         </FormSubmitButton>
                       </form>
                     </div>

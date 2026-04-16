@@ -15,6 +15,7 @@ type AccountFormProps = {
     email: string;
     avatarUrl: string | null;
     hasPassword: boolean;
+    emailNotifications: boolean;
   };
   csrfToken: string;
 };
@@ -26,6 +27,7 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
     {}
   );
   const [name, setName] = useState(user.name);
+  const [emailNotifications, setEmailNotifications] = useState(user.emailNotifications);
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
@@ -148,6 +150,26 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
               required
               className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-2.5 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
             />
+          </div>
+
+          {/* Notification preference */}
+          <div className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3">
+            <input
+              id="emailNotifications"
+              name="emailNotifications"
+              type="checkbox"
+              checked={emailNotifications}
+              onChange={(e) => setEmailNotifications(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-[var(--border)] accent-[var(--primary)]"
+            />
+            <div>
+              <label htmlFor="emailNotifications" className="text-sm font-medium text-[var(--text)] cursor-pointer">
+                Email notifications
+              </label>
+              <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                Receive emails for new messages and purchase confirmations.
+              </p>
+            </div>
           </div>
 
           {/* Email (read-only) */}

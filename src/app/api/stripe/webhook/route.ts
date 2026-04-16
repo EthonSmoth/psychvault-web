@@ -105,7 +105,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }),
     db.user.findUnique({
       where: { id: buyerId },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, emailNotifications: true },
     }),
   ]);
 
@@ -140,15 +140,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   logger.info("Purchase recorded", { buyerId, resourceId, amountCents, stripePaymentId });
 
-  // Send confirmation email — fire and forget
-  trySendPurchaseConfirmationEmail({
-    buyerEmail: buyer.email,
-    buyerName: buyer.name,
-    resourceTitle: resource.title,
-    resourceSlug: resource.slug,
-    storeName: resource.store?.name ?? "PsychVault creator",
-    amountCents,
-    isFree: false,
-    appBaseUrl: getAppBaseUrl(),
-  });
+  // Send confirmation email — fire and forget, only if not unsubscribed
+  if (buyer.emailNotifications) {
+    trySendPurchaseConfirmationEmail({
+      buyerEmail: buyer.email,
+      buyerName: buyer.name,
+      buyerId: buyer.id,
+      resourceTitle: resource.title,
+      resourceSlug: resource.slug,
+      storeName: resource.store?.name ?? "PsychVault creator",
+      amountCents,
+      isFree: false,
+      appBaseUrl: getAppBaseUrl(),
+    });
+  }
 }

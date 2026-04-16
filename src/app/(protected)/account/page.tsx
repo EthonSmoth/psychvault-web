@@ -25,6 +25,7 @@ export default async function AccountPage() {
       email: true,
       avatarUrl: true,
       passwordHash: true,
+      emailNotifications: true,
       role: true,
       createdAt: true,
     },
@@ -54,6 +55,7 @@ export default async function AccountPage() {
           email: user.email,
           avatarUrl: user.avatarUrl,
           hasPassword: Boolean(user.passwordHash),
+          emailNotifications: user.emailNotifications,
         }}
         csrfToken={csrfToken}
       />
@@ -80,7 +82,14 @@ export default async function AccountPage() {
             >
               Creator dashboard
             </Link>
-          ) : null}
+          ) : (
+            <Link
+              href="/apply-creator"
+              className="inline-flex rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+            >
+              Become a creator
+            </Link>
+          )}
         </div>
       </div>
     </div>

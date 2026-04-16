@@ -504,7 +504,7 @@ export function getRelatedPublishedResources(options: {
           }),
           select: resourceCardSelect,
           orderBy: [{ salesCount: "desc" }, { createdAt: "desc" }],
-          take: 3,
+          take: 6,
         });
 
         return relatedResources.map(toPublicResourceCard);

@@ -114,3 +114,53 @@ export async function saveReviewAction(
     return { error: "Something went wrong. Please try again." };
   }
 }
+
+export type FlagReviewFormState = {
+  error?: string;
+  success?: string;
+};
+
+// Flags a review for admin attention. One flag per user per review.
+export async function flagReviewAction(
+  _prev: FlagReviewFormState,
+  formData: FormData
+): Promise<FlagReviewFormState> {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return { error: "You must be logged in to flag a review." };
+    }
+
+    const csrfToken = formData.get("_csrf") as string;
+    if (!csrfToken || !verifyCSRFToken(csrfToken, session.user.id)) {
+      return { error: "Invalid CSRF token." };
+    }
+
+    const reporterId = session.user.id;
+    const reviewId = String(formData.get("reviewId") ?? "").trim();
+    const reason = sanitizeUserText(formData.get("reason"), { maxLength: 100 });
+
+    if (!reviewId) return { error: "Missing review ID." };
+    if (!reason) return { error: "Please select a reason." };
+
+    const review = await db.review.findUnique({
+      where: { id: reviewId },
+      select: { id: true, buyerId: true },
+    });
+
+    if (!review) return { error: "Review not found." };
+    if (review.buyerId === reporterId) return { error: "You cannot flag your own review." };
+
+    await db.reviewReport.upsert({
+      where: { reviewId_reporterId: { reviewId, reporterId } },
+      update: { reason },
+      create: { reviewId, reporterId, reason },
+    });
+
+    return { success: "Review flagged. Our team will take a look." };
+  } catch (error) {
+    logger.error("flagReviewAction failed.", error);
+    return { error: "Something went wrong. Please try again." };
+  }
+}

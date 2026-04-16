@@ -41,11 +41,14 @@ export async function updateProfileAction(
       return { error: "Name must be at least 2 characters." };
     }
 
+    const emailNotifications = formData.get("emailNotifications") === "on";
+
     await db.user.update({
       where: { id: session.user.id },
       data: {
         name: name.trim(),
         avatarUrl: avatarUrl || null,
+        emailNotifications,
       },
     });
 

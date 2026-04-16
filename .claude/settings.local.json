@@ -5,7 +5,8 @@
       "Bash(npx tsc:*)",
       "Bash(find /c/Users/Ethon/Downloads/psychvault-starter/psychvault-starter/src/components -name \"*.tsx\" -exec grep -l \"cart\\\\|Cart\\\\|purchase.*multiple\\\\|bulk\" {} \\\\;)",
       "Bash(xargs wc:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
     ]
   }
 }
