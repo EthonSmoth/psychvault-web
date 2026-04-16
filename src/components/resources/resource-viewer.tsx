@@ -80,7 +80,7 @@ export function ResourceViewerProvider({
   );
 }
 
-function useResourceViewerState() {
+export function useResourceViewerState() {
   return useContext(ResourceViewerContext);
 }
 

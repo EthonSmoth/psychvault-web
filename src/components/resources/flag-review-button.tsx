@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { flagReviewAction, type FlagReviewFormState } from "@/server/actions/review-actions";
+import { useResourceViewerState } from "@/components/resources/resource-viewer";
 
 const REPORT_REASONS = [
   { value: "spam", label: "Spam or advertising" },
@@ -12,15 +13,13 @@ const REPORT_REASONS = [
 
 const initialState: FlagReviewFormState = {};
 
-export function FlagReviewButton({
-  reviewId,
-  csrfToken,
-}: {
-  reviewId: string;
-  csrfToken: string;
-}) {
+export function FlagReviewButton({ reviewId }: { reviewId: string }) {
+  const { viewerState } = useResourceViewerState();
+  const csrfToken = viewerState?.authenticated ? viewerState.viewer.csrfToken : null;
   const [open, setOpen] = useState(false);
   const [state, action, isPending] = useActionState(flagReviewAction, initialState);
+
+  if (!csrfToken) return null;
 
   if (state.success) {
     return (

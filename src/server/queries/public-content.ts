@@ -253,10 +253,8 @@ export function getPublishedResourceMetadata(slug: string) {
       const queryTimer = startTimer();
 
       try {
-        return await db.resource.findFirst({
-          where: getPubliclyVisiblePublishedResourceWhere({
-            slug,
-          }),
+        return await db.resource.findUnique({
+          where: { slug },
           select: {
             slug: true,
             status: true,

@@ -13,8 +13,6 @@ import {
   getPublishedResourcePageData,
   getRelatedPublishedResources,
 } from "@/server/queries/public-content";
-import { auth } from "@/lib/auth";
-import { generateCSRFToken } from "@/lib/csrf";
 import { FlagReviewButton } from "@/components/resources/flag-review-button";
 import { ResourceGallery } from "@/components/resources/resource-gallery";
 import { ResourceGrid } from "@/components/resources/resource-grid";
@@ -127,13 +125,7 @@ async function ResourceReviewsSection({
   resourceId: string;
   resourceSlug: string;
 }) {
-  const [reviews, session] = await Promise.all([
-    getPublishedResourceReviews({ resourceId, resourceSlug }),
-    auth(),
-  ]);
-  const csrfToken = session?.user?.id
-    ? generateCSRFToken(session.user.id)
-    : undefined;
+  const reviews = await getPublishedResourceReviews({ resourceId, resourceSlug });
 
   return (
     <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
@@ -162,9 +154,7 @@ async function ResourceReviewsSection({
                   <div className="text-xs text-[var(--text-light)]">
                     {formatDate(review.createdAt)}
                   </div>
-                  {csrfToken && (
-                    <FlagReviewButton reviewId={review.id} csrfToken={csrfToken} />
-                  )}
+                  <FlagReviewButton reviewId={review.id} />
                 </div>
               </div>
 

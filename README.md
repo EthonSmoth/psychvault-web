@@ -275,7 +275,6 @@ Not implemented yet:
 
 - Apple OAuth
 - CAPTCHA / Turnstile
-- Password reset flow
 
 ## Getting Started
 
