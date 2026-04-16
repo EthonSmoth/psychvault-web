@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { verifyCSRFToken } from "@/lib/csrf";
-import { sanitizeUserText } from "@/lib/sanitize";
+import { sanitizeUserText } from "@/lib/input-safety";
 import { revalidatePath } from "next/cache";
 
 export type AccountFormState = {

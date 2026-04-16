@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { verifyCSRFToken } from "@/lib/csrf";
-import { sanitizeUserText } from "@/lib/sanitize";
+import { sanitizeUserText } from "@/lib/input-safety";
 import { trySendRefundRequestAdminEmail } from "@/lib/email";
 import { getAppBaseUrl } from "@/lib/env";
 import { revalidatePath } from "next/cache";
