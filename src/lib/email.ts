@@ -124,6 +124,110 @@ export async function trySendEmail(options: SendEmailOptions) {
   }
 }
 
+// ─── Shared email layout ──────────────────────────────────────────────────────
+
+// Wraps all outbound HTML emails in the PsychVault branded shell.
+// Uses table-based layout for compatibility with Outlook and older clients.
+function buildEmailLayout(
+  content: string,
+  opts: {
+    preheader?: string;
+    unsubscribeUrl?: string;
+    showSupport?: boolean;
+  } = {}
+): string {
+  const preheader = opts.preheader
+    ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#fbf0e4;">${htmlEscape(opts.preheader)}&nbsp;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;&zwnj;</div>`
+    : "";
+
+  const footer = [
+    opts.unsubscribeUrl
+      ? `<a href="${opts.unsubscribeUrl}" style="color:#b09070;text-decoration:underline;">Unsubscribe from notifications</a>`
+      : "",
+    opts.showSupport
+      ? `<a href="mailto:${htmlEscape(getSupportEmail() ?? "support@psychvault.com.au")}" style="color:#b09070;text-decoration:underline;">Contact support</a>`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" &nbsp;&middot;&nbsp; ");
+
+  return `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#fbf0e4;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  ${preheader}
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fbf0e4;">
+    <tr>
+      <td align="center" style="padding:40px 16px 48px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#4c3523;border-radius:12px 12px 0 0;padding:24px 40px;text-align:center;">
+              <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#fbf0e4;letter-spacing:-0.3px;">PsychVault</span>
+            </td>
+          </tr>
+
+          <!-- Body card -->
+          <tr>
+            <td style="background-color:#fdfaf6;border:1px solid #dfc9b0;border-top:none;border-radius:0 0 12px 12px;padding:40px 40px 36px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#4c3523;">
+                    ${content}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:32px;">
+                <tr>
+                  <td style="border-top:1px solid #e8d5c0;padding-top:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:#b09070;text-align:center;line-height:1.6;">
+                    PsychVault &mdash; Resources for Australian clinicians<br/>
+                    ${footer ? `<span style="display:inline-block;margin-top:4px;">${footer}</span>` : ""}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// Renders a full-width CTA button suitable for all major email clients.
+function buildEmailButton(label: string, url: string): string {
+  return `
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 8px;">
+      <tr>
+        <td style="border-radius:8px;background-color:#c47f2c;" align="center">
+          <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:44px;v-text-anchor:middle;width:200px;" arcsize="18%" stroke="f" fillcolor="#c47f2c"><w:anchorlock/><center style="color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:bold;">${htmlEscape(label)}</center></v:roundrect><![endif]-->
+          <!--[if !mso]><!-->
+          <a href="${url}" style="display:inline-block;padding:13px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;background-color:#c47f2c;">${htmlEscape(label)}</a>
+          <!--<![endif]-->
+        </td>
+      </tr>
+    </table>`;
+}
+
+// Renders a two-column label/value row for receipt-style summary tables.
+function buildSummaryRow(label: string, value: string): string {
+  return `
+    <tr>
+      <td style="padding:8px 16px 8px 0;font-size:13px;color:#9b7f6a;white-space:nowrap;vertical-align:top;">${label}</td>
+      <td style="padding:8px 0;font-size:13px;color:#4c3523;font-weight:500;">${value}</td>
+    </tr>`;
+}
+
 export async function sendContactEmail(options: ContactEmailOptions) {
   const subject = options.subject.trim();
   const supportEmail = getSupportEmail();
@@ -132,14 +236,16 @@ export async function sendContactEmail(options: ContactEmailOptions) {
     throw new EmailConfigurationError("Missing SUPPORT_EMAIL configuration.");
   }
 
+  // Internal alert — plain layout is fine for admin inboxes.
   const html = `
-    <h2>PsychVault contact/support enquiry</h2>
-    <p><strong>Name:</strong> ${htmlEscape(options.name)}</p>
-    <p><strong>Email:</strong> ${htmlEscape(options.email)}</p>
-    <p><strong>Subject:</strong> ${htmlEscape(subject)}</p>
-    <hr />
-    <p><strong>Message:</strong></p>
-    <p>${htmlEscape(options.message).replace(/\n/g, "<br/>")}</p>
+    <h2 style="margin:0 0 16px;font-size:18px;">PsychVault contact enquiry</h2>
+    <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-bottom:16px;">
+      ${buildSummaryRow("Name", htmlEscape(options.name))}
+      ${buildSummaryRow("Email", htmlEscape(options.email))}
+      ${buildSummaryRow("Subject", htmlEscape(subject))}
+    </table>
+    <p style="margin:0 0 6px;font-size:13px;color:#9b7f6a;">Message</p>
+    <p style="margin:0;font-size:14px;color:#4c3523;white-space:pre-wrap;">${htmlEscape(options.message)}</p>
   `;
 
   const text = [
@@ -156,7 +262,7 @@ export async function sendContactEmail(options: ContactEmailOptions) {
   return sendEmail({
     to: supportEmail,
     subject: `[PsychVault Contact] ${subject}`,
-    html,
+    html: buildEmailLayout(html),
     text,
     replyTo: options.email,
     tags: [
@@ -166,31 +272,55 @@ export async function sendContactEmail(options: ContactEmailOptions) {
   });
 }
 
+// ─── Email verification ───────────────────────────────────────────────────────
+
 function buildVerificationEmail(options: VerificationEmailOptions) {
-  const html = `
-    <h2>Verify your PsychVault email</h2>
-    <p>Hi ${htmlEscape(options.name)},</p>
-    <p>Please confirm your email address to unlock creator tools and protected buyer actions on PsychVault.</p>
-    <p><a href="${htmlEscape(options.verificationUrl)}">Verify my email</a></p>
-    <p>If the button does not work, copy and paste this URL into your browser:</p>
-    <p>${htmlEscape(options.verificationUrl)}</p>
+  const content = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#4c3523;letter-spacing:-0.3px;">Verify your email address</h1>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#6b4f3a;">Hi ${htmlEscape(options.name)},</p>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6b4f3a;">
+      Thanks for joining PsychVault. Please verify your email to unlock your full account — including purchasing and downloading resources, writing reviews, and messaging creators.
+    </p>
+    ${buildEmailButton("Verify my email", htmlEscape(options.verificationUrl))}
+    <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#9b7f6a;">
+      Button not working? Copy and paste this link into your browser:<br/>
+      <a href="${htmlEscape(options.verificationUrl)}" style="color:#c47f2c;word-break:break-all;">${htmlEscape(options.verificationUrl)}</a>
+    </p>
+    <p style="margin:16px 0 0;font-size:13px;line-height:1.5;color:#b09070;">
+      If you did not create a PsychVault account, you can safely ignore this email.
+    </p>
   `;
 
   const text = [
     `Hi ${options.name},`,
     "",
-    "Please verify your email address for PsychVault by opening this link:",
+    "Thanks for joining PsychVault. Please verify your email address by opening the link below:",
+    "",
     options.verificationUrl,
+    "",
+    "If you didn't create a PsychVault account, you can safely ignore this email.",
   ].join("\n");
 
   return {
     to: options.email,
     subject: "Verify your PsychVault email address",
-    html,
+    html: buildEmailLayout(content, {
+      preheader: "Tap to verify your email and unlock your full PsychVault account.",
+    }),
     text,
     tags: [{ name: "type", value: "verification" }] as EmailTag[],
   };
 }
+
+export async function sendVerificationEmail(options: VerificationEmailOptions) {
+  return sendEmail(buildVerificationEmail(options));
+}
+
+export async function trySendVerificationEmail(options: VerificationEmailOptions) {
+  return trySendEmail(buildVerificationEmail(options));
+}
+
+// ─── Password reset ───────────────────────────────────────────────────────────
 
 type PasswordResetEmailOptions = {
   email: string;
@@ -199,31 +329,43 @@ type PasswordResetEmailOptions = {
 };
 
 function buildPasswordResetEmail(options: PasswordResetEmailOptions) {
-  const html = `
-    <h2>Reset your PsychVault password</h2>
-    <p>Hi ${htmlEscape(options.name)},</p>
-    <p>We received a request to reset your password. Click the link below to choose a new one.</p>
-    <p><a href="${htmlEscape(options.resetUrl)}">Reset my password</a></p>
-    <p>If the button does not work, copy and paste this URL into your browser:</p>
-    <p>${htmlEscape(options.resetUrl)}</p>
-    <p>This link expires in 1 hour. If you did not request a password reset, you can safely ignore this email.</p>
+  const content = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#4c3523;letter-spacing:-0.3px;">Reset your password</h1>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#6b4f3a;">Hi ${htmlEscape(options.name)},</p>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6b4f3a;">
+      We received a request to reset the password for your PsychVault account. Click the button below to choose a new password.
+    </p>
+    ${buildEmailButton("Reset my password", htmlEscape(options.resetUrl))}
+    <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#9b7f6a;">
+      Button not working? Copy and paste this link into your browser:<br/>
+      <a href="${htmlEscape(options.resetUrl)}" style="color:#c47f2c;word-break:break-all;">${htmlEscape(options.resetUrl)}</a>
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;">
+      <tr>
+        <td style="background-color:#fdf3e3;border:1px solid #e8d5c0;border-radius:8px;padding:14px 16px;font-size:13px;color:#6b4f3a;line-height:1.5;">
+          This link expires in <strong>1 hour</strong>. If you did not request a password reset, no action is needed — your account is safe.
+        </td>
+      </tr>
+    </table>
   `;
 
   const text = [
     `Hi ${options.name},`,
     "",
     "We received a request to reset your PsychVault password.",
-    "Open this link to choose a new password:",
+    "Open this link to choose a new password (expires in 1 hour):",
+    "",
     options.resetUrl,
     "",
-    "This link expires in 1 hour.",
-    "If you did not request this, you can ignore this email.",
+    "If you did not request this, you can safely ignore this email.",
   ].join("\n");
 
   return {
     to: options.email,
     subject: "Reset your PsychVault password",
-    html,
+    html: buildEmailLayout(content, {
+      preheader: "Use this link to set a new password for your PsychVault account.",
+    }),
     text,
     tags: [{ name: "type", value: "password-reset" }] as EmailTag[],
   };
@@ -235,14 +377,6 @@ export async function sendPasswordResetEmail(options: PasswordResetEmailOptions)
 
 export async function trySendPasswordResetEmail(options: PasswordResetEmailOptions) {
   return trySendEmail(buildPasswordResetEmail(options));
-}
-
-export async function sendVerificationEmail(options: VerificationEmailOptions) {
-  return sendEmail(buildVerificationEmail(options));
-}
-
-export async function trySendVerificationEmail(options: VerificationEmailOptions) {
-  return trySendEmail(buildVerificationEmail(options));
 }
 
 // ─── Purchase confirmation ────────────────────────────────────────────────────
@@ -269,37 +403,68 @@ function buildPurchaseConfirmationEmail(options: PurchaseConfirmationEmailOption
   const resourceUrl = `${options.appBaseUrl}/resources/${htmlEscape(options.resourceSlug)}`;
   const unsubscribeUrl = buildUnsubscribeUrl(options.buyerId);
 
-  const html = `
-    <h2>Your PsychVault purchase is confirmed</h2>
-    <p>Hi ${htmlEscape(options.buyerName)},</p>
-    <p>Thanks for your purchase. Your resource is now in your library and ready to download.</p>
-    <table style="border-collapse:collapse;margin:16px 0">
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:14px">Resource</td><td style="padding:4px 0;font-size:14px;font-weight:600">${htmlEscape(options.resourceTitle)}</td></tr>
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:14px">Creator</td><td style="padding:4px 0;font-size:14px">${htmlEscape(options.storeName)}</td></tr>
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:14px">Amount</td><td style="padding:4px 0;font-size:14px">${htmlEscape(priceLabel)}</td></tr>
+  const content = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#4c3523;letter-spacing:-0.3px;">
+      ${options.isFree ? "Resource added to your library" : "Purchase confirmed"}
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6b4f3a;">Hi ${htmlEscape(options.buyerName)},</p>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6b4f3a;">
+      ${options.isFree
+        ? "Your free resource has been added to your library and is ready to download."
+        : "Your payment was processed successfully. Your resource is in your library and ready to download."}
+    </p>
+
+    <!-- Order summary -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fdf5ea;border:1px solid #e8d5c0;border-radius:10px;margin-bottom:28px;">
+      <tr>
+        <td style="padding:20px 20px 4px;">
+          <p style="margin:0 0 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#9b7f6a;">Order summary</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            ${buildSummaryRow("Resource", htmlEscape(options.resourceTitle))}
+            ${buildSummaryRow("Creator", htmlEscape(options.storeName))}
+            ${buildSummaryRow("Amount", htmlEscape(priceLabel))}
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:4px 20px 16px;">
+          &nbsp;
+        </td>
+      </tr>
     </table>
-    <p><a href="${htmlEscape(libraryUrl)}" style="display:inline-block;background:#0f172a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Go to my library</a></p>
-    <p style="font-size:13px;color:#6b7280">You can also <a href="${htmlEscape(resourceUrl)}">view the resource page</a> or reply to this email if you have any questions.</p>
-    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-    <p style="font-size:11px;color:#9ca3af">PsychVault &mdash; <a href="${htmlEscape(unsubscribeUrl)}" style="color:#9ca3af">Unsubscribe from notification emails</a></p>
+
+    ${buildEmailButton("Go to my library", libraryUrl)}
+
+    <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#9b7f6a;">
+      You can also <a href="${resourceUrl}" style="color:#c47f2c;text-decoration:underline;">view the resource page</a> or reply to this email if you have any questions.
+    </p>
   `;
 
   const text = [
     `Hi ${options.buyerName},`,
     "",
-    "Your PsychVault purchase is confirmed.",
+    options.isFree
+      ? "Your free resource has been added to your library and is ready to download."
+      : "Your PsychVault purchase is confirmed.",
     "",
     `Resource: ${options.resourceTitle}`,
     `Creator: ${options.storeName}`,
     `Amount: ${priceLabel}`,
     "",
-    `Download it from your library: ${libraryUrl}`,
+    `Go to your library: ${libraryUrl}`,
   ].join("\n");
 
   return {
     to: options.buyerEmail,
-    subject: `Your purchase: ${options.resourceTitle}`,
-    html,
+    subject: options.isFree
+      ? `Added to your library: ${options.resourceTitle}`
+      : `Purchase confirmed: ${options.resourceTitle}`,
+    html: buildEmailLayout(content, {
+      preheader: options.isFree
+        ? `${options.resourceTitle} is now in your library.`
+        : `Your purchase of ${options.resourceTitle} is confirmed. Go to your library to download.`,
+      unsubscribeUrl,
+    }),
     text,
     tags: [{ name: "type", value: "purchase-confirmation" }] as EmailTag[],
   };
@@ -327,18 +492,27 @@ function buildMessageNotificationEmail(options: MessageNotificationEmailOptions)
   const inboxUrl = `${options.appBaseUrl}/messages/${htmlEscape(options.conversationId)}`;
   const unsubscribeUrl = buildUnsubscribeUrl(options.recipientId);
   const preview =
-    options.messagePreview.length > 120
-      ? options.messagePreview.slice(0, 120) + "…"
+    options.messagePreview.length > 200
+      ? options.messagePreview.slice(0, 200) + "…"
       : options.messagePreview;
 
-  const html = `
-    <h2>New message on PsychVault</h2>
-    <p>Hi ${htmlEscape(options.recipientName)},</p>
-    <p><strong>${htmlEscape(options.senderName)}</strong> sent you a message:</p>
-    <blockquote style="border-left:3px solid #e2e8f0;margin:12px 0;padding:8px 16px;color:#374151;font-size:14px">${htmlEscape(preview)}</blockquote>
-    <p><a href="${htmlEscape(inboxUrl)}" style="display:inline-block;background:#0f172a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Reply</a></p>
-    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-    <p style="font-size:11px;color:#9ca3af">PsychVault &mdash; <a href="${htmlEscape(unsubscribeUrl)}" style="color:#9ca3af">Unsubscribe from notification emails</a></p>
+  const content = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#4c3523;letter-spacing:-0.3px;">New message</h1>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#6b4f3a;">Hi ${htmlEscape(options.recipientName)},</p>
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#6b4f3a;">
+      <strong style="color:#4c3523;">${htmlEscape(options.senderName)}</strong> sent you a message on PsychVault:
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+      <tr>
+        <td style="background-color:#fdf5ea;border-left:3px solid #c47f2c;border-radius:0 8px 8px 0;padding:14px 16px;font-size:14px;color:#4c3523;line-height:1.6;font-style:italic;">
+          ${htmlEscape(preview)}
+        </td>
+      </tr>
+    </table>
+    ${buildEmailButton("View conversation", inboxUrl)}
+    <p style="margin:20px 0 0;font-size:13px;line-height:1.5;color:#b09070;">
+      You are receiving this because you have message notifications enabled. To turn them off, visit your account settings or use the link below.
+    </p>
   `;
 
   const text = [
@@ -346,7 +520,7 @@ function buildMessageNotificationEmail(options: MessageNotificationEmailOptions)
     "",
     `${options.senderName} sent you a message on PsychVault:`,
     "",
-    preview,
+    `"${preview}"`,
     "",
     `Reply here: ${inboxUrl}`,
   ].join("\n");
@@ -354,7 +528,10 @@ function buildMessageNotificationEmail(options: MessageNotificationEmailOptions)
   return {
     to: options.recipientEmail,
     subject: `New message from ${options.senderName}`,
-    html,
+    html: buildEmailLayout(content, {
+      preheader: `${options.senderName}: ${preview.slice(0, 80)}`,
+      unsubscribeUrl,
+    }),
     text,
     tags: [{ name: "type", value: "message-notification" }] as EmailTag[],
   };
@@ -379,16 +556,23 @@ type RefundRequestAdminEmailOptions = {
 };
 
 function buildRefundRequestAdminEmail(options: RefundRequestAdminEmailOptions) {
-  const html = `
-    <h2>New refund request — PsychVault</h2>
-    <table style="border-collapse:collapse;margin:16px 0">
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:14px">Buyer</td><td style="padding:4px 0;font-size:14px">${htmlEscape(options.buyerName)} (${htmlEscape(options.buyerEmail)})</td></tr>
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:14px">Resource</td><td style="padding:4px 0;font-size:14px;font-weight:600">${htmlEscape(options.resourceTitle)}</td></tr>
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:14px">Reason</td><td style="padding:4px 0;font-size:14px">${htmlEscape(options.reason)}</td></tr>
-      ${options.message ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:14px;vertical-align:top">Message</td><td style="padding:4px 0;font-size:14px">${htmlEscape(options.message).replace(/\n/g, "<br/>")}</td></tr>` : ""}
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:14px">Purchase ID</td><td style="padding:4px 0;font-size:14px;font-family:monospace">${htmlEscape(options.purchaseId)}</td></tr>
+  const content = `
+    <h1 style="margin:0 0 20px;font-size:20px;font-weight:700;color:#4c3523;">New refund request</h1>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fdf5ea;border:1px solid #e8d5c0;border-radius:10px;margin-bottom:20px;">
+      <tr>
+        <td style="padding:20px 20px 4px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            ${buildSummaryRow("Buyer", `${htmlEscape(options.buyerName)} &lt;${htmlEscape(options.buyerEmail)}&gt;`)}
+            ${buildSummaryRow("Resource", htmlEscape(options.resourceTitle))}
+            ${buildSummaryRow("Reason", htmlEscape(options.reason))}
+            ${options.message ? buildSummaryRow("Message", htmlEscape(options.message).replace(/\n/g, "<br/>")) : ""}
+            ${buildSummaryRow("Purchase ID", `<code style="font-family:monospace;font-size:12px;">${htmlEscape(options.purchaseId)}</code>`)}
+          </table>
+        </td>
+      </tr>
+      <tr><td style="padding:4px 20px 16px;">&nbsp;</td></tr>
     </table>
-    <p style="font-size:13px;color:#6b7280">Review this request in the admin panel.</p>
+    <p style="margin:0;font-size:13px;color:#9b7f6a;">Review this in the admin panel and reply to the buyer directly if needed.</p>
   `;
 
   const text = [
@@ -411,7 +595,7 @@ function buildRefundRequestAdminEmail(options: RefundRequestAdminEmailOptions) {
   return {
     to: supportEmail,
     subject: `[Refund Request] ${options.resourceTitle} — ${options.buyerName}`,
-    html,
+    html: buildEmailLayout(content),
     text,
     replyTo: options.buyerEmail,
     tags: [{ name: "type", value: "refund-request" }] as EmailTag[],

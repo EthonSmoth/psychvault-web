@@ -141,18 +141,18 @@ export function Footer() {
               <Link href="/careers" className="block transition-colors hover:text-[var(--accent)]">
                 Careers
               </Link>
-              <Link
+              <a
                 href="/feed.xml"
                 className="block transition-colors hover:text-[var(--accent)]"
               >
                 RSS feed
-              </Link>
-              <Link
+              </a>
+              <a
                 href="/sitemap.xml"
                 className="block transition-colors hover:text-[var(--accent)]"
               >
                 Sitemap
-              </Link>
+              </a>
             </div>
           </div>
         </div>
