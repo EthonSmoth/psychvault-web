@@ -3,8 +3,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { generateCSRFToken } from "@/lib/csrf";
 import { getAppBaseUrl } from "@/lib/env";
 import { serializeJsonLd } from "@/lib/input-safety";
 import { getMarketplacePolicyLinks, getPaymentsAvailability } from "@/lib/payments";
@@ -15,6 +13,8 @@ import {
   getPublishedResourcePageData,
   getRelatedPublishedResources,
 } from "@/server/queries/public-content";
+import { auth } from "@/lib/auth";
+import { generateCSRFToken } from "@/lib/csrf";
 import { FlagReviewButton } from "@/components/resources/flag-review-button";
 import { ResourceGallery } from "@/components/resources/resource-gallery";
 import { ResourceGrid } from "@/components/resources/resource-grid";
@@ -123,16 +123,17 @@ type ResourcePageProps = {
 async function ResourceReviewsSection({
   resourceId,
   resourceSlug,
-  csrfToken,
 }: {
   resourceId: string;
   resourceSlug: string;
-  csrfToken?: string;
 }) {
-  const reviews = await getPublishedResourceReviews({
-    resourceId,
-    resourceSlug,
-  });
+  const [reviews, session] = await Promise.all([
+    getPublishedResourceReviews({ resourceId, resourceSlug }),
+    auth(),
+  ]);
+  const csrfToken = session?.user?.id
+    ? generateCSRFToken(session.user.id)
+    : undefined;
 
   return (
     <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
@@ -290,10 +291,6 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const relatedCategoryIds = resource.categories
     .map((item) => item.categoryId)
     .slice(0, 2);
-  const session = await auth();
-  const reviewCsrfToken = session?.user?.id
-    ? generateCSRFToken(session.user.id)
-    : undefined;
   const paymentAvailability = getPaymentsAvailability();
   const policyLinks = getMarketplacePolicyLinks();
   const creatorPayoutReady = isPaidResourcePayoutReady({
@@ -716,7 +713,6 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
               <ResourceReviewsSection
                 resourceId={resourceData.id}
                 resourceSlug={resourceData.slug}
-                csrfToken={reviewCsrfToken}
               />
             </Suspense>
           </div>
