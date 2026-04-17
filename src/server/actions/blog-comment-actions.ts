@@ -1,11 +1,20 @@
 'use server';
 
+import { Prisma } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { requireVerifiedEmailOrRedirect } from '@/lib/require-email-verification';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { sanitizeUserText } from '@/lib/input-safety';
 import { revalidatePath } from 'next/cache';
+
+function isMissingBlogCommentTableError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === 'P2021' &&
+    error.meta?.modelName === 'BlogComment'
+  );
+}
 
 /**
  * Submit a blog comment
@@ -52,29 +61,39 @@ export async function submitBlogComment(slug: string, body: string) {
   const isApproved = user?.role === 'ADMIN';
 
   // Create the comment
-  const comment = await db.blogComment.create({
-    data: {
-      slug,
-      body: sanitized,
-      authorId: session.user.id,
-      isApproved,
-    },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          store: {
-            select: {
-              id: true,
-              name: true,
+  let comment;
+
+  try {
+    comment = await db.blogComment.create({
+      data: {
+        slug,
+        body: sanitized,
+        authorId: session.user.id,
+        isApproved,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            store: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    if (isMissingBlogCommentTableError(error)) {
+      throw new Error('Comments are temporarily unavailable. Please try again later.');
+    }
+
+    throw error;
+  }
 
   // Revalidate the blog post page to show the new comment
   revalidatePath(`/blog/${slug}`);
@@ -92,17 +111,27 @@ export async function approveBlogComment(commentId: string) {
     throw new Error('Only admins can approve comments');
   }
 
-  const comment = await db.blogComment.update({
-    where: { id: commentId },
-    data: { isApproved: true },
-    include: {
-      author: {
-        select: {
-          name: true,
+  let comment;
+
+  try {
+    comment = await db.blogComment.update({
+      where: { id: commentId },
+      data: { isApproved: true },
+      include: {
+        author: {
+          select: {
+            name: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    if (isMissingBlogCommentTableError(error)) {
+      throw new Error('Comments are temporarily unavailable.');
+    }
+
+    throw error;
+  }
 
   revalidatePath(`/blog/${comment.slug}`);
   return comment;
@@ -119,13 +148,23 @@ export async function deleteBlogComment(commentId: string) {
   }
 
   // Find the comment to check ownership
-  const comment = await db.blogComment.findUnique({
-    where: { id: commentId },
-    select: {
-      authorId: true,
-      slug: true,
-    },
-  });
+  let comment;
+
+  try {
+    comment = await db.blogComment.findUnique({
+      where: { id: commentId },
+      select: {
+        authorId: true,
+        slug: true,
+      },
+    });
+  } catch (error) {
+    if (isMissingBlogCommentTableError(error)) {
+      throw new Error('Comments are temporarily unavailable.');
+    }
+
+    throw error;
+  }
 
   if (!comment) {
     throw new Error('Comment not found');
@@ -139,9 +178,17 @@ export async function deleteBlogComment(commentId: string) {
     throw new Error('You can only delete your own comments');
   }
 
-  await db.blogComment.delete({
-    where: { id: commentId },
-  });
+  try {
+    await db.blogComment.delete({
+      where: { id: commentId },
+    });
+  } catch (error) {
+    if (isMissingBlogCommentTableError(error)) {
+      throw new Error('Comments are temporarily unavailable.');
+    }
+
+    throw error;
+  }
 
   revalidatePath(`/blog/${comment.slug}`);
   return { success: true };
@@ -151,46 +198,58 @@ export async function deleteBlogComment(commentId: string) {
  * Get all approved blog comments for a post
  */
 export async function getBlogComments(slug: string, limit = 50, offset = 0) {
-  const comments = await db.blogComment.findMany({
-    where: {
-      slug,
-      isApproved: true,
-    },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          store: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
+  try {
+    const comments = await db.blogComment.findMany({
+      where: {
+        slug,
+        isApproved: true,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            store: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    take: limit,
-    skip: offset,
-  });
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
+      skip: offset,
+    });
 
-  const total = await db.blogComment.count({
-    where: {
-      slug,
-      isApproved: true,
-    },
-  });
+    const total = await db.blogComment.count({
+      where: {
+        slug,
+        isApproved: true,
+      },
+    });
 
-  return {
-    comments,
-    total,
-    hasMore: offset + limit < total,
-  };
+    return {
+      comments,
+      total,
+      hasMore: offset + limit < total,
+    };
+  } catch (error) {
+    if (isMissingBlogCommentTableError(error)) {
+      return {
+        comments: [],
+        total: 0,
+        hasMore: false,
+      };
+    }
+
+    throw error;
+  }
 }
 
 /**
@@ -203,36 +262,48 @@ export async function getPendingBlogComments(limit = 20, offset = 0) {
     throw new Error('Only admins can view pending comments');
   }
 
-  const comments = await db.blogComment.findMany({
-    where: {
-      isApproved: false,
-    },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          image: true,
+  try {
+    const comments = await db.blogComment.findMany({
+      where: {
+        isApproved: false,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
         },
       },
-    },
-    orderBy: {
-      createdAt: 'asc',
-    },
-    take: limit,
-    skip: offset,
-  });
+      orderBy: {
+        createdAt: 'asc',
+      },
+      take: limit,
+      skip: offset,
+    });
 
-  const total = await db.blogComment.count({
-    where: {
-      isApproved: false,
-    },
-  });
+    const total = await db.blogComment.count({
+      where: {
+        isApproved: false,
+      },
+    });
 
-  return {
-    comments,
-    total,
-    hasMore: offset + limit < total,
-  };
+    return {
+      comments,
+      total,
+      hasMore: offset + limit < total,
+    };
+  } catch (error) {
+    if (isMissingBlogCommentTableError(error)) {
+      return {
+        comments: [],
+        total: 0,
+        hasMore: false,
+      };
+    }
+
+    throw error;
+  }
 }

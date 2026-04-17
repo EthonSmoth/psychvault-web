@@ -9,11 +9,9 @@ import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
 } from "@/lib/blog";
-import { auth } from "@/lib/auth";
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 import { BlogTableOfContents, MarkdownRenderer } from "@/components/blog/markdown-renderer";
-import { BlogCommentForm } from "@/components/blog/blog-comment-form";
-import { BlogCommentList } from "@/components/blog/blog-comment-list";
+import { BlogCommentsSection } from "@/components/blog/blog-comments-section";
 
 export const revalidate = 300;
 
@@ -103,7 +101,6 @@ export async function generateMetadata({
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
-  const session = await auth();
 
   if (!post) {
     notFound();
@@ -255,21 +252,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </p>
               </div>
 
-              <BlogCommentForm
-                slug={post.slug}
-                isLoggedIn={!!session?.user?.id}
-              />
-
-              <div>
-                <h3 className="mb-4 text-lg font-semibold text-[var(--text)]">
-                  Comments
-                </h3>
-                <BlogCommentList
-                  slug={post.slug}
-                  currentUserId={session?.user?.id}
-                  currentUserRole={session?.user?.role}
-                />
-              </div>
+              <BlogCommentsSection slug={post.slug} />
             </section>
 
             <section className="mt-10 grid gap-5 md:grid-cols-2">

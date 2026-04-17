@@ -26,12 +26,14 @@ interface Comment {
 
 interface BlogCommentListProps {
   slug: string;
+  refreshToken?: number;
   currentUserId?: string;
   currentUserRole?: string;
 }
 
 export function BlogCommentList({
   slug,
+  refreshToken = 0,
   currentUserId,
   currentUserRole,
 }: BlogCommentListProps) {
@@ -56,7 +58,7 @@ export function BlogCommentList({
     }
 
     loadComments();
-  }, [slug]);
+  }, [slug, refreshToken]);
 
   async function handleDeleteComment(commentId: string) {
     if (!confirm('Are you sure you want to delete this comment?')) {
