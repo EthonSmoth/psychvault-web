@@ -9,8 +9,11 @@ import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
 } from "@/lib/blog";
+import { auth } from "@/lib/auth";
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 import { BlogTableOfContents, MarkdownRenderer } from "@/components/blog/markdown-renderer";
+import { BlogCommentForm } from "@/components/blog/blog-comment-form";
+import { BlogCommentList } from "@/components/blog/blog-comment-list";
 
 export const revalidate = 300;
 
@@ -100,6 +103,7 @@ export async function generateMetadata({
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
+  const session = await auth();
 
   if (!post) {
     notFound();
@@ -239,6 +243,34 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <div className="mt-8 rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm sm:p-8 lg:p-10">
               <MarkdownRenderer content={post.content} headings={post.headings} />
             </div>
+
+            {/* Comments Section */}
+            <section className="mt-14 space-y-8">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+                  Discussion
+                </h2>
+                <p className="mt-2 text-[var(--text-muted)]">
+                  Share your thoughts and experiences with this resource.
+                </p>
+              </div>
+
+              <BlogCommentForm
+                slug={post.slug}
+                isLoggedIn={!!session?.user?.id}
+              />
+
+              <div>
+                <h3 className="mb-4 text-lg font-semibold text-[var(--text)]">
+                  Comments
+                </h3>
+                <BlogCommentList
+                  slug={post.slug}
+                  currentUserId={session?.user?.id}
+                  currentUserRole={session?.user?.role}
+                />
+              </div>
+            </section>
 
             <section className="mt-10 grid gap-5 md:grid-cols-2">
               <Link

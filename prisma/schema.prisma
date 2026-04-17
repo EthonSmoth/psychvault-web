@@ -117,6 +117,7 @@ model User {
   conversationParticipants ConversationParticipant[]
   sentMessages             Message[]
   refundRequests           RefundRequest[]
+  blogComments             BlogComment[]
 }
 
 model Conversation {
@@ -505,6 +506,22 @@ model PasswordResetToken {
 
   @@index([email])
   @@index([expires])
+}
+
+model BlogComment {
+  id        String   @id @default(cuid())
+  slug      String   // blog post slug (e.g., "how-to-make-psychoeducation-handouts")
+  authorId  String
+  body      String
+  isApproved Boolean @default(false) // moderation flag
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([slug, createdAt])
+  @@index([authorId])
+  @@index([slug, isApproved])
 }
 
 model RateLimitState {
