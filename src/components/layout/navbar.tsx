@@ -60,6 +60,8 @@ export function Navbar() {
           <div className="group relative">
             <button
               type="button"
+              aria-label="More navigation links"
+              aria-haspopup="true"
               className="flex cursor-pointer list-none items-center gap-2 rounded-2xl border border-soft bg-[var(--surface-alt)] px-4 py-2 text-sm font-medium text-[var(--text)] shadow-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
             >
               More

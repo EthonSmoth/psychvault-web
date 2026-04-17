@@ -23,6 +23,7 @@ import {
   ResourceReviewGate,
   ResourceViewerProvider,
 } from "@/components/resources/resource-viewer";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 
 export const revalidate = 300;
@@ -507,6 +508,16 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbSchema) }}
       />
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <Breadcrumb
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Browse", href: "/resources" },
+          ...(primaryCategory
+            ? [{ label: primaryCategory.name, href: `/resources?category=${primaryCategory.slug}` }]
+            : []),
+          { label: resourceData.title },
+        ]}
+      />
       <Suspense fallback={null}>
         <ResourcePageNotices />
       </Suspense>

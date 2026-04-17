@@ -16,6 +16,7 @@ import {
   StoreReportSection,
   StoreViewerProvider,
 } from "@/components/stores/store-viewer";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 
 // force-dynamic because searchParams (pagination) is a request-time API.
@@ -143,6 +144,13 @@ export default async function StorePage({ params, searchParams }: StorePageProps
       />
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <Breadcrumb
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Stores", href: "/stores" },
+            { label: store.name },
+          ]}
+        />
         <section className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
           <div className="relative h-40 sm:h-52">
             {store.bannerUrl ? (

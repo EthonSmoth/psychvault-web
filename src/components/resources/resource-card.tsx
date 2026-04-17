@@ -46,7 +46,7 @@ export default function ResourceCard({
             className="object-cover transition group-hover:scale-[1.02]"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-[var(--muted)]">
+          <div className="flex h-full w-full items-center justify-center text-sm text-[var(--text-muted)]">
             No preview available
           </div>
         )}
@@ -93,7 +93,7 @@ export default function ResourceCard({
         </h3>
 
         {resource.shortDescription ? (
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--muted)]">
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--text-muted)]">
             {resource.shortDescription}
           </p>
         ) : null}

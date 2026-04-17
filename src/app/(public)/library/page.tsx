@@ -55,7 +55,7 @@ export default async function LibraryPage() {
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
               href="/login"
-              className="inline-flex items-center rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
+              className="inline-flex items-center rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--primary-dark)]"
             >
               Log in again
             </Link>
@@ -127,7 +127,7 @@ export default async function LibraryPage() {
               Purchased resources
             </h1>
             <p className="mt-2 text-sm text-[var(--text-muted)]">
-              Access the resources you've purchased and download them anytime.
+              Access the resources you&apos;ve purchased and download them anytime.
             </p>
           </div>
 
@@ -148,19 +148,28 @@ export default async function LibraryPage() {
 
       {purchases.length === 0 ? (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-alt)] text-2xl">
+            📚
+          </div>
           <h2 className="text-xl font-semibold text-[var(--text)]">
             Your library is empty
           </h2>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
-            When you purchase a resource, it will appear here.
+          <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+            Purchased and free resources both appear here — ready to download anytime.
           </p>
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/resources?price=free"
+              className="inline-flex items-center rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--primary-dark)]"
+            >
+              Browse free resources
+            </Link>
             <Link
               href="/resources"
-              className="inline-flex items-center rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
+              className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
             >
-              Browse resources
+              Browse all resources
             </Link>
           </div>
         </div>
@@ -208,7 +217,7 @@ export default async function LibraryPage() {
 
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="truncate text-lg font-semibold text-slate-900">
+                        <h2 className="truncate text-lg font-semibold text-[var(--text)]">
                           {resource.title}
                         </h2>
 
@@ -217,24 +226,24 @@ export default async function LibraryPage() {
                             Free
                           </span>
                         ) : (
-                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                          <span className="rounded-full bg-[var(--surface-alt)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]">
                             {formatPrice(resource.priceCents)}
                           </span>
                         )}
                       </div>
 
                       {resource.shortDescription ? (
-                        <p className="mt-1 line-clamp-2 text-sm text-slate-600">
+                        <p className="mt-1 line-clamp-2 text-sm text-[var(--text-muted)]">
                           {resource.shortDescription}
                         </p>
                       ) : null}
 
-                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--text-muted)]">
                         <span>
                           By{" "}
                           <Link
                             href={`/stores/${resource.store.slug}`}
-                            className="font-medium text-slate-700 hover:text-slate-900"
+                            className="font-medium text-[var(--text)] hover:text-[var(--accent)]"
                           >
                             {resource.store.name}
                           </Link>
@@ -252,9 +261,9 @@ export default async function LibraryPage() {
                       </div>
 
                       {mainDownload ? (
-                        <p className="mt-3 text-xs text-slate-500">
+                        <p className="mt-3 text-xs text-[var(--text-muted)]">
                           Download file:{" "}
-                          <span className="font-medium text-slate-700">
+                          <span className="font-medium text-[var(--text)]">
                             {mainDownload.fileName}
                           </span>
                         </p>
@@ -270,7 +279,7 @@ export default async function LibraryPage() {
                     <div className="flex flex-wrap gap-3">
                       <Link
                         href={`/resources/${resource.slug}`}
-                        className="inline-flex items-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
                       >
                         View resource
                       </Link>
@@ -278,7 +287,7 @@ export default async function LibraryPage() {
                       {mainDownload ? (
                         <a
                           href={`/api/downloads/${resource.id}`}
-                          className="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                          className="inline-flex items-center rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--primary-dark)]"
                         >
                           Download
                         </a>
@@ -290,7 +299,7 @@ export default async function LibraryPage() {
 
                       <Link
                         href={`/purchases/${purchase.id}/receipt`}
-                        className="inline-flex items-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                        className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] transition hover:bg-[var(--surface-alt)]"
                       >
                         Receipt
                       </Link>
