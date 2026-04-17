@@ -33,7 +33,7 @@ export async function submitBlogComment(slug: string, body: string) {
   }
 
   // Sanitize input
-  const sanitized = sanitizeInput(body);
+  const sanitized = sanitizeUserText(body);
 
   if (!sanitized.trim()) {
     throw new Error('Comment cannot be empty');

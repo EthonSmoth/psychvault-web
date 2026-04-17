@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { stripe, getPlatformFeeBps } from "@/lib/stripe";
+import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { trySendPurchaseConfirmationEmail } from "@/lib/email";
 import { getAppBaseUrl } from "@/lib/env";
+import { calculateRevenueSplitForCreator } from "@/lib/revenue-split";
 
 function getWebhookSecret(): string | null {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -57,6 +58,7 @@ export async function POST(request: Request) {
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   const resourceId = session.metadata?.resourceId;
   const buyerId = session.metadata?.buyerId;
+  const creatorId = session.metadata?.creatorId;
 
   if (!resourceId || !buyerId) {
     logger.warn("checkout.session.completed missing resourceId or buyerId in metadata", {
@@ -88,9 +90,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   const amountCents = session.amount_total ?? 0;
-  const feeBps = getPlatformFeeBps();
-  const platformFeeCents = Math.round((amountCents * feeBps) / 10000);
-  const creatorShareCents = amountCents - platformFeeCents;
+  
+  // Calculate revenue split using creator's current fee percentage
+  const revenueSplit = await calculateRevenueSplitForCreator(
+    amountCents,
+    creatorId || ""
+  );
 
   // Fetch resource and buyer in parallel
   const [resource, buyer] = await Promise.all([
@@ -126,10 +131,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         buyerId,
         resourceId,
         amountCents,
-        platformFeeCents,
-        creatorShareCents,
+        platformFeeCents: revenueSplit.platformFeeCents,
+        creatorShareCents: revenueSplit.creatorShareCents,
         currency: session.currency?.toUpperCase() ?? "AUD",
         stripePaymentId,
+        feePercentageAtPurchase: revenueSplit.feePercentage,
       },
     }),
     db.resource.update({
@@ -138,7 +144,15 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }),
   ]);
 
-  logger.info("Purchase recorded", { buyerId, resourceId, amountCents, stripePaymentId });
+  logger.info("Purchase recorded", {
+    buyerId,
+    resourceId,
+    amountCents,
+    platformFeeCents: revenueSplit.platformFeeCents,
+    creatorShareCents: revenueSplit.creatorShareCents,
+    feePercentage: revenueSplit.feePercentage,
+    stripePaymentId,
+  });
 
   // Send confirmation email — fire and forget, only if not unsubscribed
   if (buyer.emailNotifications) {

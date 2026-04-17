@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { isEmailVerified } from "@/lib/require-email-verification";
-import { stripe, getPlatformFeeBps } from "@/lib/stripe";
+import { stripe } from "@/lib/stripe";
 import { logger } from "@/lib/logger";
 import { jsonError } from "@/lib/http";
 import { getAppBaseUrl } from "@/lib/env";
@@ -14,6 +14,7 @@ import { checkRateLimit, RATE_LIMITS, getClientIP } from "@/lib/rate-limit";
 import { getEffectivePublicResourceFileState } from "@/lib/resource-file-state";
 import { isPayoutAccountReady, syncCreatorPayoutStatus } from "@/lib/stripe-connect";
 import { trySendPurchaseConfirmationEmail } from "@/lib/email";
+import { calculateRevenueSplitForCreator } from "@/lib/revenue-split";
 
 export async function POST(request: Request) {
   try {
@@ -219,8 +220,13 @@ export async function POST(request: Request) {
     }
 
     const appUrl = getAppBaseUrl();
-    const feeBps = getPlatformFeeBps();
-    const platformFeeCents = Math.round((resource.priceCents * feeBps) / 10000);
+    
+    // Calculate revenue split based on creator's fee percentage
+    const revenueSplit = await calculateRevenueSplitForCreator(
+      resource.priceCents,
+      resource.store?.owner?.id || ""
+    );
+    
     const stripeAccountId = resource.store?.owner?.payoutAccount?.stripeAccountId;
     const bypassesPayoutRequirement = canBypassPaidResourcePayoutRequirement(
       resource.store?.owner
@@ -261,12 +267,14 @@ export async function POST(request: Request) {
       metadata: {
         resourceId: resource.id,
         buyerId: userId,
+        creatorId: resource.store?.ownerId || "",
+        feePercentage: revenueSplit.feePercentage.toString(),
       },
     };
 
     if (stripeAccountId) {
       (checkoutParams as any).payment_intent_data = {
-        application_fee_amount: platformFeeCents,
+        application_fee_amount: revenueSplit.platformFeeCents,
         transfer_data: {
           destination: stripeAccountId,
         },
