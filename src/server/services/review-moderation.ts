@@ -6,15 +6,13 @@
 import { db } from "@/lib/db";
 
 export type FlaggedReviewWithContext = {
-  review: {
-    id: string;
-    buyerId: string;
-    resourceId: string;
-    rating: number;
-    body: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  };
+  id: string;
+  buyerId: string;
+  resourceId: string;
+  rating: number;
+  body: string | null;
+  createdAt: Date;
+  updatedAt: Date;
   buyer: {
     id: string;
     name: string;
@@ -28,7 +26,7 @@ export type FlaggedReviewWithContext = {
       name: string;
     };
   };
-  reviewReports: Array<{
+  reports: Array<{
     reason: string;
     createdAt: Date;
   }>;

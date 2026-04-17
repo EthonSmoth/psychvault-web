@@ -57,28 +57,39 @@ const HARD_TRIGGERS = [
  * Soft signals that suggest outcome-focused wording.
  * These are flagged (not rejected) because they're borderline
  * and depend on context.
+ *
+ * Note: "helped me" alone is NOT flagged because "helped me organize"
+ * or "helped me structure" are legitimate resource feature reviews.
+ * We only flag when combined with mental health language.
  */
 const SOFT_SIGNALS = [
-  // Outcome language
-  "helped me",
+  // Outcome language combined with mental health terms
+  "helped me with my",
+  "helped me manage",
   "helped with my",
-  "made a difference",
-  "really effective",
-  "worked well",
-  "worked great",
-  "very effective",
-  "highly effective",
-  "worked clinically",
-  "improved my",
-  "better after",
-  "feels better",
-  "anxiety went away",
-  "depression went away",
-  "stress went away",
+  "made a real difference in my",
+  "made a difference for my",
 
-  // Benefit claims (context matters)
-  "for treatment",
-  "for therapy",
+  // Client/patient outcomes
+  "helped my patients",
+  "helped my clients",
+
+  // Mental health condition + improvement
+  "anxiety went away",
+  "anxiety decreased",
+  "depression improved",
+  "depression went away",
+  "stress decreased",
+  "stress went away",
+  "improved my symptoms",
+  "reduced my symptoms",
+
+  // Therapeutic benefit language
+  "really effective for",
+  "highly effective for",
+  "worked well clinically",
+  "worked great for",
+  "very effective for",
 ];
 
 /**

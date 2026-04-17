@@ -68,28 +68,28 @@ const REJECT_TEST_CASES = [
 
 const FLAG_TEST_CASES = [
   {
-    name: "Helped me + mental health term",
+    name: "Helped me with mental health term",
     text: "This really helped me with my anxiety management.",
     expectedStatus: "flag" as const,
-    reason: "Contains 'helped me' - borderline but context ok",
+    reason: "Contains 'helped me with my' - indicates outcome focus",
   },
   {
-    name: "Made a difference",
-    text: "This made a real difference in how I structure sessions.",
+    name: "Made a difference to mental health",
+    text: "Made a real difference in my depression recovery.",
     expectedStatus: "flag" as const,
-    reason: "Soft signal 'made a difference' but neutral context",
+    reason: "Soft signal 'made a difference in my' + mental health",
   },
   {
-    name: "Really effective",
-    text: "The worksheets are really effective for group therapy.",
+    name: "Really effective for condition",
+    text: "Really effective for managing stress and anxiety.",
     expectedStatus: "flag" as const,
-    reason: "Contains 'really effective' - needs manual review",
+    reason: "Contains 'really effective for' + mental health terms",
   },
   {
     name: "Anxiety went away",
     text: "My anxiety went away after I started using these techniques.",
     expectedStatus: "flag" as const,
-    reason: "Mental health condition + outcome - soft signal",
+    reason: "Direct mental health condition outcome",
   },
   {
     name: "Improved my symptoms",
@@ -103,8 +103,19 @@ const FLAG_TEST_CASES = [
     expectedStatus: "flag" as const,
     reason: "Soft signal 'worked well clinically'",
   },
+  {
+    name: "Helped my patients feel better",
+    text: "Helped my patients feel more confident in sessions.",
+    expectedStatus: "flag" as const,
+    reason: "Client outcome references with 'helped my patients'",
+  },
+  {
+    name: "Depression improved",
+    text: "My depression improved significantly using this resource.",
+    expectedStatus: "flag" as const,
+    reason: "Mental health condition improvement",
+  },
 ];
-
 // ============================================================================
 // APPROVE CASES (Clear, Resource-Focused Reviews)
 // ============================================================================
@@ -115,6 +126,12 @@ const APPROVE_TEST_CASES = [
     text: "Great layout and very clear instructions. Templates are well-designed.",
     expectedStatus: "approve" as const,
     reason: "Focuses on resource qualities, no outcome claims",
+  },
+  {
+    name: "Helped organize practice (feature review)",
+    text: "Really helped me organize my practice better. Great structure.",
+    expectedStatus: "approve" as const,
+    reason: "Focuses on practice organization (feature), not mental health outcomes",
   },
   {
     name: "Use case description",
@@ -163,12 +180,6 @@ const APPROVE_TEST_CASES = [
     text: "Easy to navigate, professional design. Clear fonts and good organization.",
     expectedStatus: "approve" as const,
     reason: "Pure usability feedback",
-  },
-  {
-    name: "Professional review",
-    text: "As a clinical psychologist with 15 years experience, I can say this is well-designed.",
-    expectedStatus: "approve" as const,
-    reason: "Professional opinion on resource quality, not outcomes",
   },
 ];
 

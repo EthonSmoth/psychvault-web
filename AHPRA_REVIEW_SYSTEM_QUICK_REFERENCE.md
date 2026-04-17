@@ -165,7 +165,7 @@ UI displays red error box with feedback
 ### Example 2: Soft Signal (Flagged)
 
 ```
-User input: "Really helped me organize my practice better."
+User input: "Helped me manage my anxiety symptoms much better."
 ↓
 analyseReviewCompliance() returns:
 {
@@ -173,7 +173,7 @@ analyseReviewCompliance() returns:
   reason: "Potential outcome-based wording detected",
   feedback: "💡 Tip: Keep your review focused on how the resource 
              works (e.g., clarity, usability, structure) rather than 
-             personal outcomes."
+             personal mental health outcomes."
 }
 ↓
 saveReviewAction returns success + warning + isFlagged: true
@@ -184,10 +184,10 @@ UI displays:
   - Admin sees in dashboard for approval/rejection
 ```
 
-### Example 3: Clean Review (Approved)
+### Example 2b: Clean Feature Review (Approved)
 
 ```
-User input: "Clear instructions, well-organized worksheets."
+User input: "Really helped me organize my practice better."
 ↓
 analyseReviewCompliance() returns:
 {
