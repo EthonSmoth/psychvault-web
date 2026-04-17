@@ -9,10 +9,15 @@ import { logger } from "@/lib/logger";
 import { checkRateLimit, getClientIPFromHeaders, RATE_LIMITS } from "@/lib/rate-limit";
 import { revalidatePublicResources } from "@/server/cache/public-cache";
 import { refreshResourceRating } from "@/server/services/reviews";
+import { analyseReviewCompliance, isLikelyFirstReview } from "@/lib/review-compliance";
 
 export type ReviewFormState = {
   error?: string;
   success?: string;
+  warning?: string;
+  complianceFeedback?: string;
+  isFlagged?: boolean;
+  isFirstReview?: boolean;
 };
 
 // Creates or updates a buyer review, then refreshes the resource rating aggregates.
@@ -51,13 +56,22 @@ export async function saveReviewAction(
       return { error: "Please choose a rating from 1 to 5." };
     }
 
-    const [userRateLimit, ipRateLimit] = await Promise.all([
+    const [userRateLimit, ipRateLimit, existingReview] = await Promise.all([
       checkRateLimit(`review:${buyerId}`, RATE_LIMITS.review.max, RATE_LIMITS.review.window),
       checkRateLimit(
         `review:${clientIP}`,
         RATE_LIMITS.review.max,
         RATE_LIMITS.review.window
       ),
+      db.review.findUnique({
+        where: {
+          buyerId_resourceId: {
+            buyerId,
+            resourceId,
+          },
+        },
+        select: { rating: true, body: true },
+      }),
     ]);
 
     if (!userRateLimit.success || !ipRateLimit.success) {
@@ -85,6 +99,25 @@ export async function saveReviewAction(
       return { error: "Only customers who purchased this resource can leave a review." };
     }
 
+    // AHPRA compliance check
+    const complianceResult = analyseReviewCompliance(body || "");
+
+    if (complianceResult.status === "reject") {
+      // Clear breach - block submission
+      return {
+        error: complianceResult.feedback || "Your review contains content that doesn't comply with platform guidelines. Please revise and try again.",
+        complianceFeedback: complianceResult.feedback,
+      };
+    }
+
+    // Determine if this is the user's first review
+    const userReviewCount = await db.review.count({
+      where: { buyerId },
+    });
+
+    const isFirstReview = userReviewCount === 0;
+
+    // Save the review (flagged or not)
     await db.review.upsert({
       where: {
         buyerId_resourceId: {
@@ -105,10 +138,25 @@ export async function saveReviewAction(
     });
 
     await refreshResourceRating(resourceId);
-
     revalidatePublicResources(resourceSlug);
 
-    return { success: "Review saved successfully." };
+    // Determine success/warning message
+    let successMessage = "Review saved successfully.";
+    const isFlagged = complianceResult.status === "flag";
+
+    if (isFlagged) {
+      successMessage = "Review submitted. Thanks for your feedback!";
+    }
+
+    return {
+      success: successMessage,
+      warning: isFlagged
+        ? "Your review was flagged for manual review and may take longer to appear."
+        : undefined,
+      complianceFeedback: complianceResult.feedback,
+      isFlagged,
+      isFirstReview,
+    };
   } catch (error) {
     logger.error("saveReviewAction failed.", error);
     return { error: "Something went wrong. Please try again." };
