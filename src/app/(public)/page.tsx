@@ -576,6 +576,7 @@ async function HomeFeaturedResourcesSection() {
             preferThumbnail
             imageQuality={70}
             imageSizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 1024px) calc(50vw - 2rem), 360px"
+            priority={true}
           />
         ))}
         {Array.from({ length: Math.max(0, 3 - visibleResources.length) }).map((_, index) => (

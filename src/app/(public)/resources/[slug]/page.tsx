@@ -253,9 +253,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const { resource } = publicData;
   const resourceData = resource as NonNullable<typeof resource>;
 
-  const imagePattern = /\.(jpg|jpeg|png|webp|gif)$/i;
-  const previewFiles = resource.files.filter((file) => file.kind === "PREVIEW");
-  const previewImages = previewFiles.filter((file) => imagePattern.test(file.fileUrl));
+  const previewFiles = resource.files.filter((file) => file.kind === "PREVIEW" && /\.(jpg|jpeg|png|webp|gif)$/i.test(file.fileUrl));
   const galleryImages = [
     ...(resource.thumbnailUrl
       ? [
@@ -267,7 +265,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
           },
         ]
       : []),
-    ...previewImages.map((file, index) => ({
+    ...previewFiles.map((file, index) => ({
       id: file.id,
       url: file.fileUrl,
       alt: `${resource.title} preview ${index + 1}`,
@@ -640,7 +638,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                     </div>
                   </div>
                   <div className="text-right font-medium text-[var(--text-muted)]">
-                    {previewImages.length > 0 ? `${previewImages.length} in gallery` : "None uploaded"}
+                    {previewFiles.length > 0 ? `${previewFiles.length} in gallery` : "None uploaded"}
                   </div>
                 </div>
                 <div className="flex items-start justify-between gap-4 rounded-2xl bg-[var(--surface-alt)] px-4 py-3">

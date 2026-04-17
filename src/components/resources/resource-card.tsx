@@ -8,6 +8,7 @@ type ResourceCardProps = {
   preferThumbnail?: boolean;
   imageQuality?: number;
   imageSizes?: string;
+  priority?: boolean;
 };
 
 function formatPrice(priceCents: number, isFree?: boolean) {
@@ -24,6 +25,7 @@ export default function ResourceCard({
   preferThumbnail = false,
   imageQuality,
   imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px",
+  priority = false,
 }: ResourceCardProps) {
   const previewImage = preferThumbnail
     ? resource.thumbnailUrl || resource.previewImageUrl
@@ -43,6 +45,7 @@ export default function ResourceCard({
             fill
             sizes={imageSizes}
             quality={imageQuality}
+            priority={priority}
             className="object-cover transition group-hover:scale-[1.02]"
           />
         ) : (

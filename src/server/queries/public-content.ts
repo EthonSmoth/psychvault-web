@@ -738,14 +738,15 @@ export function getHomepageCategoryData() {
           id: true,
           name: true,
           slug: true,
-          resources: {
-            where: {
-              resource: {
-                ...getPubliclyVisiblePublishedResourceWhere(),
-              },
-            },
+          _count: {
             select: {
-              resourceId: true,
+              resources: {
+                where: {
+                  resource: {
+                    ...getPubliclyVisiblePublishedResourceWhere(),
+                  },
+                },
+              },
             },
           },
         },
@@ -757,7 +758,7 @@ export function getHomepageCategoryData() {
           name: category.name,
           slug: category.slug,
           _count: {
-            resources: category.resources.length,
+            resources: category._count.resources,
           },
         }))
       );
