@@ -10,7 +10,8 @@ The app is structured for production deployment on Vercel with Cloudflare in fro
 - Template SEO landing pages grouped by clinical workflow and search intent
 - Creator dashboard with store settings, resource creation/editing, sales, analytics, and payouts
 - Buyer account flows including library access, purchases, reviews, follows, and creator messaging
-- Admin moderation for queued resources, marketplace reports, recent activity, and creator trust context
+- **AHPRA-aware review compliance system** with 26 hard-trigger rejections, 16 soft-signal flags, and user education
+- Admin moderation for queued resources, marketplace reports, recent activity, creator trust context, and flagged reviews
 - Email verification gates for high-trust actions like purchases, reviews, follows, messaging, and reporting
 - Stripe Checkout plus webhook-based fulfilment for paid resources
 - Optimized image uploads for thumbnails, previews, logos, and banners
@@ -107,6 +108,10 @@ Examples: CBT thought record templates, NDIS report templates, therapy intake fo
 - open resource and store reports
 - creator trust scoring and moderation context
 - recent resource and store visibility into marketplace health
+- **review compliance moderation** for AHPRA-flagged and auto-rejected reviews
+  - soft-signal flagged reviews await admin approval
+  - hard-trigger rejected reviews with user education feedback
+  - moderation stats tracking flagging rate and patterns
 
 ### Legal and support pages
 
@@ -270,6 +275,7 @@ Implemented:
 - server-side authorization checks for ownership and role-protected actions
 - Stripe webhook signature verification
 - security headers via Next.js config (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, CSP, HSTS in production)
+- **review compliance analysis** with AHPRA-aware phrase detection, context-sensitive soft signals, and proportionate moderation
 
 Not implemented yet:
 
@@ -338,6 +344,34 @@ npm run dev
 - keep secrets and OAuth credentials out of version control
 - if Prisma build steps fail on Windows because the query engine DLL is locked, stop running dev processes and retry
 - rate limiting uses the shared Postgres database as its primary store so limits apply across serverless instances; in-memory fallback applies if the database is temporarily unreachable
+
+## Review Compliance System
+
+PsychVault includes a production-ready AHPRA-aware review compliance system that protects marketplace integrity while keeping most reviews flowing through.
+
+**How it works:**
+
+- **Hard triggers** (26 phrases): Auto-reject reviews that reference personal mental health outcomes, therapeutic benefits, or client references with clear feedback
+- **Soft signals** (16 phrases): Flag borderline outcome-focused wording for manual admin review
+- **First-time notice**: User education shown once per session explaining review guidelines
+- **Inline guidance**: Gentle tips visible above the review box
+- **Real-time suggestions**: Browser-side rewrite suggestions as users type
+
+**Learn more:**
+
+- [AHPRA_REVIEW_SYSTEM_README.md](./AHPRA_REVIEW_SYSTEM_README.md) — System overview and philosophy
+- [AHPRA_REVIEW_SYSTEM.md](./AHPRA_REVIEW_SYSTEM.md) — Complete design and implementation
+- [ADMIN_REVIEW_MODERATION_GUIDE.md](./ADMIN_REVIEW_MODERATION_GUIDE.md) — Admin training and workflows
+- [AHPRA_REVIEW_SYSTEM_QUICK_REFERENCE.md](./AHPRA_REVIEW_SYSTEM_QUICK_REFERENCE.md) — Developer API reference
+- [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md) — Tasks and deployment steps
+
+**Code files:**
+
+- `src/lib/review-compliance.ts` — Core compliance analysis engine
+- `src/lib/review-compliance.test.ts` — 27 comprehensive test cases
+- `src/server/actions/review-actions.ts` — Server-side integration
+- `src/components/resources/review-form.tsx` — User-facing UI
+- `src/server/services/review-moderation.ts` — Admin utilities
 
 ## Documentation Vault
 
