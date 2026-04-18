@@ -26,6 +26,7 @@ export default async function CreatorStorePage() {
           name: true,
           slug: true,
           bio: true,
+          location: true,
           logoUrl: true,
           bannerUrl: true,
           isPublished: true,

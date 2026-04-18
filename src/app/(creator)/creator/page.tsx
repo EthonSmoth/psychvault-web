@@ -32,8 +32,10 @@ export default async function CreatorDashboardPage() {
       store: {
         select: {
           id: true,
+          slug: true,
           name: true,
           bio: true,
+          location: true,
           isPublished: true,
           moderationStatus: true,
           moderationReason: true,
