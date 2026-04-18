@@ -3,9 +3,7 @@ import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { trySendPurchaseConfirmationEmail } from "@/lib/email";
-import { getAppBaseUrl } from "@/lib/env";
-import { calculateRevenueSplitForCreator } from "@/lib/revenue-split";
+import { fulfillCheckoutSessionPurchase } from "@/server/services/purchase-fulfillment";
 
 function getWebhookSecret(): string | null {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -56,116 +54,5 @@ export async function POST(request: Request) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  const resourceId = session.metadata?.resourceId;
-  const buyerId = session.metadata?.buyerId;
-  const creatorId = session.metadata?.creatorId;
-
-  if (!resourceId || !buyerId) {
-    logger.warn("checkout.session.completed missing resourceId or buyerId in metadata", {
-      sessionId: session.id,
-    });
-    return;
-  }
-
-  // Idempotency: the stripePaymentId field has a unique constraint
-  const stripePaymentId =
-    typeof session.payment_intent === "string"
-      ? session.payment_intent
-      : session.payment_intent?.id ?? null;
-
-  if (!stripePaymentId) {
-    logger.warn("checkout.session.completed has no payment_intent", { sessionId: session.id });
-    return;
-  }
-
-  // Check if this payment_intent was already processed
-  const existing = await db.purchase.findUnique({
-    where: { stripePaymentId },
-    select: { id: true },
-  });
-
-  if (existing) {
-    logger.info("Purchase already recorded for payment_intent — skipping", { stripePaymentId });
-    return;
-  }
-
-  const amountCents = session.amount_total ?? 0;
-  
-  // Calculate revenue split using creator's current fee percentage
-  const revenueSplit = await calculateRevenueSplitForCreator(
-    amountCents,
-    creatorId || ""
-  );
-
-  // Fetch resource and buyer in parallel
-  const [resource, buyer] = await Promise.all([
-    db.resource.findUnique({
-      where: { id: resourceId },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        store: { select: { name: true } },
-      },
-    }),
-    db.user.findUnique({
-      where: { id: buyerId },
-      select: { id: true, name: true, email: true, emailNotifications: true },
-    }),
-  ]);
-
-  if (!resource) {
-    logger.error("checkout.session.completed: resource not found", { resourceId });
-    return;
-  }
-
-  if (!buyer) {
-    logger.error("checkout.session.completed: buyer not found", { buyerId });
-    return;
-  }
-
-  // Create purchase and increment salesCount atomically
-  await db.$transaction([
-    db.purchase.create({
-      data: {
-        buyerId,
-        resourceId,
-        amountCents,
-        platformFeeCents: revenueSplit.platformFeeCents,
-        creatorShareCents: revenueSplit.creatorShareCents,
-        currency: session.currency?.toUpperCase() ?? "AUD",
-        stripePaymentId,
-        feePercentageAtPurchase: revenueSplit.feePercentage,
-      },
-    }),
-    db.resource.update({
-      where: { id: resourceId },
-      data: { salesCount: { increment: 1 } },
-    }),
-  ]);
-
-  logger.info("Purchase recorded", {
-    buyerId,
-    resourceId,
-    amountCents,
-    platformFeeCents: revenueSplit.platformFeeCents,
-    creatorShareCents: revenueSplit.creatorShareCents,
-    feePercentage: revenueSplit.feePercentage,
-    stripePaymentId,
-  });
-
-  // Send confirmation email — fire and forget, only if not unsubscribed
-  if (buyer.emailNotifications) {
-    trySendPurchaseConfirmationEmail({
-      buyerEmail: buyer.email,
-      buyerName: buyer.name,
-      buyerId: buyer.id,
-      resourceTitle: resource.title,
-      resourceSlug: resource.slug,
-      storeName: resource.store?.name ?? "PsychVault creator",
-      amountCents,
-      isFree: false,
-      appBaseUrl: getAppBaseUrl(),
-    });
-  }
+  await fulfillCheckoutSessionPurchase(session);
 }
