@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { resendVerificationEmailFormAction } from "@/server/actions/email-verification-actions";
 import { logoutAction } from "@/server/actions/auth-actions";
@@ -69,31 +70,53 @@ async function fetchNavbarSession() {
 }
 
 function useNavbarSession() {
+  const pathname = usePathname();
   const [session, setSession] = useState<NavbarSessionResponse | null>(
     navbarSessionCache?.authenticated ? navbarSessionCache : null
   );
 
   useEffect(() => {
+    let cancelled = false;
+
+    const refreshSession = () => {
+      fetchNavbarSession().then((payload) => {
+        if (!cancelled) {
+          setSession(payload);
+        }
+      });
+    };
+
     if (navbarSessionCache?.authenticated) {
       setSession(navbarSessionCache);
     }
 
-    fetchNavbarSession().then((payload) => {
-      setSession(payload);
-    });
+    refreshSession();
 
     const refreshOnFocus = () => {
-      fetchNavbarSession().then((payload) => {
-        setSession(payload);
-      });
+      refreshSession();
+    };
+
+    const refreshOnVisibility = () => {
+      if (document.visibilityState === "visible") {
+        refreshSession();
+      }
+    };
+
+    const refreshOnPageShow = () => {
+      refreshSession();
     };
 
     window.addEventListener("focus", refreshOnFocus);
+    window.addEventListener("pageshow", refreshOnPageShow);
+    document.addEventListener("visibilitychange", refreshOnVisibility);
 
     return () => {
+      cancelled = true;
       window.removeEventListener("focus", refreshOnFocus);
+      window.removeEventListener("pageshow", refreshOnPageShow);
+      document.removeEventListener("visibilitychange", refreshOnVisibility);
     };
-  }, []);
+  }, [pathname]);
 
   return session;
 }
