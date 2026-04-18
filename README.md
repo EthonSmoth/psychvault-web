@@ -146,9 +146,33 @@ Note: `/privacy` and `/terms` also exist as alternate routes pointing to the sam
 | Styling | Tailwind CSS v4 |
 | Rate Limiting | Database-backed (Prisma) with in-memory fallback |
 
+## Database Workflow
+
+Prisma schema remains the application source of truth, but schema changes are currently applied manually in the Supabase SQL Editor.
+
+Why:
+
+- local Prisma schema push and migration commands are not reliable in this setup because database connectivity depends on ports that are not consistently reachable
+- Vercel deployments are not used to run Prisma migrations for the same reason
+- production-safe schema updates are therefore executed manually via SQL in Supabase, then reflected back into `prisma/schema.prisma`
+
+Current workflow:
+
+1. Update `prisma/schema.prisma` to match the intended data model.
+2. Generate the SQL needed for the schema change.
+3. Run that SQL manually in the Supabase SQL Editor.
+4. Verify the new columns, indexes, or constraints in Supabase.
+5. Regenerate Prisma Client locally with `npm run db:generate`.
+
+Important:
+
+- do not rely on local `prisma db push` or `prisma migrate` as the primary way to change production schema
+- treat `prisma/migrations/` as reference/history, not as the guaranteed deployment mechanism
+- when drift occurs, fix production first in Supabase SQL Editor, then make sure `prisma/schema.prisma` matches reality
+
 ## Source Layout
 
-```
+```text
 src/
   app/
     (creator)/creator/      Creator dashboard routes (store, resources, analytics, sales, payouts)
@@ -233,7 +257,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 Optional:
 
-- `DIRECT_URL` for Prisma schema operations when you want a direct database connection
+- `DIRECT_URL` for Prisma schema operations when you have a working direct database connection
 - `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` if enabling Google OAuth
 
 Notes:
@@ -296,13 +320,27 @@ npm install
 npm run db:generate
 ```
 
-### 3. Push the schema
+### 3. Apply database schema changes
 
-```bash
-npm run db:push
+Use Supabase SQL Editor for schema changes.
+
+Do not assume local `npm run db:push` or `npm run db:migrate` will work in this environment. The current setup has direct connection and port issues, so schema updates are applied manually in Supabase instead of through local Prisma migration execution or Vercel deploy hooks.
+
+Recommended process:
+
+1. update `prisma/schema.prisma`
+2. prepare the SQL change
+3. run it in Supabase SQL Editor
+4. verify the change in the database
+5. run `npm run db:generate`
+
+Example verification query:
+
+```sql
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_name = 'Purchase';
 ```
-
-If your local machine cannot reach the direct database host, run the equivalent SQL from Supabase SQL Editor instead.
 
 ### 4. Optional seed
 
@@ -331,8 +369,8 @@ npm run dev
 | `npm run start` | Start the production server |
 | `npm run lint` | Run ESLint |
 | `npm run db:generate` | Generate Prisma client |
-| `npm run db:push` | Push schema changes |
-| `npm run db:migrate` | Run Prisma migrations in development |
+| `npm run db:push` | Not the primary schema workflow in this environment; may fail because of direct connection and port issues |
+| `npm run db:migrate` | Migration helper only; do not rely on it for production schema rollout in this environment |
 | `npm run db:seed` | Seed demo data |
 | `npm run db:backfill-public-state` | Backfill denormalized public file-state columns |
 
@@ -343,6 +381,8 @@ npm run dev
 - Stripe webhook fulfilment is the server-side source of truth for paid access
 - keep secrets and OAuth credentials out of version control
 - if Prisma build steps fail on Windows because the query engine DLL is locked, stop running dev processes and retry
+- schema changes are currently rolled out through Supabase SQL Editor, not through Vercel deploy-time Prisma migrations
+- if local Prisma schema commands fail, check database connection and port availability before assuming the schema file is wrong
 - rate limiting uses the shared Postgres database as its primary store so limits apply across serverless instances; in-memory fallback applies if the database is temporarily unreachable
 
 ## Review Compliance System
