@@ -37,7 +37,7 @@ function getInitials(name?: string | null) {
 }
 
 async function fetchNavbarSession() {
-  if (navbarSessionCache) {
+  if (navbarSessionCache?.authenticated) {
     return navbarSessionCache;
   }
 
@@ -56,7 +56,8 @@ async function fetchNavbarSession() {
         return { authenticated: false } satisfies NavbarSessionResponse;
       })
       .then((payload) => {
-        navbarSessionCache = payload;
+        // Cache only authenticated payloads so the navbar can recover immediately after login.
+        navbarSessionCache = payload.authenticated ? payload : undefined;
         return payload;
       })
       .finally(() => {
@@ -69,18 +70,29 @@ async function fetchNavbarSession() {
 
 function useNavbarSession() {
   const [session, setSession] = useState<NavbarSessionResponse | null>(
-    navbarSessionCache ?? null
+    navbarSessionCache?.authenticated ? navbarSessionCache : null
   );
 
   useEffect(() => {
-    if (navbarSessionCache) {
+    if (navbarSessionCache?.authenticated) {
       setSession(navbarSessionCache);
-      return;
     }
 
     fetchNavbarSession().then((payload) => {
       setSession(payload);
     });
+
+    const refreshOnFocus = () => {
+      fetchNavbarSession().then((payload) => {
+        setSession(payload);
+      });
+    };
+
+    window.addEventListener("focus", refreshOnFocus);
+
+    return () => {
+      window.removeEventListener("focus", refreshOnFocus);
+    };
   }, []);
 
   return session;
