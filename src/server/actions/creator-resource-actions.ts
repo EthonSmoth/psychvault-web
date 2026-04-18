@@ -22,7 +22,17 @@ async function getCurrentUserWithStore() {
 
   const user = await db.user.findUnique({
     where: { id: authedUser.id },
-    include: { store: true },
+    select: {
+      id: true,
+      emailVerified: true,
+      isSuperAdmin: true,
+      store: {
+        select: {
+          id: true,
+          slug: true,
+        },
+      },
+    },
   });
 
   if (!user || !user.store) {

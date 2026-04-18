@@ -136,13 +136,13 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
       {images.length > 1 ? (
         <div className="mt-4">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-[var(--text)]">{title} preview gallery</p>
+            <p className="product-title text-sm font-medium text-[var(--text)]">{title} preview gallery</p>
             <p className="text-xs text-[var(--text-light)]">
               {images.findIndex((image) => image.id === activeImage.id) + 1} / {images.length}
             </p>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-1">
+          <div className="gallery pb-1">
             {images.map((image, index) => {
               const isActive = image.id === activeImage.id;
 
@@ -168,7 +168,7 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
                       className="object-cover"
                     />
                   </div>
-                  <div className="px-1 pt-2 text-[11px] font-medium text-[var(--text-muted)]">
+                  <div className="file-name px-1 pt-2 text-[11px] font-medium text-[var(--text-muted)]">
                     {image.label || `Preview ${index + 1}`}
                   </div>
                 </button>

@@ -197,7 +197,17 @@ async function getCurrentCreator() {
 
   return db.user.findUnique({
     where: { id: session.id },
-    include: { store: true },
+    select: {
+      id: true,
+      emailVerified: true,
+      isSuperAdmin: true,
+      store: {
+        select: {
+          id: true,
+          slug: true,
+        },
+      },
+    },
   });
 }
 

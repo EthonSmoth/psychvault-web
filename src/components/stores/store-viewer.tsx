@@ -75,7 +75,7 @@ function useStoreViewerState() {
 function StoreViewerButtonSkeleton() {
   return (
     <div
-      className="h-11 min-w-[10rem] animate-pulse rounded-xl border border-[var(--border)] bg-[var(--surface-alt)]"
+      className="h-11 w-full max-w-[10rem] animate-pulse rounded-xl border border-[var(--border)] bg-[var(--surface-alt)]"
       aria-hidden="true"
     />
   );

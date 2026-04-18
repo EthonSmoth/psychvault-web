@@ -21,9 +21,12 @@ export async function deleteOwnStoreAction(formData: FormData) {
 
   const user = await db.user.findUnique({
     where: { id: userSession.id },
-    include: {
+    select: {
+      id: true,
       store: {
-        include: {
+        select: {
+          id: true,
+          slug: true,
           resources: {
             select: { id: true },
           },

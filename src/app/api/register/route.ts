@@ -101,13 +101,16 @@ export async function POST(req: Request) {
     }
 
     const existingUser =
-      (await db.user.findUnique({ where: { email } })) ??
+      (await db.user.findUnique({ where: { email }, select: { id: true } })) ??
       (await db.user.findFirst({
         where: {
           email: {
             equals: email,
             mode: "insensitive",
           },
+        },
+        select: {
+          id: true,
         },
       }));
 

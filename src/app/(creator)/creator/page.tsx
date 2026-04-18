@@ -19,10 +19,24 @@ export default async function CreatorDashboardPage() {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    include: {
-      payoutAccount: true,
+    select: {
+      id: true,
+      name: true,
+      isSuperAdmin: true,
+      payoutAccount: {
+        select: {
+          payoutsEnabled: true,
+          detailsSubmitted: true,
+        },
+      },
       store: {
-        include: {
+        select: {
+          id: true,
+          name: true,
+          bio: true,
+          isPublished: true,
+          moderationStatus: true,
+          moderationReason: true,
           resources: true,
           followers: true,
         },

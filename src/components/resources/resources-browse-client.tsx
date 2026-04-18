@@ -243,7 +243,7 @@ export function ResourcesBrowseClient({
         <form
           key={formKey}
           action={handleSubmit}
-          className="grid gap-4 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]"
+          className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
         >
           <div>
             <label htmlFor="q" className="mb-2 block text-sm font-medium text-[var(--text)]">
@@ -336,7 +336,7 @@ export function ResourcesBrowseClient({
 
           {filters.store ? <input type="hidden" name="store" value={filters.store} /> : null}
 
-          <div className="flex items-end gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             <button
               type="submit"
               className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
@@ -356,31 +356,31 @@ export function ResourcesBrowseClient({
           </button>
 
           {filters.q ? (
-            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)]">
+            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] break-words">
               Search: {filters.q}
             </span>
           ) : null}
 
           {filters.category ? (
-            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)]">
+            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] break-words">
               Category: {categoryLabels.get(filters.category) || filters.category}
             </span>
           ) : null}
 
           {filters.tag ? (
-            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)]">
+            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] break-words">
               Tag: {tagLabels.get(filters.tag) || filters.tag}
             </span>
           ) : null}
 
           {filters.price ? (
-            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)]">
+            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] break-words">
               Price: {filters.price}
             </span>
           ) : null}
 
           {filters.store ? (
-            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)]">
+            <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text)] break-words">
               Store: {filters.store}
             </span>
           ) : null}

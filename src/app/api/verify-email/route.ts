@@ -73,6 +73,9 @@ export async function POST(req: Request) {
 
     const user = await db.user.findUnique({
       where: { email: verificationToken.identifier },
+      select: {
+        id: true,
+      },
     });
 
     if (!user) {

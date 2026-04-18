@@ -177,7 +177,7 @@ export function StoresBrowseClient({
         <form
           key={formKey}
           action={handleSubmit}
-          className="mt-8 grid gap-4 rounded-[1.75rem] border border-[var(--border)] bg-[var(--surface-alt)] p-4 sm:grid-cols-[minmax(0,1fr)_220px_auto]"
+          className="mt-8 grid gap-4 rounded-[1.75rem] border border-[var(--border)] bg-[var(--surface-alt)] p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,220px)_auto]"
         >
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-[var(--text)]">

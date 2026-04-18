@@ -355,7 +355,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
 
   function renderPurchasePanel(extraClassName = "") {
     return (
-      <aside className={extraClassName}>
+      <aside className={`min-w-0 ${extraClassName}`}>
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
           <div className="text-3xl font-semibold text-[var(--text)]">
             {formatPrice(resourceData.priceCents, resourceData.isFree)}
@@ -373,14 +373,14 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
 
           <div className="mt-4 rounded-2xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--text)]">
             <div className="flex items-start justify-between gap-4">
-              <span className="font-medium text-[var(--text)]">File format</span>
-              <span className="text-right text-[var(--text-muted)]">
+              <span className="min-w-0 font-medium text-[var(--text)]">File format</span>
+              <span className="file-name min-w-0 text-right text-[var(--text-muted)]">
                 {fileFormat || "Not specified"}
               </span>
             </div>
             <div className="mt-3 flex items-start justify-between gap-4">
-              <span className="font-medium text-[var(--text)]">Access</span>
-              <span className="text-right text-[var(--text-muted)]">
+              <span className="min-w-0 font-medium text-[var(--text)]">Access</span>
+              <span className="min-w-0 text-right text-[var(--text-muted)]">
                 {resourceData.isFree
                   ? "Instant after claim"
                   : checkoutUnavailableReason
@@ -389,8 +389,8 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
               </span>
             </div>
             <div className="mt-3 flex items-start justify-between gap-4">
-              <span className="font-medium text-[var(--text)]">License</span>
-              <span className="text-right text-[var(--text-muted)]">
+              <span className="min-w-0 font-medium text-[var(--text)]">License</span>
+              <span className="min-w-0 text-right text-[var(--text-muted)]">
                 Single-buyer digital use
               </span>
             </div>
@@ -519,14 +519,14 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
       <Suspense fallback={null}>
         <ResourcePageNotices />
       </Suspense>
-      <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-        <div>
-          <div className="mb-6 flex flex-wrap gap-2">
+      <div className="product-layout">
+        <div className="product-content min-w-0">
+          <div className="tag-row mb-6">
             {resourceData.categories.map((item) => (
               <Link
                 key={item.category.id}
                 href={`/resources?category=${item.category.slug}`}
-                className="rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+                className="tag rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
               >
                 {item.category.name}
               </Link>
@@ -536,18 +536,18 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
               <Link
                 key={item.tag.id}
                 href={`/resources?tag=${item.tag.slug}`}
-                className="rounded-full bg-[var(--card)] px-3 py-1 text-xs font-semibold text-[var(--text)] ring-1 ring-[var(--ring-focus)] transition hover:bg-[var(--surface-alt)]"
+                className="tag rounded-full bg-[var(--card)] px-3 py-1 text-xs font-semibold text-[var(--text)] ring-1 ring-[var(--ring-focus)] transition hover:bg-[var(--surface-alt)]"
               >
                 {item.tag.name}
               </Link>
             ))}
           </div>
 
-          <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)] sm:text-4xl">
+          <h1 className="product-title text-3xl font-semibold tracking-tight text-[var(--text)] sm:text-4xl">
             {resourceData.title}
           </h1>
 
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[var(--text-muted)]">
+          <div className="meta-row mt-4 items-center text-sm text-[var(--text-muted)]">
             {resourceData.store ? (
               <span className="inline-flex flex-wrap items-center gap-2">
                 {resourceData.store.logoUrl ? (
@@ -608,7 +608,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                 </p>
               ) : null}
 
-              <p className="whitespace-pre-line">{resourceData.description}</p>
+              <p className="description whitespace-pre-line">{resourceData.description}</p>
             </div>
           </div>
 
@@ -620,46 +620,46 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
               </p>
               <div className="mt-5 space-y-3 text-sm">
                 <div className="flex items-start justify-between gap-4 rounded-2xl bg-[var(--surface-alt)] px-4 py-3">
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium text-[var(--text)]">Main download</div>
                     <div className="mt-1 text-xs text-[var(--text-light)]">
                       Delivered after purchase or free claim
                     </div>
                   </div>
-                  <div className="max-w-[55%] break-words text-right font-medium text-[var(--text-muted)]">
+                  <div className="file-name min-w-0 max-w-[55%] text-right font-medium text-[var(--text-muted)]">
                     {mainFile?.fileName || "To be uploaded"}
                   </div>
                 </div>
                 <div className="flex items-start justify-between gap-4 rounded-2xl bg-[var(--surface-alt)] px-4 py-3">
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium text-[var(--text)]">Preview gallery</div>
                     <div className="mt-1 text-xs text-[var(--text-light)]">
                       Screenshots buyers can click through before downloading
                     </div>
                   </div>
-                  <div className="text-right font-medium text-[var(--text-muted)]">
+                  <div className="min-w-0 text-right font-medium text-[var(--text-muted)]">
                     {previewFiles.length > 0 ? `${previewFiles.length} in gallery` : "None uploaded"}
                   </div>
                 </div>
                 <div className="flex items-start justify-between gap-4 rounded-2xl bg-[var(--surface-alt)] px-4 py-3">
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium text-[var(--text)]">File format</div>
                     <div className="mt-1 text-xs text-[var(--text-light)]">
                       Main download type
                     </div>
                   </div>
-                  <div className="text-right font-medium text-[var(--text-muted)]">
+                  <div className="file-name min-w-0 text-right font-medium text-[var(--text-muted)]">
                     {fileFormat || "Not specified"}
                   </div>
                 </div>
                 <div className="flex items-start justify-between gap-4 rounded-2xl bg-[var(--surface-alt)] px-4 py-3">
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium text-[var(--text)]">Resource type</div>
                     <div className="mt-1 text-xs text-[var(--text-light)]">
                       Primary marketplace category
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="min-w-0 text-right">
                     {primaryCategory ? (
                       <Link
                         href={`/resources?category=${primaryCategory.slug}`}
@@ -686,7 +686,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                     <Link
                       key={item.tag.id}
                       href={`/resources?tag=${item.tag.slug}`}
-                      className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition hover:bg-[var(--surface-strong)] hover:text-[var(--accent)]"
+                      className="tag rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition hover:bg-[var(--surface-strong)] hover:text-[var(--accent)]"
                     >
                       {item.tag.name}
                     </Link>
@@ -724,7 +724,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
           </div>
         </div>
 
-        {renderPurchasePanel("hidden lg:block lg:sticky lg:top-24 lg:self-start")}
+        {renderPurchasePanel("product-sidebar hidden lg:block lg:sticky lg:top-24 lg:self-start")}
       </div>
 
       <Suspense

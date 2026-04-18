@@ -28,9 +28,11 @@ export default async function CreatorAnalyticsPage() {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    include: {
+    select: {
+      id: true,
       store: {
-        include: {
+        select: {
+          id: true,
           followers: {
             select: { followerId: true },
           },
@@ -91,7 +93,9 @@ export default async function CreatorAnalyticsPage() {
         createdAt: "desc",
       },
       take: 10,
-      include: {
+      select: {
+        id: true,
+        createdAt: true,
         resource: {
           select: {
             id: true,

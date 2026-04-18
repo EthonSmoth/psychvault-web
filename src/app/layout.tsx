@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from "@/lib/env";
 import { serializeJsonLd } from "@/lib/input-safety";
@@ -79,6 +79,11 @@ export const metadata: Metadata = {
     },
   },
   category: "healthcare",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

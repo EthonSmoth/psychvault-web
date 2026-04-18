@@ -524,7 +524,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                 Approve and publish
                               </FormSubmitButton>
                             </form>
-                            <form action={adminRejectQueuedResourceAction} className="flex min-w-[280px] flex-1 flex-col gap-2">
+                            <form action={adminRejectQueuedResourceAction} className="flex w-full sm:min-w-[280px] flex-1 flex-col gap-2">
                               <input type="hidden" name="resourceId" value={resource.id} />
                               <textarea
                                 name="rejectionNote"
@@ -838,7 +838,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           name="adminNotes"
                           rows={2}
                           placeholder="Optional admin notes (visible internally)."
-                          className="w-full min-w-[220px] rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)]"
+                          className="w-full sm:min-w-[220px] rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)]"
                         />
                         <FormSubmitButton pendingText="Approving..." className="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
                           Approve
@@ -907,7 +907,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           name="adminNotes"
                           rows={2}
                           placeholder="Rejection reason shown to the applicant (optional)."
-                          className="w-full min-w-[220px] rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)]"
+                          className="w-full sm:min-w-[220px] rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)]"
                         />
                         <FormSubmitButton pendingText="Rejecting..." className="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50">
                           Reject

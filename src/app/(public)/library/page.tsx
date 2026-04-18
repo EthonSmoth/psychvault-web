@@ -79,9 +79,19 @@ export default async function LibraryPage() {
     orderBy: {
       createdAt: "desc",
     },
-    include: {
+    select: {
+      id: true,
+      amountCents: true,
+      createdAt: true,
       resource: {
-        include: {
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          shortDescription: true,
+          thumbnailUrl: true,
+          isFree: true,
+          priceCents: true,
           store: {
             select: {
               id: true,
@@ -96,9 +106,6 @@ export default async function LibraryPage() {
             select: {
               id: true,
               fileName: true,
-              fileUrl: true,
-              mimeType: true,
-              fileSizeBytes: true,
             },
           },
           reviews: {

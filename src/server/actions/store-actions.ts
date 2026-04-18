@@ -86,7 +86,16 @@ export async function saveStoreAction(
 
     const user = await db.user.findUnique({
       where: { id: session.id },
-      include: { store: true },
+      select: {
+        id: true,
+        role: true,
+        emailVerified: true,
+        store: {
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
     if (!user) {

@@ -42,7 +42,14 @@ export default async function ArchivedResourcesPage() {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    include: { store: true },
+    select: {
+      id: true,
+      store: {
+        select: {
+          id: true,
+        },
+      },
+    },
   });
 
   if (!user) redirect("/login");

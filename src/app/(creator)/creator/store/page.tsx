@@ -17,7 +17,29 @@ export default async function CreatorStorePage() {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    include: { store: true, payoutAccount: true },
+    select: {
+      id: true,
+      isSuperAdmin: true,
+      store: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          bio: true,
+          logoUrl: true,
+          bannerUrl: true,
+          isPublished: true,
+          moderationStatus: true,
+          moderationReason: true,
+        },
+      },
+      payoutAccount: {
+        select: {
+          payoutsEnabled: true,
+          detailsSubmitted: true,
+        },
+      },
+    },
   });
 
   if (!user) {

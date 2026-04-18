@@ -18,9 +18,20 @@ export default async function NewCreatorResourcePage() {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    include: {
-      store: true,
-      payoutAccount: true,
+    select: {
+      id: true,
+      isSuperAdmin: true,
+      store: {
+        select: {
+          id: true,
+        },
+      },
+      payoutAccount: {
+        select: {
+          payoutsEnabled: true,
+          detailsSubmitted: true,
+        },
+      },
     },
   });
 
