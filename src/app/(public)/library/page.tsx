@@ -22,7 +22,25 @@ function formatDate(date: Date | string) {
   }).format(new Date(date));
 }
 
-export default async function LibraryPage() {
+type LibraryPageProps = {
+  searchParams: Promise<{
+    purchase?: string;
+    resource?: string;
+  }>;
+};
+
+function isValidSlug(value: string) {
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+}
+
+export default async function LibraryPage({ searchParams }: LibraryPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const showPurchaseSuccess = resolvedSearchParams.purchase === "success";
+  const purchaseResourceSlug =
+    typeof resolvedSearchParams.resource === "string" &&
+    isValidSlug(resolvedSearchParams.resource)
+      ? resolvedSearchParams.resource
+      : null;
   const session = await auth();
 
   if (!session?.user?.email) {
@@ -152,6 +170,32 @@ export default async function LibraryPage() {
           </div>
         </div>
       </div>
+
+      {showPurchaseSuccess ? (
+        <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-medium">
+              Purchase complete. Your resource is now in your library.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              {purchaseResourceSlug ? (
+                <Link
+                  href={`/resources/${purchaseResourceSlug}`}
+                  className="font-semibold text-emerald-900 underline underline-offset-2"
+                >
+                  View resource
+                </Link>
+              ) : null}
+              <Link
+                href="/library"
+                className="font-medium text-emerald-900/80 underline underline-offset-2"
+              >
+                Dismiss
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {purchases.length === 0 ? (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">

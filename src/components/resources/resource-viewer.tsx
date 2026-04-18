@@ -10,11 +10,13 @@ import type { ResourceViewerState } from "@/types/resource-viewer";
 type ResourceViewerContextValue = {
   viewerState: ResourceViewerState | null;
   loading: boolean;
+  failed: boolean;
 };
 
 const ResourceViewerContext = createContext<ResourceViewerContextValue>({
   viewerState: null,
   loading: true,
+  failed: false,
 });
 
 function formatPrice(priceCents: number, isFree?: boolean) {
@@ -36,12 +38,14 @@ export function ResourceViewerProvider({
   children: React.ReactNode;
 }) {
   const [viewerState, setViewerState] = useState<ResourceViewerState | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
 
     setViewerState(null);
+    setFailed(false);
 
     fetch(`/api/resources/${resourceId}/viewer`, {
       cache: "no-store",
@@ -61,7 +65,7 @@ export function ResourceViewerProvider({
       })
       .catch(() => {
         if (active && !controller.signal.aborted) {
-          setViewerState({ authenticated: false });
+          setFailed(true);
         }
       });
 
@@ -73,7 +77,7 @@ export function ResourceViewerProvider({
 
   return (
     <ResourceViewerContext.Provider
-      value={{ viewerState, loading: viewerState === null }}
+      value={{ viewerState, loading: viewerState === null && !failed, failed }}
     >
       {children}
     </ResourceViewerContext.Provider>
@@ -142,7 +146,7 @@ export function ResourcePurchaseActions({
   priceCents: number;
   checkoutUnavailableReason: "platform" | "creator-payouts" | null;
 }) {
-  const { viewerState, loading } = useResourceViewerState();
+  const { viewerState, loading, failed } = useResourceViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
 
   if (loading) {
@@ -152,6 +156,14 @@ export function ResourcePurchaseActions({
         <ResourceViewerButtonSkeleton />
         {storeOwnerId ? <ResourceViewerButtonSkeleton /> : null}
       </>
+    );
+  }
+
+  if (failed) {
+    return (
+      <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        We could not confirm your purchase status just now. Please refresh this page.
+      </div>
     );
   }
 
@@ -250,12 +262,20 @@ export function ResourceReportBox({
   resourceId: string;
   resourceSlug: string;
 }) {
-  const { viewerState, loading } = useResourceViewerState();
+  const { viewerState, loading, failed } = useResourceViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
 
   if (loading) {
     return (
       <ResourceViewerMessageSkeleton label="Checking reporting access..." />
+    );
+  }
+
+  if (failed) {
+    return (
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm text-[var(--text-muted)]">
+        Reporting tools are temporarily unavailable. Please refresh and try again.
+      </div>
     );
   }
 

@@ -55,6 +55,15 @@ export async function POST(request: Request) {
 
     const session = await auth();
 
+    const buildLibraryRedirectUrl = (slug?: string) => {
+      const libraryUrl = new URL("/library", request.url);
+      if (slug) {
+        libraryUrl.searchParams.set("resource", slug);
+      }
+      libraryUrl.searchParams.set("purchase", "success");
+      return libraryUrl;
+    };
+
     if (!session?.user?.id) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirectTo", redirectTo);
@@ -144,7 +153,7 @@ export async function POST(request: Request) {
 
     if (resource.store?.ownerId === userId) {
       return NextResponse.redirect(
-        new URL(`/api/downloads/${resource.id}`, request.url),
+        buildLibraryRedirectUrl(resource.slug),
         303
       );
     }
@@ -163,7 +172,7 @@ export async function POST(request: Request) {
 
     if (existingPurchase) {
       return NextResponse.redirect(
-        new URL(`/api/downloads/${resource.id}`, request.url),
+        buildLibraryRedirectUrl(resource.slug),
         303
       );
     }
@@ -206,7 +215,7 @@ export async function POST(request: Request) {
       }
 
       return NextResponse.redirect(
-        new URL(`/api/downloads/${resourceId}`, request.url),
+        buildLibraryRedirectUrl(resource.slug),
         303
       );
     }
