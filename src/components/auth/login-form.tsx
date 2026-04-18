@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { loginAction } from "@/app/(public)/login/actions";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { SubmitButton } from "@/components/auth/submit-button";
+import { requestNavbarSessionRefresh } from "@/lib/navbar-session-sync";
 import { getSafeRedirectTarget } from "@/lib/redirects";
 
 export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
@@ -19,7 +20,13 @@ export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }
   const [state, formAction] = useActionState(loginAction, {});
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form
+      action={formAction}
+      className="space-y-5"
+      onSubmit={() => {
+        requestNavbarSessionRefresh();
+      }}
+    >
       <input type="hidden" name="redirectTo" value={redirectTo} />
 
       {googleEnabled ? (

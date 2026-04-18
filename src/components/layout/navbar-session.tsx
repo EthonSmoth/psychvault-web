@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { resendVerificationEmailFormAction } from "@/server/actions/email-verification-actions";
 import { logoutAction } from "@/server/actions/auth-actions";
 import { MobileOverlayMenu } from "@/components/layout/mobile-overlay-menu";
+import { consumeNavbarSessionRefreshRequest } from "@/lib/navbar-session-sync";
 
 type NavbarSessionResponse =
   | {
@@ -37,9 +38,14 @@ function getInitials(name?: string | null) {
   );
 }
 
-async function fetchNavbarSession() {
-  if (navbarSessionCache?.authenticated) {
+async function fetchNavbarSession(forceRefresh = false) {
+  if (!forceRefresh && navbarSessionCache?.authenticated) {
     return navbarSessionCache;
+  }
+
+  if (forceRefresh) {
+    navbarSessionCache = undefined;
+    navbarSessionRequest = null;
   }
 
   if (!navbarSessionRequest) {
@@ -79,7 +85,9 @@ function useNavbarSession() {
     let cancelled = false;
 
     const refreshSession = () => {
-      fetchNavbarSession().then((payload) => {
+      const forceRefresh = consumeNavbarSessionRefreshRequest();
+
+      fetchNavbarSession(forceRefresh).then((payload) => {
         if (!cancelled) {
           setSession(payload);
         }
