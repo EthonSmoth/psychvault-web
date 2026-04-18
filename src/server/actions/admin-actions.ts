@@ -11,6 +11,10 @@ import {
 } from "@/lib/stripe-connect";
 import { revalidateMarketplaceSurface } from "@/server/cache/public-cache";
 import {
+  DEFAULT_CREATOR_FEE_PERCENTAGE,
+  FOUNDING_CREATOR_FEE_PERCENTAGE,
+} from "@/lib/revenue-split";
+import {
   ModerationActionType,
   ModerationStatus,
   ModerationTargetType,
@@ -26,6 +30,57 @@ function revalidateAdminAndPublicPaths(extraPaths: string[] = []) {
   for (const path of extraPaths) {
     revalidatePath(path);
   }
+}
+
+export async function adminToggleFounderStatusAction(formData: FormData) {
+  const admin = await requireAdmin();
+
+  if (!admin.isSuperAdmin) {
+    throw new Error("Only superadmins can change founder status.");
+  }
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) throw new Error("Missing user id.");
+
+  const creator = await db.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      isFounder: true,
+      isSuperAdmin: true,
+      store: {
+        select: {
+          slug: true,
+        },
+      },
+    },
+  });
+
+  if (!creator) {
+    throw new Error("Creator not found.");
+  }
+
+  if (creator.isSuperAdmin) {
+    throw new Error("Superadmin accounts cannot be marked as founders.");
+  }
+
+  const nextFounderStatus = !creator.isFounder;
+
+  await db.user.update({
+    where: { id: creator.id },
+    data: {
+      isFounder: nextFounderStatus,
+      feePercentage: nextFounderStatus
+        ? FOUNDING_CREATOR_FEE_PERCENTAGE
+        : DEFAULT_CREATOR_FEE_PERCENTAGE,
+    },
+  });
+
+  revalidateAdminAndPublicPaths([
+    "/creator",
+    "/creator/payouts",
+    creator.store?.slug ? `/stores/${creator.store.slug}` : "/stores",
+  ]);
 }
 
 // Archives a resource from the admin dashboard and records who moderated it.

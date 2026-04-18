@@ -49,7 +49,7 @@ export async function getCreatorFeePercentage(creatorId: string): Promise<number
   try {
     const creator = await db.user.findUnique({
       where: { id: creatorId },
-      select: { feePercentage: true, isSuperAdmin: true },
+      select: { feePercentage: true, isSuperAdmin: true, isFounder: true },
     });
 
     if (!creator) {
@@ -60,6 +60,10 @@ export async function getCreatorFeePercentage(creatorId: string): Promise<number
     // Superadmin gets 0% fee (manual processing typically)
     if (creator.isSuperAdmin) {
       return PLATFORM_OWNER_FEE_PERCENTAGE;
+    }
+
+    if (creator.isFounder) {
+      return FOUNDING_CREATOR_FEE_PERCENTAGE;
     }
 
     // Return creator's configured fee percentage

@@ -21,6 +21,7 @@ import {
   adminRejectRefundAction,
   adminResolveResourceReportAction,
   adminResolveStoreReportAction,
+  adminToggleFounderStatusAction,
   adminToggleStoreVerificationAction,
   adminUnpublishResourceAction,
 } from "@/server/actions/admin-actions";
@@ -119,7 +120,13 @@ function fetchQueuedResources() {
     take: 10,
     include: {
       store: true,
-      creator: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
       files: { where: { kind: "MAIN_DOWNLOAD" }, select: { id: true }, take: 1 },
       reports: { where: { status: "OPEN" }, select: { id: true } },
     },
@@ -131,7 +138,10 @@ function fetchOpenReports() {
     where: { status: "OPEN" },
     orderBy: { createdAt: "desc" },
     take: 10,
-    include: { reporter: true, resource: { include: { store: true } } },
+    include: {
+      reporter: { select: { id: true, name: true, email: true } },
+      resource: { include: { store: true } },
+    },
   });
 }
 
@@ -140,7 +150,20 @@ function fetchOpenStoreReports() {
     where: { status: "OPEN" },
     orderBy: { createdAt: "desc" },
     take: 10,
-    include: { reporter: true, store: { include: { owner: true } } },
+    include: {
+      reporter: { select: { id: true, name: true, email: true } },
+      store: {
+        include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
   });
 }
 
@@ -150,7 +173,13 @@ function fetchRecentResources() {
     take: 10,
     include: {
       store: true,
-      creator: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
       files: { where: { kind: "MAIN_DOWNLOAD" }, select: { id: true }, take: 1 },
     },
   });
@@ -161,10 +190,61 @@ function fetchRecentStores() {
     orderBy: { createdAt: "desc" },
     take: 10,
     include: {
-      owner: true,
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isFounder: true,
+          isSuperAdmin: true,
+          feePercentage: true,
+        },
+      },
       resources: { where: { status: "PUBLISHED" }, select: { id: true } },
       followers: { select: { followerId: true } },
     },
+  });
+}
+
+function fetchCreatorRevenueTiers() {
+  return db.user.findMany({
+    where: {
+      OR: [
+        { role: "CREATOR" },
+        { store: { isNot: null } },
+      ],
+    },
+    orderBy: [
+      { isFounder: "desc" },
+      { createdAt: "asc" },
+    ],
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isFounder: true,
+      isSuperAdmin: true,
+      feePercentage: true,
+      createdAt: true,
+      store: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          isPublished: true,
+        },
+      },
+      resources: {
+        where: {
+          status: "PUBLISHED",
+        },
+        select: {
+          id: true,
+        },
+      },
+    },
+    take: 100,
   });
 }
 
@@ -255,7 +335,8 @@ type AdminPageProps = {
 };
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const canManageFounderStatus = Boolean(admin.isSuperAdmin);
   const resolvedSearchParams = await searchParams;
   const activeView = resolvedSearchParams?.view || "overview";
 
@@ -280,6 +361,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   let recentModerationEvents: Awaited<ReturnType<typeof fetchRecentModerationEvents>> = [];
   let pendingRefundRequests: Awaited<ReturnType<typeof fetchPendingRefundRequests>> = [];
   let pendingCreatorApplications: Awaited<ReturnType<typeof fetchPendingCreatorApplications>> = [];
+  let creatorRevenueTiers: Awaited<ReturnType<typeof fetchCreatorRevenueTiers>> = [];
 
   if (activeView === "overview" || activeView === "queue" || activeView === "resource-reports") {
     [queuedResources, openReports] = await db.$transaction([fetchQueuedResources(), fetchOpenReports()]);
@@ -305,6 +387,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     recentModerationEvents = await fetchRecentModerationEvents();
   }
 
+  if (activeView === "creator-revenue") {
+    creatorRevenueTiers = await fetchCreatorRevenueTiers();
+  }
+
   const grossRevenue = revenueAgg._sum.amountCents ?? 0;
   const totalOpenReports = openReportCount + openStoreReportCount;
   const itemsNeedingAttention = pendingReviewCount + totalOpenReports;
@@ -317,6 +403,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     { href: "/admin?view=refunds", label: `Refunds (${formatCount(pendingRefundCount)})`, key: "refunds" },
     { href: "/admin?view=creator-applications", label: `Applications (${formatCount(pendingCreatorApplicationCount)})`, key: "creator-applications" },
     { href: "/admin?view=stores", label: "Stores", key: "stores" },
+    ...(canManageFounderStatus
+      ? [{ href: "/admin?view=creator-revenue", label: "Creator revenue tiers", key: "creator-revenue" }]
+      : []),
     { href: "/admin?view=audit", label: "Audit log", key: "audit" },
   ];
   const healthState =
@@ -750,10 +839,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           <StatusBadge label={store.isPublished ? "Published" : "Hidden"} tone={store.isPublished ? "success" : "warning"} />
                           <StatusBadge label={formatModerationStatus(store.moderationStatus)} tone={getModerationTone(store.moderationStatus)} />
                           {store.isVerified ? <StatusBadge label="Verified" tone="info" /> : null}
+                          {store.owner?.isFounder ? <StatusBadge label="Founder" tone="info" /> : null}
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <MetaPill>/{store.slug}</MetaPill>
                           <MetaPill>{store.owner?.name || "Unknown owner"}</MetaPill>
+                          <MetaPill>{`${Math.round((store.owner?.feePercentage ?? 0.2) * 100)}% platform fee`}</MetaPill>
                           <MetaPill>{formatCount(store.resources.length)} published resource{store.resources.length === 1 ? "" : "s"}</MetaPill>
                           <MetaPill>{formatCount(store.followers.length)} follower{store.followers.length === 1 ? "" : "s"}</MetaPill>
                         </div>
@@ -781,6 +872,79 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           {store.isVerified ? "Remove verification" : "Verify store"}
                         </FormSubmitButton>
                       </form>
+                      {canManageFounderStatus && store.owner && !store.owner.isSuperAdmin ? (
+                        <form action={adminToggleFounderStatusAction}>
+                          <input type="hidden" name="userId" value={store.owner.id} />
+                          <FormSubmitButton pendingText={store.owner.isFounder ? "Updating..." : "Updating..."} className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                            {store.owner.isFounder ? "Remove founder" : "Make founder (15%)"}
+                          </FormSubmitButton>
+                        </form>
+                      ) : null}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </section>
+      ) : null}
+
+      {activeView === "creator-revenue" ? (
+        <section className="mt-10">
+          <SectionCard
+            title="Creator Revenue Tiers"
+            subtitle="Superadmin controls for founder status and platform fee tiers"
+            action={<StatusBadge label={`${formatCount(creatorRevenueTiers.filter((creator) => creator.isFounder).length)} founders`} tone="info" />}
+          >
+            <div className="space-y-4">
+              {creatorRevenueTiers.length === 0 ? (
+                <div className="rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-alt)] p-6 text-sm text-[var(--text-muted)]">
+                  No creators found yet.
+                </div>
+              ) : (
+                creatorRevenueTiers.map((creator) => (
+                  <div key={creator.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-semibold text-[var(--text)]">{creator.name || creator.email}</h3>
+                          {creator.store ? <StatusBadge label="Has store" tone={creator.store.isPublished ? "success" : "warning"} /> : null}
+                          {creator.isFounder ? <StatusBadge label="Founder" tone="info" /> : null}
+                          {creator.isSuperAdmin ? <StatusBadge label="Superadmin" tone="neutral" /> : null}
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <MetaPill>{creator.email}</MetaPill>
+                          <MetaPill>{`${Math.round(creator.feePercentage * 100)}% platform fee`}</MetaPill>
+                          <MetaPill>{formatCount(creator.resources.length)} published resource{creator.resources.length === 1 ? "" : "s"}</MetaPill>
+                          <MetaPill>Joined {formatDateTime(creator.createdAt)}</MetaPill>
+                          {creator.store ? <MetaPill>/{creator.store.slug}</MetaPill> : null}
+                        </div>
+                        {creator.store ? (
+                          <p className="mt-3 text-sm text-[var(--text-muted)]">
+                            Store: {creator.store.name}
+                          </p>
+                        ) : (
+                          <p className="mt-3 text-sm text-[var(--text-muted)]">
+                            This account has no store yet.
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {creator.store ? (
+                          <Link href={`/stores/${creator.store.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                            Open store
+                          </Link>
+                        ) : null}
+                        {!creator.isSuperAdmin ? (
+                          <form action={adminToggleFounderStatusAction}>
+                            <input type="hidden" name="userId" value={creator.id} />
+                            <FormSubmitButton pendingText="Updating..." className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                              {creator.isFounder ? "Remove founder" : "Make founder (15%)"}
+                            </FormSubmitButton>
+                          </form>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 ))
