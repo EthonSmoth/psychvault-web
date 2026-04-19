@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { findConversationForUser } from "@/server/actions/message-actions";
-import MessageThread from "@/components/messages/message-thread";
-import MessageComposer from "@/components/messages/message-composer";
+import Link from"next/link";
+import { notFound } from"next/navigation";
+import { auth } from"@/lib/auth";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { findConversationForUser } from"@/server/actions/message-actions";
+import MessageThread from"@/components/messages/message-thread";
+import MessageComposer from"@/components/messages/message-composer";
 
 type ConversationPageProps = {
   params: Promise<{
@@ -69,7 +69,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
           }))}
         />
 
-        <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+        <div className="card-section space-y-4">
           <div>
             <p className="text-sm font-semibold text-[var(--text)]">Message creator</p>
             <p className="mt-2 text-sm text-[var(--text-muted)]">

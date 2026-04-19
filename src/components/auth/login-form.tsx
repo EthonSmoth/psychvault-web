@@ -1,19 +1,19 @@
 "use client";
 
-import Link from "next/link";
-import { useActionState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import { loginAction } from "@/app/(public)/login/actions";
-import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { SubmitButton } from "@/components/auth/submit-button";
-import { requestNavbarSessionRefresh } from "@/lib/navbar-session-sync";
-import { getSafeRedirectTarget } from "@/lib/redirects";
+import Link from"next/link";
+import { useActionState, useMemo } from"react";
+import { useSearchParams } from"next/navigation";
+import { loginAction } from"@/app/(public)/login/actions";
+import { GoogleAuthButton } from"@/components/auth/google-auth-button";
+import { SubmitButton } from"@/components/auth/submit-button";
+import { requestNavbarSessionRefresh } from"@/lib/navbar-session-sync";
+import { getSafeRedirectTarget } from"@/lib/redirects";
 
 export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const searchParams = useSearchParams();
 
   const redirectTo = useMemo(
-    () => getSafeRedirectTarget(searchParams.get("redirectTo"), "/library"),
+    () => getSafeRedirectTarget(searchParams.get("redirectTo"),"/library"),
     [searchParams]
   );
 

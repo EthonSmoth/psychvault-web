@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useState, useRef } from "react";
-import { saveStoreAction, type StoreFormState } from "@/server/actions/store-actions";
+import { useActionState, useState, useRef } from"react";
+import { saveStoreAction, type StoreFormState } from"@/server/actions/store-actions";
 
 const initialState: StoreFormState = {};
 
@@ -22,11 +22,11 @@ type StoreFormProps = {
 
 type UploadedFile = { url: string };
 
-async function uploadFile(file: File, uploadKind: "thumbnail" | "preview"): Promise<UploadedFile> {
+async function uploadFile(file: File, uploadKind:"thumbnail" |"preview"): Promise<UploadedFile> {
   const fd = new FormData();
   fd.append("file", file);
   fd.append("uploadKind", uploadKind);
-  const res = await fetch("/api/upload", { method: "POST", body: fd });
+  const res = await fetch("/api/upload", { method:"POST", body: fd });
   if (!res.ok) throw new Error("Upload failed");
   return res.json();
 }
@@ -51,7 +51,7 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
     setBannerLoading(true);
     setBannerError("");
     try {
-      const result = await uploadFile(file, "preview");
+      const result = await uploadFile(file,"preview");
       setBanner(result.url);
     } catch {
       setBannerError("Upload failed. Try again.");
@@ -66,7 +66,7 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
     setLogoLoading(true);
     setLogoError("");
     try {
-      const result = await uploadFile(file, "thumbnail");
+      const result = await uploadFile(file,"thumbnail");
       setLogo(result.url);
     } catch {
       setLogoError("Upload failed. Try again.");
@@ -79,22 +79,22 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
     <form action={formAction} className="space-y-6">
       <input type="hidden" name="_csrf" value={csrfToken} />
 
-      {store?.moderationStatus === "PENDING_REVIEW" ? (
+      {store?.moderationStatus ==="PENDING_REVIEW" ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <div className="font-semibold">Moderation status: Pending review</div>
           <div className="mt-1">
             {store.moderationReason ||
-              "This store is waiting for admin review before it can be published."}
+"This store is waiting for admin review before it can be published."}
           </div>
         </div>
       ) : null}
 
-      {store?.moderationStatus === "REJECTED" ? (
+      {store?.moderationStatus ==="REJECTED" ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           <div className="font-semibold">Moderation status: Rejected</div>
           <div className="mt-1">
             {store.moderationReason ||
-              "This store needs changes before it can be published again."}
+"This store needs changes before it can be published again."}
           </div>
         </div>
       ) : null}
@@ -119,7 +119,7 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
               type="button"
               onClick={() => {
                 setBanner(null);
-                if (bannerRef.current) bannerRef.current.value = "";
+                if (bannerRef.current) bannerRef.current.value ="";
               }}
               className="absolute right-3 top-3 rounded-lg bg-white/90 px-2 py-1 text-xs font-medium text-[var(--text)] shadow transition hover:bg-white"
             >
@@ -188,14 +188,14 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
               disabled={logoLoading}
               className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)] disabled:opacity-60"
             >
-              {logoLoading ? "Uploading..." : logo ? "Change logo" : "Upload logo"}
+              {logoLoading ?"Uploading..." : logo ?"Change logo" :"Upload logo"}
             </button>
             {logo && (
               <button
                 type="button"
                 onClick={() => {
                   setLogo(null);
-                  if (logoRef.current) logoRef.current.value = "";
+                  if (logoRef.current) logoRef.current.value ="";
                 }}
                 className="text-xs text-[var(--text-muted)] hover:text-red-600"
               >
@@ -223,7 +223,7 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
         <input
           id="name"
           name="name"
-          defaultValue={store?.name ?? ""}
+          defaultValue={store?.name ??""}
           placeholder="Mindful Practice Tools"
           className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
         />
@@ -237,7 +237,7 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
         <input
           id="slug"
           name="slug"
-          defaultValue={store?.slug ?? ""}
+          defaultValue={store?.slug ??""}
           placeholder="mindful-practice-tools"
           className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
         />
@@ -254,7 +254,7 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
         <input
           id="location"
           name="location"
-          defaultValue={store?.location ?? ""}
+          defaultValue={store?.location ??""}
           placeholder="Perth, WA"
           className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
         />
@@ -268,7 +268,7 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
         <textarea
           id="bio"
           name="bio"
-          defaultValue={store?.bio ?? ""}
+          defaultValue={store?.bio ??""}
           rows={5}
           placeholder="Describe what kind of resources you create and who they are for."
           className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
@@ -314,7 +314,7 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
           disabled={pending}
           className="inline-flex rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? "Saving..." : "Save store"}
+          {pending ?"Saving..." :"Save store"}
         </button>
       </div>
     </form>

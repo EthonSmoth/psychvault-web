@@ -1,13 +1,13 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { generateCSRFToken } from "@/lib/csrf";
-import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
-import { getCreatorResourceTaxonomy } from "@/server/services/resource-taxonomy";
-import { getCreatorTrustProfile } from "@/lib/creator-trust";
-import ResourceForm from "@/components/forms/resource-form";
+import { redirect } from"next/navigation";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { generateCSRFToken } from"@/lib/csrf";
+import { canBypassPaidResourcePayoutRequirement } from"@/lib/payout-readiness";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from"@/lib/stripe-connect";
+import { getCreatorResourceTaxonomy } from"@/server/services/resource-taxonomy";
+import { getCreatorTrustProfile } from"@/lib/creator-trust";
+import ResourceForm from"@/components/forms/resource-form";
 
 type EditResourcePageProps = {
   params: Promise<{
@@ -86,7 +86,7 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
         <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
           Edit resource
         </span>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)]">
           {resource.title}
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
@@ -95,22 +95,22 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
 
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-            {resource.status === "PUBLISHED" ? "Published" : "Draft"}
+            {resource.status ==="PUBLISHED" ?"Published" :"Draft"}
           </span>
           <span
             className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-              resource.moderationStatus === "APPROVED"
-                ? "bg-emerald-100 text-emerald-700"
-                : resource.moderationStatus === "PENDING_REVIEW"
-                ? "bg-amber-100 text-amber-800"
-                : "bg-red-100 text-red-700"
+              resource.moderationStatus ==="APPROVED"
+                ?"bg-emerald-100 text-emerald-700"
+                : resource.moderationStatus ==="PENDING_REVIEW"
+                ?"bg-amber-100 text-amber-800"
+                :"bg-red-100 text-red-700"
             }`}
           >
-            {resource.moderationStatus === "PENDING_REVIEW"
-              ? "Pending review"
-              : resource.moderationStatus === "REJECTED"
-              ? "Rejected"
-              : "Approved"}
+            {resource.moderationStatus ==="PENDING_REVIEW"
+              ?"Pending review"
+              : resource.moderationStatus ==="REJECTED"
+              ?"Rejected"
+              :"Approved"}
           </span>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           This is a paid resource. Existing paid listings now require Stripe payout
           onboarding before they can stay sale-ready.
-          {" "}
+          {""}
           <a href="/creator/payouts" className="font-semibold underline">
             Finish payout setup
           </a>
@@ -133,7 +133,7 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
         resource={resource}
         csrfToken={csrfToken}
         paidResourcePayoutRequired={requiresPaidResourcePayoutSetup}
-        isTrusted={trustProfile.tier === "trusted"}
+        isTrusted={trustProfile.tier ==="trusted"}
       />
     </main>
   );

@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { PolicyContactPanel } from "@/components/legal/policy-contact-panel";
-import { LEGAL_LAST_UPDATED } from "@/lib/legal";
-import { getMarketplacePolicyLinks } from "@/lib/payments";
+import Link from"next/link";
+import { PolicyContactPanel } from"@/components/legal/policy-contact-panel";
+import { LEGAL_LAST_UPDATED } from"@/lib/legal";
+import { getMarketplacePolicyLinks } from"@/lib/payments";
 
 // Sets the core marketplace rules for buyers, creators, content, and digital purchases.
 export function TermsOfServiceContent() {
@@ -24,7 +24,7 @@ export function TermsOfServiceContent() {
           </p>
         </div>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Marketplace use and accounts</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -41,7 +41,7 @@ export function TermsOfServiceContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Marketplace role and listings</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -58,7 +58,7 @@ export function TermsOfServiceContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Pricing, checkout, and digital delivery</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -75,7 +75,7 @@ export function TermsOfServiceContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Licences and acceptable use</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -93,7 +93,7 @@ export function TermsOfServiceContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Creator responsibilities</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -110,12 +110,12 @@ export function TermsOfServiceContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Refunds, disputes, and support</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
               Because most purchases are digital and may be available immediately, refunds
-              are not automatic. Refund requests are assessed under our{" "}
+              are not automatic. Refund requests are assessed under our{""}
               <Link href={links.refunds} className="font-medium text-[var(--text)] underline">
                 Refund Policy
               </Link>
@@ -130,7 +130,7 @@ export function TermsOfServiceContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Disclaimers and legal rights</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -149,7 +149,7 @@ export function TermsOfServiceContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Changes to these terms</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             We may update these terms from time to time to reflect product changes,

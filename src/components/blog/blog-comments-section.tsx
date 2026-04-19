@@ -97,7 +97,7 @@ export function BlogCommentsSection({ slug }: { slug: string }) {
       />
 
       <div>
-        <h3 className="mb-4 text-lg font-semibold text-[var(--text)]">
+        <h3 className="heading-section mb-4">
           Comments
         </h3>
         <BlogCommentList

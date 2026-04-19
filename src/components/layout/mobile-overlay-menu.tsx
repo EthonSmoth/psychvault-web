@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, type ReactNode } from"react";
+import { usePathname } from"next/navigation";
+import { useState } from"react";
 
 type MobileOverlayMenuProps = {
   title: string;
@@ -17,7 +17,7 @@ export function MobileOverlayMenu({
   triggerClassName,
   triggerContent,
   children,
-  panelClassName = "",
+  panelClassName ="",
 }: MobileOverlayMenuProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -32,7 +32,7 @@ export function MobileOverlayMenu({
     }
 
     const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow ="hidden";
 
     return () => {
       document.body.style.overflow = overflow;

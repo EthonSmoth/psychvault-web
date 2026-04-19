@@ -33,3 +33,4 @@ Make anonymous traffic cheap and reserve dynamic compute for account, entitlemen
 - keep session/nav reads lean and avoid unnecessary Prisma lookups
 - consider moving shared rate limiting to Redis/Upstash if traffic grows beyond what the main database should absorb
 - keep image optimization reliable so oversized uploads do not inflate storage and bandwidth
+- maintain CSS utility class extraction to keep HTML markup lean across pages

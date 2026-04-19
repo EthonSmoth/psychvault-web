@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { PolicyContactPanel } from "@/components/legal/policy-contact-panel";
-import { LEGAL_LAST_UPDATED } from "@/lib/legal";
-import { getMarketplacePolicyLinks } from "@/lib/payments";
+import Link from"next/link";
+import { PolicyContactPanel } from"@/components/legal/policy-contact-panel";
+import { LEGAL_LAST_UPDATED } from"@/lib/legal";
+import { getMarketplacePolicyLinks } from"@/lib/payments";
 
 // Explains what user, payment, and marketplace data PsychVault collects and why.
 export function PrivacyPolicyContent() {
@@ -24,7 +24,7 @@ export function PrivacyPolicyContent() {
           </p>
         </div>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">What information we collect</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -48,7 +48,7 @@ export function PrivacyPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">How we use personal information</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>We use personal information to:</p>
@@ -67,7 +67,7 @@ export function PrivacyPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">When we share information</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -89,7 +89,7 @@ export function PrivacyPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Cookies, analytics, and security</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -108,7 +108,7 @@ export function PrivacyPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Retention and international processing</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -127,7 +127,7 @@ export function PrivacyPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Your choices and rights</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -145,15 +145,15 @@ export function PrivacyPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Related policies</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             For more information about digital purchases, licensing, and refund handling,
-            please also review our{" "}
+            please also review our{""}
             <Link href={links.terms} className="font-medium text-[var(--text)] underline">
               Terms of Service
-            </Link>{" "}
-            and{" "}
+            </Link>{""}
+            and{""}
             <Link href={links.refunds} className="font-medium text-[var(--text)] underline">
               Refund Policy
             </Link>

@@ -1,9 +1,9 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { getAppBaseUrl } from "@/lib/env";
-import { serializeJsonLd } from "@/lib/input-safety";
-import { getAllBlogPosts, getFeaturedBlogPosts } from "@/lib/blog";
-import { BlogPostCard } from "@/components/blog/blog-post-card";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { getAppBaseUrl } from"@/lib/env";
+import { serializeJsonLd } from"@/lib/input-safety";
+import { getAllBlogPosts, getFeaturedBlogPosts } from"@/lib/blog";
+import { BlogPostCard } from"@/components/blog/blog-post-card";
 
 export const revalidate = 300;
 
@@ -24,43 +24,43 @@ function resolveBlogImageUrl(src?: string | null) {
 }
 
 export const metadata: Metadata = {
-  title: "PsychVault Blog",
+  title:"PsychVault Blog",
   description:
-    "Read practical articles on psychology resources, NDIS workflows, report writing, psychoeducation, and selling clinician-made tools online.",
+"Read practical articles on psychology resources, NDIS workflows, report writing, psychoeducation, and selling clinician-made tools online.",
   keywords: [
-    "psychology blog",
-    "NDIS report writing",
-    "psychoeducation resources",
-    "therapy worksheet tips",
-    "sell psychology resources",
-    "clinical templates",
+"psychology blog",
+"NDIS report writing",
+"psychoeducation resources",
+"therapy worksheet tips",
+"sell psychology resources",
+"clinical templates",
   ],
   alternates: {
     canonical: blogUrl,
     types: {
-      "application/rss+xml": feedUrl,
+"application/rss+xml": feedUrl,
     },
   },
   openGraph: {
-    type: "website",
+    type:"website",
     url: blogUrl,
-    title: "PsychVault Blog",
+    title:"PsychVault Blog",
     description:
-      "Practical articles on psychology resources, workflows, templates, and digital products for clinicians.",
+"Practical articles on psychology resources, workflows, templates, and digital products for clinicians.",
     images: [
       {
-        url: "/opengraph-image",
+        url:"/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "PsychVault Blog",
+        alt:"PsychVault Blog",
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "PsychVault Blog",
+    card:"summary_large_image",
+    title:"PsychVault Blog",
     description:
-      "Practical articles on psychology resources, workflows, templates, and digital products for clinicians.",
+"Practical articles on psychology resources, workflows, templates, and digital products for clinicians.",
     images: ["/opengraph-image"],
   },
 };
@@ -81,21 +81,21 @@ export default async function BlogIndexPage() {
   const categories = Array.from(new Set(posts.map((post) => post.category))).slice(0, 6);
 
   const blogSchema = {
-    "@context": "https://schema.org",
-    "@type": "Blog",
-    name: "PsychVault Blog",
+"@context":"https://schema.org",
+"@type":"Blog",
+    name:"PsychVault Blog",
     description:
-      "Practical articles on psychology resources, NDIS workflows, clinical templates, and creator growth.",
+"Practical articles on psychology resources, NDIS workflows, clinical templates, and creator growth.",
     url: blogUrl,
     publisher: {
-      "@type": "Organization",
-      name: "PsychVault",
+"@type":"Organization",
+      name:"PsychVault",
       url: baseUrl,
       logo: `${baseUrl}/logo-PNG.png`,
     },
-    inLanguage: "en-AU",
+    inLanguage:"en-AU",
     blogPost: posts.slice(0, 12).map((post) => ({
-      "@type": "BlogPosting",
+"@type":"BlogPosting",
       headline: post.title,
       description: post.description,
       datePublished: post.publishedAt.toISOString(),
@@ -105,26 +105,26 @@ export default async function BlogIndexPage() {
       keywords: post.tags,
       articleSection: post.category,
       author: {
-        "@type": "Person",
+"@type":"Person",
         name: post.author,
       },
     })),
   };
 
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+"@context":"https://schema.org",
+"@type":"BreadcrumbList",
     itemListElement: [
       {
-        "@type": "ListItem",
+"@type":"ListItem",
         position: 1,
-        name: "Home",
+        name:"Home",
         item: baseUrl,
       },
       {
-        "@type": "ListItem",
+"@type":"ListItem",
         position: 2,
-        name: "Blog",
+        name:"Blog",
         item: blogUrl,
       },
     ],
@@ -159,7 +159,7 @@ export default async function BlogIndexPage() {
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href={leadPost ? `/blog/${leadPost.slug}` : "#latest-posts"}
+                  href={leadPost ? `/blog/${leadPost.slug}` :"#latest-posts"}
                   className="inline-flex rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
                 >
                   Start reading
@@ -222,11 +222,11 @@ export default async function BlogIndexPage() {
         ) : null}
 
         <section id="latest-posts" className="mt-14 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
-          <aside className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+          <aside className="card-section">
             <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-light)]">
               What You&apos;ll Find
             </div>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text)]">
+            <h2 className="heading-2xl mt-3">
               Topics clinicians actually come looking for
             </h2>
             <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">

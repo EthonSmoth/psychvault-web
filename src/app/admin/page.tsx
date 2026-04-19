@@ -1,13 +1,13 @@
-import type { ReactNode } from "react";
-import Link from "next/link";
+import type { ReactNode } from"react";
+import Link from"next/link";
 import {
   formatCreatorTrustTier,
   getCreatorTrustAppearance,
   getCreatorTrustProfiles,
   type CreatorTrustProfile,
-} from "@/lib/creator-trust";
-import { db } from "@/lib/db";
-import { requireAdmin } from "@/lib/require-admin";
+} from"@/lib/creator-trust";
+import { db } from"@/lib/db";
+import { requireAdmin } from"@/lib/require-admin";
 import {
   adminApproveQueuedResourceAction,
   adminApproveRefundAction,
@@ -24,18 +24,18 @@ import {
   adminToggleFounderStatusAction,
   adminToggleStoreVerificationAction,
   adminUnpublishResourceAction,
-} from "@/server/actions/admin-actions";
+} from"@/server/actions/admin-actions";
 import {
   adminApproveCreatorApplicationAction,
   adminRejectCreatorApplicationAction,
-} from "@/server/actions/creator-application-actions";
-import { FormSubmitButton } from "@/components/ui/form-submit-button";
+} from"@/server/actions/creator-application-actions";
+import { FormSubmitButton } from"@/components/ui/form-submit-button";
 
-type Tone = "danger" | "warning" | "success" | "info" | "neutral";
+type Tone ="danger" |"warning" |"success" |"info" |"neutral";
 
 const emptyTrustProfile: CreatorTrustProfile = {
   score: 0,
-  tier: "new",
+  tier:"new",
   reasons: [],
   stats: {
     accountAgeDays: 0,
@@ -50,8 +50,8 @@ const emptyTrustProfile: CreatorTrustProfile = {
 
 function formatMoney(cents: number) {
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
+    style:"currency",
+    currency:"AUD",
   }).format(cents / 100);
 }
 
@@ -61,62 +61,62 @@ function formatCount(value: number) {
 
 function formatDateTime(date: Date) {
   return new Intl.DateTimeFormat("en-AU", {
-    dateStyle: "medium",
-    timeStyle: "short",
+    dateStyle:"medium",
+    timeStyle:"short",
   }).format(date);
 }
 
 function formatReportReason(reason: string) {
-  const label = reason.replaceAll("_", " ").toLowerCase();
+  const label = reason.replaceAll("_","").toLowerCase();
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function formatModerationStatus(status: string) {
-  return status.toLowerCase().replaceAll("_", " ").replace(/^\w/, (char) => char.toUpperCase());
+  return status.toLowerCase().replaceAll("_","").replace(/^\w/, (char) => char.toUpperCase());
 }
 
 function getToneStyles(tone: Tone) {
   switch (tone) {
-    case "danger":
-      return { textColor: "var(--error)", borderColor: "rgba(208, 87, 78, 0.28)", backgroundColor: "rgba(208, 87, 78, 0.12)" };
-    case "warning":
-      return { textColor: "var(--warning)", borderColor: "rgba(217, 126, 59, 0.28)", backgroundColor: "rgba(217, 126, 59, 0.12)" };
-    case "success":
-      return { textColor: "var(--success)", borderColor: "rgba(107, 142, 35, 0.28)", backgroundColor: "rgba(107, 142, 35, 0.12)" };
-    case "info":
-      return { textColor: "var(--primary)", borderColor: "rgba(128, 80, 45, 0.26)", backgroundColor: "rgba(128, 80, 45, 0.10)" };
+    case"danger":
+      return { textColor:"var(--error)", borderColor:"rgba(208, 87, 78, 0.28)", backgroundColor:"rgba(208, 87, 78, 0.12)" };
+    case"warning":
+      return { textColor:"var(--warning)", borderColor:"rgba(217, 126, 59, 0.28)", backgroundColor:"rgba(217, 126, 59, 0.12)" };
+    case"success":
+      return { textColor:"var(--success)", borderColor:"rgba(107, 142, 35, 0.28)", backgroundColor:"rgba(107, 142, 35, 0.12)" };
+    case"info":
+      return { textColor:"var(--primary)", borderColor:"rgba(128, 80, 45, 0.26)", backgroundColor:"rgba(128, 80, 45, 0.10)" };
     default:
-      return { textColor: "var(--text)", borderColor: "var(--border)", backgroundColor: "var(--surface-alt)" };
+      return { textColor:"var(--text)", borderColor:"var(--border)", backgroundColor:"var(--surface-alt)" };
   }
 }
 
 function getMetricBadgeLabel(tone: Tone) {
-  if (tone === "danger") return "Urgent";
-  if (tone === "warning") return "Watch";
-  if (tone === "success") return "Healthy";
-  if (tone === "info") return "Live";
-  return "Active";
+  if (tone ==="danger") return"Urgent";
+  if (tone ==="warning") return"Watch";
+  if (tone ==="success") return"Healthy";
+  if (tone ==="info") return"Live";
+  return"Active";
 }
 
 function getModerationTone(status: string): Tone {
-  if (["APPROVED", "PUBLISHED", "RESOLVED", "VERIFIED"].includes(status)) return "success";
-  if (["PENDING_REVIEW", "DRAFT"].includes(status)) return "warning";
-  if (["REJECTED", "ARCHIVED"].includes(status)) return "danger";
-  return "neutral";
+  if (["APPROVED","PUBLISHED","RESOLVED","VERIFIED"].includes(status)) return"success";
+  if (["PENDING_REVIEW","DRAFT"].includes(status)) return"warning";
+  if (["REJECTED","ARCHIVED"].includes(status)) return"danger";
+  return"neutral";
 }
 
 function getEventTone(action: string): Tone {
   const normalized = action.toUpperCase();
-  if (/(APPROVE|PUBLISH|VERIFY|RESOLVE)/.test(normalized)) return "success";
-  if (/(REJECT|ARCHIVE|UNPUBLISH)/.test(normalized)) return "danger";
-  if (normalized.includes("DISMISS")) return "neutral";
-  return "info";
+  if (/(APPROVE|PUBLISH|VERIFY|RESOLVE)/.test(normalized)) return"success";
+  if (/(REJECT|ARCHIVE|UNPUBLISH)/.test(normalized)) return"danger";
+  if (normalized.includes("DISMISS")) return"neutral";
+  return"info";
 }
 
 function fetchQueuedResources() {
   return db.resource.findMany({
-    where: { moderationStatus: "PENDING_REVIEW" },
-    orderBy: { updatedAt: "desc" },
+    where: { moderationStatus:"PENDING_REVIEW" },
+    orderBy: { updatedAt:"desc" },
     take: 10,
     include: {
       store: true,
@@ -127,16 +127,16 @@ function fetchQueuedResources() {
           email: true,
         },
       },
-      files: { where: { kind: "MAIN_DOWNLOAD" }, select: { id: true }, take: 1 },
-      reports: { where: { status: "OPEN" }, select: { id: true } },
+      files: { where: { kind:"MAIN_DOWNLOAD" }, select: { id: true }, take: 1 },
+      reports: { where: { status:"OPEN" }, select: { id: true } },
     },
   });
 }
 
 function fetchOpenReports() {
   return db.resourceReport.findMany({
-    where: { status: "OPEN" },
-    orderBy: { createdAt: "desc" },
+    where: { status:"OPEN" },
+    orderBy: { createdAt:"desc" },
     take: 10,
     include: {
       reporter: { select: { id: true, name: true, email: true } },
@@ -147,8 +147,8 @@ function fetchOpenReports() {
 
 function fetchOpenStoreReports() {
   return db.storeReport.findMany({
-    where: { status: "OPEN" },
-    orderBy: { createdAt: "desc" },
+    where: { status:"OPEN" },
+    orderBy: { createdAt:"desc" },
     take: 10,
     include: {
       reporter: { select: { id: true, name: true, email: true } },
@@ -169,7 +169,7 @@ function fetchOpenStoreReports() {
 
 function fetchRecentResources() {
   return db.resource.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt:"desc" },
     take: 10,
     include: {
       store: true,
@@ -180,14 +180,14 @@ function fetchRecentResources() {
           email: true,
         },
       },
-      files: { where: { kind: "MAIN_DOWNLOAD" }, select: { id: true }, take: 1 },
+      files: { where: { kind:"MAIN_DOWNLOAD" }, select: { id: true }, take: 1 },
     },
   });
 }
 
 function fetchRecentStores() {
   return db.store.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt:"desc" },
     take: 10,
     include: {
       owner: {
@@ -200,7 +200,7 @@ function fetchRecentStores() {
           feePercentage: true,
         },
       },
-      resources: { where: { status: "PUBLISHED" }, select: { id: true } },
+      resources: { where: { status:"PUBLISHED" }, select: { id: true } },
       followers: { select: { followerId: true } },
     },
   });
@@ -210,13 +210,13 @@ function fetchCreatorRevenueTiers() {
   return db.user.findMany({
     where: {
       OR: [
-        { role: "CREATOR" },
+        { role:"CREATOR" },
         { store: { isNot: null } },
       ],
     },
     orderBy: [
-      { isFounder: "desc" },
-      { createdAt: "asc" },
+      { isFounder:"desc" },
+      { createdAt:"asc" },
     ],
     select: {
       id: true,
@@ -237,7 +237,7 @@ function fetchCreatorRevenueTiers() {
       },
       resources: {
         where: {
-          status: "PUBLISHED",
+          status:"PUBLISHED",
         },
         select: {
           id: true,
@@ -250,8 +250,8 @@ function fetchCreatorRevenueTiers() {
 
 function fetchPendingCreatorApplications() {
   return db.creatorApplication.findMany({
-    where: { status: "PENDING" },
-    orderBy: { createdAt: "asc" },
+    where: { status:"PENDING" },
+    orderBy: { createdAt:"asc" },
     take: 50,
     include: {
       user: { select: { id: true, name: true, email: true, createdAt: true } },
@@ -261,8 +261,8 @@ function fetchPendingCreatorApplications() {
 
 function fetchPendingRefundRequests() {
   return db.refundRequest.findMany({
-    where: { status: "PENDING" },
-    orderBy: { createdAt: "asc" },
+    where: { status:"PENDING" },
+    orderBy: { createdAt:"asc" },
     take: 50,
     include: {
       buyer: { select: { id: true, name: true, email: true } },
@@ -277,7 +277,7 @@ function fetchPendingRefundRequests() {
 
 function fetchRecentModerationEvents() {
   return db.moderationEvent.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt:"desc" },
     take: 12,
     include: { actorUser: { select: { name: true, email: true } } },
   });
@@ -301,7 +301,7 @@ function SectionCard({ title, subtitle, action, children }: { title: string; sub
     <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-[var(--text)]">{title}</h2>
+          <h2 className="heading-section">{title}</h2>
           <p className="mt-1 text-sm text-[var(--text-muted)]">{subtitle}</p>
         </div>
         {action}
@@ -338,18 +338,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const admin = await requireAdmin();
   const canManageFounderStatus = Boolean(admin.isSuperAdmin);
   const resolvedSearchParams = await searchParams;
-  const activeView = resolvedSearchParams?.view || "overview";
+  const activeView = resolvedSearchParams?.view ||"overview";
 
   const [userCount, storeCount, resourceCount, purchaseCount, pendingReviewCount, openReportCount, openStoreReportCount, pendingRefundCount, pendingCreatorApplicationCount, revenueAgg] = await db.$transaction([
     db.user.count(),
     db.store.count(),
     db.resource.count(),
     db.purchase.count(),
-    db.resource.count({ where: { moderationStatus: "PENDING_REVIEW" } }),
-    db.resourceReport.count({ where: { status: "OPEN" } }),
-    db.storeReport.count({ where: { status: "OPEN" } }),
-    db.refundRequest.count({ where: { status: "PENDING" } }),
-    db.creatorApplication.count({ where: { status: "PENDING" } }),
+    db.resource.count({ where: { moderationStatus:"PENDING_REVIEW" } }),
+    db.resourceReport.count({ where: { status:"OPEN" } }),
+    db.storeReport.count({ where: { status:"OPEN" } }),
+    db.refundRequest.count({ where: { status:"PENDING" } }),
+    db.creatorApplication.count({ where: { status:"PENDING" } }),
     db.purchase.aggregate({ _sum: { amountCents: true } }),
   ]);
 
@@ -363,102 +363,102 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   let pendingCreatorApplications: Awaited<ReturnType<typeof fetchPendingCreatorApplications>> = [];
   let creatorRevenueTiers: Awaited<ReturnType<typeof fetchCreatorRevenueTiers>> = [];
 
-  if (activeView === "overview" || activeView === "queue" || activeView === "resource-reports") {
+  if (activeView ==="overview" || activeView ==="queue" || activeView ==="resource-reports") {
     [queuedResources, openReports] = await db.$transaction([fetchQueuedResources(), fetchOpenReports()]);
   }
 
-  if (activeView === "overview" || activeView === "store-reports") {
+  if (activeView ==="overview" || activeView ==="store-reports") {
     openStoreReports = await fetchOpenStoreReports();
   }
 
-  if (activeView === "overview" || activeView === "stores") {
+  if (activeView ==="overview" || activeView ==="stores") {
     [recentResources, recentStores] = await db.$transaction([fetchRecentResources(), fetchRecentStores()]);
   }
 
-  if (activeView === "overview" || activeView === "refunds") {
+  if (activeView ==="overview" || activeView ==="refunds") {
     pendingRefundRequests = await fetchPendingRefundRequests();
   }
 
-  if (activeView === "overview" || activeView === "creator-applications") {
+  if (activeView ==="overview" || activeView ==="creator-applications") {
     pendingCreatorApplications = await fetchPendingCreatorApplications();
   }
 
-  if (activeView === "overview" || activeView === "audit") {
+  if (activeView ==="overview" || activeView ==="audit") {
     recentModerationEvents = await fetchRecentModerationEvents();
   }
 
-  if (activeView === "creator-revenue") {
+  if (activeView ==="creator-revenue") {
     creatorRevenueTiers = await fetchCreatorRevenueTiers();
   }
 
   const grossRevenue = revenueAgg._sum.amountCents ?? 0;
   const totalOpenReports = openReportCount + openStoreReportCount;
   const itemsNeedingAttention = pendingReviewCount + totalOpenReports;
-  const queuedTrustProfiles = await getCreatorTrustProfiles(queuedResources.map((resource) => resource.creator?.id ?? ""));
+  const queuedTrustProfiles = await getCreatorTrustProfiles(queuedResources.map((resource) => resource.creator?.id ??""));
   const viewTabs = [
-    { href: "/admin", label: "Overview", key: "overview" },
-    { href: "/admin?view=queue", label: `Queue (${formatCount(pendingReviewCount)})`, key: "queue" },
-    { href: "/admin?view=resource-reports", label: `Resource reports (${formatCount(openReportCount)})`, key: "resource-reports" },
-    { href: "/admin?view=store-reports", label: `Store reports (${formatCount(openStoreReportCount)})`, key: "store-reports" },
-    { href: "/admin?view=refunds", label: `Refunds (${formatCount(pendingRefundCount)})`, key: "refunds" },
-    { href: "/admin?view=creator-applications", label: `Applications (${formatCount(pendingCreatorApplicationCount)})`, key: "creator-applications" },
-    { href: "/admin?view=stores", label: "Stores", key: "stores" },
+    { href:"/admin", label:"Overview", key:"overview" },
+    { href:"/admin?view=queue", label: `Queue (${formatCount(pendingReviewCount)})`, key:"queue" },
+    { href:"/admin?view=resource-reports", label: `Resource reports (${formatCount(openReportCount)})`, key:"resource-reports" },
+    { href:"/admin?view=store-reports", label: `Store reports (${formatCount(openStoreReportCount)})`, key:"store-reports" },
+    { href:"/admin?view=refunds", label: `Refunds (${formatCount(pendingRefundCount)})`, key:"refunds" },
+    { href:"/admin?view=creator-applications", label: `Applications (${formatCount(pendingCreatorApplicationCount)})`, key:"creator-applications" },
+    { href:"/admin?view=stores", label:"Stores", key:"stores" },
     ...(canManageFounderStatus
-      ? [{ href: "/admin?view=creator-revenue", label: "Creator revenue tiers", key: "creator-revenue" }]
+      ? [{ href:"/admin?view=creator-revenue", label:"Creator revenue tiers", key:"creator-revenue" }]
       : []),
-    { href: "/admin?view=audit", label: "Audit log", key: "audit" },
+    { href:"/admin?view=audit", label:"Audit log", key:"audit" },
   ];
   const healthState =
     itemsNeedingAttention === 0
-      ? { label: "Calm inbox", note: "No urgent moderation items are waiting right now.", tone: "success" as const }
+      ? { label:"Calm inbox", note:"No urgent moderation items are waiting right now.", tone:"success" as const }
       : itemsNeedingAttention < 6
-      ? { label: "Steady flow", note: "A small queue is forming, but the marketplace is still under control.", tone: "warning" as const }
-      : { label: "High attention", note: "Pending reviews and open reports are stacking up and should be cleared soon.", tone: "danger" as const };
+      ? { label:"Steady flow", note:"A small queue is forming, but the marketplace is still under control.", tone:"warning" as const }
+      : { label:"High attention", note:"Pending reviews and open reports are stacking up and should be cleared soon.", tone:"danger" as const };
   const focusCards = [
     {
-      href: "/admin?view=queue",
-      label: "Pending review",
+      href:"/admin?view=queue",
+      label:"Pending review",
       value: formatCount(pendingReviewCount),
-      note: pendingReviewCount > 0 ? "Resources waiting for a publish or reject decision." : "No queued resources right now.",
+      note: pendingReviewCount > 0 ?"Resources waiting for a publish or reject decision." :"No queued resources right now.",
       tone: pendingReviewCount > 0 ? ("warning" as const) : ("success" as const),
     },
     {
-      href: "/admin?view=resource-reports",
-      label: "Resource reports",
+      href:"/admin?view=resource-reports",
+      label:"Resource reports",
       value: formatCount(openReportCount),
-      note: openReportCount > 0 ? "Flagged listings that need a moderation pass." : "No unresolved resource reports.",
+      note: openReportCount > 0 ?"Flagged listings that need a moderation pass." :"No unresolved resource reports.",
       tone: openReportCount > 0 ? ("danger" as const) : ("success" as const),
     },
     {
-      href: "/admin?view=store-reports",
-      label: "Store reports",
+      href:"/admin?view=store-reports",
+      label:"Store reports",
       value: formatCount(openStoreReportCount),
-      note: openStoreReportCount > 0 ? "Store-level concerns waiting for follow-up." : "No unresolved store reports.",
+      note: openStoreReportCount > 0 ?"Store-level concerns waiting for follow-up." :"No unresolved store reports.",
       tone: openStoreReportCount > 0 ? ("danger" as const) : ("success" as const),
     },
     {
-      href: "/admin?view=refunds",
-      label: "Refund requests",
+      href:"/admin?view=refunds",
+      label:"Refund requests",
       value: formatCount(pendingRefundCount),
-      note: pendingRefundCount > 0 ? "Buyer refund requests waiting for a decision." : "No pending refund requests.",
+      note: pendingRefundCount > 0 ?"Buyer refund requests waiting for a decision." :"No pending refund requests.",
       tone: pendingRefundCount > 0 ? ("warning" as const) : ("success" as const),
     },
     {
-      href: "/admin?view=audit",
-      label: "Gross revenue",
+      href:"/admin?view=audit",
+      label:"Gross revenue",
       value: formatMoney(grossRevenue),
-      note: "Useful marketplace signal alongside moderation load.",
-      tone: "info" as const,
+      note:"Useful marketplace signal alongside moderation load.",
+      tone:"info" as const,
     },
   ];
   const metricCards = [
-    { label: "Pending review", value: formatCount(pendingReviewCount), note: "Listings waiting on the admin queue.", tone: pendingReviewCount > 0 ? ("warning" as const) : ("success" as const) },
-    { label: "Open reports", value: formatCount(totalOpenReports), note: "Combined resource and store reports still unresolved.", tone: totalOpenReports > 0 ? ("danger" as const) : ("success" as const) },
-    { label: "Gross revenue", value: formatMoney(grossRevenue), note: "All-time purchase volume across the marketplace.", tone: "info" as const },
-    { label: "Purchases", value: formatCount(purchaseCount), note: "Completed orders processed so far.", tone: "neutral" as const },
-    { label: "Users", value: formatCount(userCount), note: "Registered accounts across creators and buyers.", tone: "neutral" as const },
-    { label: "Stores", value: formatCount(storeCount), note: "Creator storefronts on the platform.", tone: "neutral" as const },
-    { label: "Resources", value: formatCount(resourceCount), note: "Total listings tracked in the catalog.", tone: "neutral" as const },
+    { label:"Pending review", value: formatCount(pendingReviewCount), note:"Listings waiting on the admin queue.", tone: pendingReviewCount > 0 ? ("warning" as const) : ("success" as const) },
+    { label:"Open reports", value: formatCount(totalOpenReports), note:"Combined resource and store reports still unresolved.", tone: totalOpenReports > 0 ? ("danger" as const) : ("success" as const) },
+    { label:"Gross revenue", value: formatMoney(grossRevenue), note:"All-time purchase volume across the marketplace.", tone:"info" as const },
+    { label:"Purchases", value: formatCount(purchaseCount), note:"Completed orders processed so far.", tone:"neutral" as const },
+    { label:"Users", value: formatCount(userCount), note:"Registered accounts across creators and buyers.", tone:"neutral" as const },
+    { label:"Stores", value: formatCount(storeCount), note:"Creator storefronts on the platform.", tone:"neutral" as const },
+    { label:"Resources", value: formatCount(resourceCount), note:"Total listings tracked in the catalog.", tone:"neutral" as const },
   ];
   const healthTone = getToneStyles(healthState.tone);
 
@@ -481,8 +481,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   href={item.href}
                   className={`inline-flex rounded-full border px-3 py-1.5 text-sm font-medium transition ${
                     activeView === item.key
-                      ? "border-transparent bg-[var(--text)] text-white"
-                      : "border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-alt)]"
+                      ?"border-transparent bg-[var(--text)] text-white"
+                      :"border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-alt)]"
                   }`}
                 >
                   {item.label}
@@ -525,12 +525,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         ))}
       </section>
 
-      {(activeView === "overview" || activeView === "queue" || activeView === "resource-reports") ? (
+      {(activeView ==="overview" || activeView ==="queue" || activeView ==="resource-reports") ? (
         <section className="mt-10 grid gap-8 xl:grid-cols-2">
           <SectionCard
             title="Queued resources"
-            subtitle={`${formatCount(pendingReviewCount)} resource${pendingReviewCount === 1 ? "" : "s"} awaiting moderation`}
-            action={<StatusBadge label={pendingReviewCount > 0 ? "Queue open" : "Clear"} tone={pendingReviewCount > 0 ? "warning" : "success"} />}
+            subtitle={`${formatCount(pendingReviewCount)} resource${pendingReviewCount === 1 ?"" :"s"} awaiting moderation`}
+            action={<StatusBadge label={pendingReviewCount > 0 ?"Queue open" :"Clear"} tone={pendingReviewCount > 0 ?"warning" :"success"} />}
           >
             <div className="space-y-4">
               {queuedResources.length === 0 ? (
@@ -541,9 +541,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 queuedResources.map((resource) => {
                   const trustProfile = (resource.creator?.id && queuedTrustProfiles.get(resource.creator.id)) || emptyTrustProfile;
                   const trustAppearance = getCreatorTrustAppearance(trustProfile);
-                  const creatorName = resource.creator?.name || resource.creator?.email || "Unknown creator";
+                  const creatorName = resource.creator?.name || resource.creator?.email ||"Unknown creator";
                   const hasMainFile = resource.files.length > 0;
-                  const openReportsLabel = `${resource.reports.length} open report${resource.reports.length === 1 ? "" : "s"}`;
+                  const openReportsLabel = `${resource.reports.length} open report${resource.reports.length === 1 ?"" :"s"}`;
 
                   return (
                     <div key={resource.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
@@ -551,19 +551,19 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                           <div>
                             <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="text-lg font-semibold text-[var(--text)]">{resource.title}</h3>
+                              <h3 className="heading-section">{resource.title}</h3>
                               <StatusBadge label={formatModerationStatus(resource.status)} tone={getModerationTone(resource.status)} />
                               <StatusBadge label={formatModerationStatus(resource.moderationStatus)} tone={getModerationTone(resource.moderationStatus)} />
                               {!hasMainFile ? <StatusBadge label="Missing file" tone="warning" /> : null}
                               {resource.reports.length > 0 ? <StatusBadge label={openReportsLabel} tone="danger" /> : null}
                             </div>
                             <div className="mt-2 flex flex-wrap gap-2">
-                              <MetaPill>{resource.store?.name || "No store"}</MetaPill>
+                              <MetaPill>{resource.store?.name ||"No store"}</MetaPill>
                               <MetaPill>{creatorName}</MetaPill>
                               <MetaPill>Updated {formatDateTime(resource.updatedAt)}</MetaPill>
                             </div>
                             <p className="mt-3 text-sm text-[var(--text-muted)]">
-                              Approved {formatCount(trustProfile.stats.approvedResources)} / Sales {formatCount(trustProfile.stats.salesCount)} / Age {formatCount(trustProfile.stats.accountAgeDays)} day{trustProfile.stats.accountAgeDays === 1 ? "" : "s"}
+                              Approved {formatCount(trustProfile.stats.approvedResources)} / Sales {formatCount(trustProfile.stats.salesCount)} / Age {formatCount(trustProfile.stats.accountAgeDays)} day{trustProfile.stats.accountAgeDays === 1 ?"" :"s"}
                             </p>
                           </div>
                           <Link href={`/resources/${resource.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
@@ -637,8 +637,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           <SectionCard
             title="Open resource reports"
-            subtitle={`${formatCount(openReportCount)} unresolved report${openReportCount === 1 ? "" : "s"}`}
-            action={<StatusBadge label={openReportCount > 0 ? "Needs review" : "Quiet"} tone={openReportCount > 0 ? "danger" : "success"} />}
+            subtitle={`${formatCount(openReportCount)} unresolved report${openReportCount === 1 ?"" :"s"}`}
+            action={<StatusBadge label={openReportCount > 0 ?"Needs review" :"Quiet"} tone={openReportCount > 0 ?"danger" :"success"} />}
           >
             <div className="space-y-4">
               {openReports.length === 0 ? (
@@ -651,11 +651,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg font-semibold text-[var(--text)]">{report.resource.title}</h3>
+                          <h3 className="heading-section">{report.resource.title}</h3>
                           <StatusBadge label={formatReportReason(report.reason)} tone="danger" />
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          <MetaPill>{report.resource.store?.name || "No store"}</MetaPill>
+                          <MetaPill>{report.resource.store?.name ||"No store"}</MetaPill>
                           <MetaPill>{report.reporter.name || report.reporter.email}</MetaPill>
                           <MetaPill>{formatDateTime(report.createdAt)}</MetaPill>
                         </div>
@@ -695,12 +695,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView === "overview" || activeView === "store-reports") ? (
+      {(activeView ==="overview" || activeView ==="store-reports") ? (
         <section className="mt-10">
           <SectionCard
             title="Open store reports"
-            subtitle={`${formatCount(openStoreReportCount)} unresolved report${openStoreReportCount === 1 ? "" : "s"} for storefronts`}
-            action={<StatusBadge label={openStoreReportCount > 0 ? "Needs review" : "Quiet"} tone={openStoreReportCount > 0 ? "danger" : "success"} />}
+            subtitle={`${formatCount(openStoreReportCount)} unresolved report${openStoreReportCount === 1 ?"" :"s"} for storefronts`}
+            action={<StatusBadge label={openStoreReportCount > 0 ?"Needs review" :"Quiet"} tone={openStoreReportCount > 0 ?"danger" :"success"} />}
           >
             <div className="space-y-4">
               {openStoreReports.length === 0 ? (
@@ -713,12 +713,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg font-semibold text-[var(--text)]">{report.store.name}</h3>
+                          <h3 className="heading-section">{report.store.name}</h3>
                           <StatusBadge label={formatReportReason(report.reason)} tone="danger" />
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <MetaPill>{report.reporter.name || report.reporter.email}</MetaPill>
-                          <MetaPill>{report.store.owner?.name || report.store.owner?.email || "Unknown owner"}</MetaPill>
+                          <MetaPill>{report.store.owner?.name || report.store.owner?.email ||"Unknown owner"}</MetaPill>
                           <MetaPill>{formatDateTime(report.createdAt)}</MetaPill>
                         </div>
                         {report.details ? (
@@ -757,7 +757,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView === "overview" || activeView === "stores") ? (
+      {(activeView ==="overview" || activeView ==="stores") ? (
         <section className="mt-10 grid gap-8 lg:grid-cols-2">
           <SectionCard
             title="Recent resources"
@@ -779,14 +779,14 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg font-semibold text-[var(--text)]">{resource.title}</h3>
+                          <h3 className="heading-section">{resource.title}</h3>
                           <StatusBadge label={formatModerationStatus(resource.status)} tone={getModerationTone(resource.status)} />
                           <StatusBadge label={formatModerationStatus(resource.moderationStatus)} tone={getModerationTone(resource.moderationStatus)} />
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          <MetaPill>{resource.store?.name || "No store"}</MetaPill>
-                          <MetaPill>{resource.creator?.name || "Unknown creator"}</MetaPill>
-                          <MetaPill>{resource.files.length > 0 ? "Main file ready" : "No main file"}</MetaPill>
+                          <MetaPill>{resource.store?.name ||"No store"}</MetaPill>
+                          <MetaPill>{resource.creator?.name ||"Unknown creator"}</MetaPill>
+                          <MetaPill>{resource.files.length > 0 ?"Main file ready" :"No main file"}</MetaPill>
                         </div>
                       </div>
                       <Link href={`/resources/${resource.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
@@ -822,7 +822,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <SectionCard
             title="Recent stores"
             subtitle="New storefronts and their publication status"
-            action={<StatusBadge label={storeCount > 0 ? "Growing" : "Empty"} tone={storeCount > 0 ? "info" : "neutral"} />}
+            action={<StatusBadge label={storeCount > 0 ?"Growing" :"Empty"} tone={storeCount > 0 ?"info" :"neutral"} />}
           >
             <div className="space-y-4">
               {recentStores.length === 0 ? (
@@ -835,18 +835,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg font-semibold text-[var(--text)]">{store.name}</h3>
-                          <StatusBadge label={store.isPublished ? "Published" : "Hidden"} tone={store.isPublished ? "success" : "warning"} />
+                          <h3 className="heading-section">{store.name}</h3>
+                          <StatusBadge label={store.isPublished ?"Published" :"Hidden"} tone={store.isPublished ?"success" :"warning"} />
                           <StatusBadge label={formatModerationStatus(store.moderationStatus)} tone={getModerationTone(store.moderationStatus)} />
                           {store.isVerified ? <StatusBadge label="Verified" tone="info" /> : null}
                           {store.owner?.isFounder ? <StatusBadge label="Founder" tone="info" /> : null}
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <MetaPill>/{store.slug}</MetaPill>
-                          <MetaPill>{store.owner?.name || "Unknown owner"}</MetaPill>
+                          <MetaPill>{store.owner?.name ||"Unknown owner"}</MetaPill>
                           <MetaPill>{`${Math.round((store.owner?.feePercentage ?? 0.2) * 100)}% platform fee`}</MetaPill>
-                          <MetaPill>{formatCount(store.resources.length)} published resource{store.resources.length === 1 ? "" : "s"}</MetaPill>
-                          <MetaPill>{formatCount(store.followers.length)} follower{store.followers.length === 1 ? "" : "s"}</MetaPill>
+                          <MetaPill>{formatCount(store.resources.length)} published resource{store.resources.length === 1 ?"" :"s"}</MetaPill>
+                          <MetaPill>{formatCount(store.followers.length)} follower{store.followers.length === 1 ?"" :"s"}</MetaPill>
                         </div>
                       </div>
                       <Link href={`/stores/${store.slug}`} className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
@@ -868,15 +868,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       </form>
                       <form action={adminToggleStoreVerificationAction}>
                         <input type="hidden" name="storeId" value={store.id} />
-                        <FormSubmitButton pendingText={store.isVerified ? "Removing..." : "Verifying..."} className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
-                          {store.isVerified ? "Remove verification" : "Verify store"}
+                        <FormSubmitButton pendingText={store.isVerified ?"Removing..." :"Verifying..."} className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                          {store.isVerified ?"Remove verification" :"Verify store"}
                         </FormSubmitButton>
                       </form>
                       {canManageFounderStatus && store.owner && !store.owner.isSuperAdmin ? (
                         <form action={adminToggleFounderStatusAction}>
                           <input type="hidden" name="userId" value={store.owner.id} />
-                          <FormSubmitButton pendingText={store.owner.isFounder ? "Updating..." : "Updating..."} className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
-                            {store.owner.isFounder ? "Remove founder" : "Make founder (15%)"}
+                          <FormSubmitButton pendingText={store.owner.isFounder ?"Updating..." :"Updating..."} className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
+                            {store.owner.isFounder ?"Remove founder" :"Make founder (15%)"}
                           </FormSubmitButton>
                         </form>
                       ) : null}
@@ -889,7 +889,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {activeView === "creator-revenue" ? (
+      {activeView ==="creator-revenue" ? (
         <section className="mt-10">
           <SectionCard
             title="Creator Revenue Tiers"
@@ -907,15 +907,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg font-semibold text-[var(--text)]">{creator.name || creator.email}</h3>
-                          {creator.store ? <StatusBadge label="Has store" tone={creator.store.isPublished ? "success" : "warning"} /> : null}
+                          <h3 className="heading-section">{creator.name || creator.email}</h3>
+                          {creator.store ? <StatusBadge label="Has store" tone={creator.store.isPublished ?"success" :"warning"} /> : null}
                           {creator.isFounder ? <StatusBadge label="Founder" tone="info" /> : null}
                           {creator.isSuperAdmin ? <StatusBadge label="Superadmin" tone="neutral" /> : null}
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <MetaPill>{creator.email}</MetaPill>
                           <MetaPill>{`${Math.round(creator.feePercentage * 100)}% platform fee`}</MetaPill>
-                          <MetaPill>{formatCount(creator.resources.length)} published resource{creator.resources.length === 1 ? "" : "s"}</MetaPill>
+                          <MetaPill>{formatCount(creator.resources.length)} published resource{creator.resources.length === 1 ?"" :"s"}</MetaPill>
                           <MetaPill>Joined {formatDateTime(creator.createdAt)}</MetaPill>
                           {creator.store ? <MetaPill>/{creator.store.slug}</MetaPill> : null}
                         </div>
@@ -940,7 +940,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           <form action={adminToggleFounderStatusAction}>
                             <input type="hidden" name="userId" value={creator.id} />
                             <FormSubmitButton pendingText="Updating..." className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]">
-                              {creator.isFounder ? "Remove founder" : "Make founder (15%)"}
+                              {creator.isFounder ?"Remove founder" :"Make founder (15%)"}
                             </FormSubmitButton>
                           </form>
                         ) : null}
@@ -954,12 +954,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView === "overview" || activeView === "refunds") ? (
+      {(activeView ==="overview" || activeView ==="refunds") ? (
         <section className="mt-10">
           <SectionCard
             title="Refund requests"
-            subtitle={`${formatCount(pendingRefundCount)} pending refund request${pendingRefundCount === 1 ? "" : "s"}`}
-            action={<StatusBadge label={pendingRefundCount > 0 ? "Needs action" : "Clear"} tone={pendingRefundCount > 0 ? "warning" : "success"} />}
+            subtitle={`${formatCount(pendingRefundCount)} pending refund request${pendingRefundCount === 1 ?"" :"s"}`}
+            action={<StatusBadge label={pendingRefundCount > 0 ?"Needs action" :"Clear"} tone={pendingRefundCount > 0 ?"warning" :"success"} />}
           >
             <div className="space-y-4">
               {pendingRefundRequests.length === 0 ? (
@@ -972,8 +972,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg font-semibold text-[var(--text)]">{req.purchase.resource.title}</h3>
-                          <StatusBadge label={req.reason.replaceAll("_", " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())} tone="warning" />
+                          <h3 className="heading-section">{req.purchase.resource.title}</h3>
+                          <StatusBadge label={req.reason.replaceAll("_","").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())} tone="warning" />
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <MetaPill>{req.buyer.name || req.buyer.email}</MetaPill>
@@ -1023,12 +1023,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView === "overview" || activeView === "creator-applications") ? (
+      {(activeView ==="overview" || activeView ==="creator-applications") ? (
         <section className="mt-10">
           <SectionCard
             title="Creator applications"
-            subtitle={`${formatCount(pendingCreatorApplicationCount)} application${pendingCreatorApplicationCount === 1 ? "" : "s"} waiting for a decision`}
-            action={<StatusBadge label={pendingCreatorApplicationCount > 0 ? "Needs review" : "Clear"} tone={pendingCreatorApplicationCount > 0 ? "warning" : "success"} />}
+            subtitle={`${formatCount(pendingCreatorApplicationCount)} application${pendingCreatorApplicationCount === 1 ?"" :"s"} waiting for a decision`}
+            action={<StatusBadge label={pendingCreatorApplicationCount > 0 ?"Needs review" :"Clear"} tone={pendingCreatorApplicationCount > 0 ?"warning" :"success"} />}
           >
             <div className="space-y-4">
               {pendingCreatorApplications.length === 0 ? (
@@ -1040,7 +1040,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   <div key={app.id} className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-alt)] p-5">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold text-[var(--text)]">
+                        <h3 className="heading-section">
                           {app.user.name || app.user.email}
                         </h3>
                         <StatusBadge label="Pending" tone="warning" />
@@ -1086,7 +1086,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView === "overview" || activeView === "audit") ? (
+      {(activeView ==="overview" || activeView ==="audit") ? (
         <section className="mt-10">
           <SectionCard
             title="Moderation audit log"
@@ -1115,7 +1115,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       </div>
                       <div className="text-xs text-[var(--text-muted)] sm:text-right">
                         <div>{formatDateTime(event.createdAt)}</div>
-                        <div className="mt-1">{event.actorUser?.name || event.actorUser?.email || "System"}</div>
+                        <div className="mt-1">{event.actorUser?.name || event.actorUser?.email ||"System"}</div>
                       </div>
                     </div>
                   </div>

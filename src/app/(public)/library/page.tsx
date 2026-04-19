@@ -1,24 +1,24 @@
-import Image from "next/image";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { generateCSRFToken } from "@/lib/csrf";
-import { RefundRequestForm } from "@/components/library/refund-request-form";
+import Image from"next/image";
+import Link from"next/link";
+import { redirect } from"next/navigation";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { generateCSRFToken } from"@/lib/csrf";
+import { RefundRequestForm } from"@/components/library/refund-request-form";
 
 function formatPrice(cents: number | null | undefined) {
-  const safe = typeof cents === "number" ? cents : 0;
+  const safe = typeof cents ==="number" ? cents : 0;
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
+    style:"currency",
+    currency:"AUD",
   }).format(safe / 100);
 }
 
 function formatDate(date: Date | string) {
   return new Intl.DateTimeFormat("en-AU", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+    day:"numeric",
+    month:"short",
+    year:"numeric",
   }).format(new Date(date));
 }
 
@@ -35,9 +35,9 @@ function isValidSlug(value: string) {
 
 export default async function LibraryPage({ searchParams }: LibraryPageProps) {
   const resolvedSearchParams = await searchParams;
-  const showPurchaseSuccess = resolvedSearchParams.purchase === "success";
+  const showPurchaseSuccess = resolvedSearchParams.purchase ==="success";
   const purchaseResourceSlug =
-    typeof resolvedSearchParams.resource === "string" &&
+    typeof resolvedSearchParams.resource ==="string" &&
     isValidSlug(resolvedSearchParams.resource)
       ? resolvedSearchParams.resource
       : null;
@@ -56,7 +56,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     },
   });
 
-  const csrfToken = user ? generateCSRFToken(user.id) : "";
+  const csrfToken = user ? generateCSRFToken(user.id) :"";
 
   if (!user) {
     return (
@@ -95,7 +95,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
       buyerId: user.id,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt:"desc",
     },
     select: {
       id: true,
@@ -119,7 +119,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           },
           files: {
             where: {
-              kind: "MAIN_DOWNLOAD",
+              kind:"MAIN_DOWNLOAD",
             },
             select: {
               id: true,
@@ -144,7 +144,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="card-section mb-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-medium text-[var(--text-light)]">My library</p>
@@ -158,8 +158,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
           <div className="flex items-center gap-3">
             <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)]">
-              <span className="font-semibold text-[var(--text)]">{totalPurchases}</span>{" "}
-              {totalPurchases === 1 ? "resource" : "resources"}
+              <span className="font-semibold text-[var(--text)]">{totalPurchases}</span>{""}
+              {totalPurchases === 1 ?"resource" :"resources"}
             </div>
             <Link
               href="/account"
@@ -268,7 +268,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="truncate text-lg font-semibold text-[var(--text)]">
+                        <h2 className="heading-section truncate">
                           {resource.title}
                         </h2>
 
@@ -291,7 +291,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
                       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--text-muted)]">
                         <span>
-                          By{" "}
+                          By{""}
                           <Link
                             href={`/stores/${resource.store.slug}`}
                             className="font-medium text-[var(--text)] hover:text-[var(--accent)]"
@@ -313,7 +313,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
                       {mainDownload ? (
                         <p className="mt-3 text-xs text-[var(--text-muted)]">
-                          Download file:{" "}
+                          Download file:{""}
                           <span className="font-medium text-[var(--text)]">
                             {mainDownload.fileName}
                           </span>
@@ -357,11 +357,11 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
                     </div>
 
                     {isPaid && (
-                      refundStatus === "APPROVED" ? (
+                      refundStatus ==="APPROVED" ? (
                         <span className="inline-flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
                           Refund approved
                         </span>
-                      ) : refundStatus === "REJECTED" ? (
+                      ) : refundStatus ==="REJECTED" ? (
                         <span className="inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
                           Refund declined
                         </span>

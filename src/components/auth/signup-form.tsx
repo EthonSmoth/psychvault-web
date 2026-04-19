@@ -1,17 +1,17 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { getSafeRedirectTarget } from "@/lib/redirects";
+import { FormEvent, useMemo, useState } from"react";
+import { signIn } from"next-auth/react";
+import { useRouter, useSearchParams } from"next/navigation";
+import { GoogleAuthButton } from"@/components/auth/google-auth-button";
+import { getSafeRedirectTarget } from"@/lib/redirects";
 
 export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const redirectTo = useMemo(
-    () => getSafeRedirectTarget(searchParams.get("redirectTo"), "/library"),
+    () => getSafeRedirectTarget(searchParams.get("redirectTo"),"/library"),
     [searchParams]
   );
 
@@ -26,21 +26,21 @@ export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean 
     const formData = new FormData(event.currentTarget);
 
     const payload = {
-      name: String(formData.get("name") || "").trim(),
-      email: String(formData.get("email") || "").trim().toLowerCase(),
-      password: String(formData.get("password") || ""),
+      name: String(formData.get("name") ||"").trim(),
+      email: String(formData.get("email") ||"").trim().toLowerCase(),
+      password: String(formData.get("password") ||""),
     };
 
     const response = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method:"POST",
+      headers: {"Content-Type":"application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const data = await response.json().catch(() => null);
       setLoading(false);
-      setError(data?.error || "Could not create account.");
+      setError(data?.error ||"Could not create account.");
       return;
     }
 
@@ -54,7 +54,7 @@ export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean 
 
     if (loginResult?.error) {
       router.push(
-        `/login${redirectTo !== "/library" ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ""}`
+        `/login${redirectTo !=="/library" ? `?redirectTo=${encodeURIComponent(redirectTo)}` :""}`
       );
       router.refresh();
       return;
@@ -149,7 +149,7 @@ export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean 
         disabled={loading}
         className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {loading ? "Creating account..." : "Create account"}
+        {loading ?"Creating account..." :"Create account"}
       </button>
     </form>
   );

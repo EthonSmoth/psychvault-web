@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { isGoogleOAuthEnabled } from "@/lib/env";
-import { getSafeRedirectTarget } from "@/lib/redirects";
-import { LoginForm } from "@/components/auth/login-form";
+import Link from"next/link";
+import { redirect } from"next/navigation";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { isGoogleOAuthEnabled } from"@/lib/env";
+import { getSafeRedirectTarget } from"@/lib/redirects";
+import { LoginForm } from"@/components/auth/login-form";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -15,7 +15,7 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await auth();
   const params = (await searchParams) ?? {};
-  const redirectTo = getSafeRedirectTarget(params.redirectTo, "/library");
+  const redirectTo = getSafeRedirectTarget(params.redirectTo,"/library");
   const googleEnabled = isGoogleOAuthEnabled();
 
   const dbUser =
@@ -50,9 +50,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </div>
 
       <div className="mx-auto w-full max-w-md">
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm sm:p-10">
+        <div className="card-panel sm:p-10">
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+            <h2 className="heading-2xl">
               Log in
             </h2>
             <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
@@ -63,9 +63,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <LoginForm googleEnabled={googleEnabled} />
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
-            Don’t have an account?{" "}
+            Don’t have an account?{""}
             <Link
-              href={redirectTo !== "/library" ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}` : "/signup"}
+              href={redirectTo !=="/library" ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}` :"/signup"}
               className="font-semibold text-[var(--text)] hover:text-[var(--accent)]"
             >
               Create one

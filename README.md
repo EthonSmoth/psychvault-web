@@ -143,7 +143,8 @@ Note: `/privacy` and `/terms` also exist as alternate routes pointing to the sam
 | Storage | Supabase Storage |
 | Payments | Stripe Checkout + Webhooks |
 | Email | Resend |
-| Styling | Tailwind CSS v4 |
+| Styling | Tailwind CSS v4 + CSS custom properties design system |
+| CSS Utilities | `clsx` + `tailwind-merge` via `cn()` helper |
 | Rate Limiting | Database-backed (Prisma) with in-memory fallback |
 
 ## Database Workflow
@@ -210,15 +211,32 @@ The app uses a warm clinical design system built on CSS custom properties in `sr
 Key tokens:
 
 | Token | Value | Use |
-|---|---|---|
-| `--background` | `#fbf0e4` | App canvas (warm beige) |
-| `--card` | `#faf6f0` | Card and panel backgrounds |
-| `--primary` | `#c47f2c` | Primary actions (warm amber) |
-| `--text` | `#4c3523` | Primary text (warm charcoal) |
-| `--text-muted` | `#6b4f3a` | Secondary text |
-| `--border` | `rgba(136,88,40,0.2)` | Subtle warm border |
+| --- | --- | --- |
+| `--background` | `#f4eadc` | App canvas (warm beige) |
+| `--surface` | `#eddcc5` | Section backgrounds |
+| `--card` | `#fbf6ee` | Card and panel backgrounds |
+| `--primary` | `#80502d` | Primary actions (warm walnut) |
+| `--primary-dark` | `#6a3f21` | Hover states |
+| `--accent` | `#97623d` | Accent interactions |
+| `--text` | `#3f2d1f` | Primary text (warm charcoal) |
+| `--text-muted` | `#624936` | Secondary text |
+| `--text-light` | `#7e624c` | Tertiary text |
+| `--border` | `rgba(112,79,52,0.24)` | Subtle warm border |
+| `--border-strong` | `rgba(112,79,52,0.38)` | Emphasized borders |
 
-Text contrast ratios meet WCAG AA (primary text on main background ~8.5:1).
+Text contrast ratios meet WCAG AA.
+
+## CSS Architecture
+
+Tailwind CSS v4 with CSS-native configuration (no `tailwind.config.js`). Theme tokens are defined as CSS custom properties in `:root`. Content scanning is controlled via `@source` directives in `globals.css`.
+
+Three CSS layers:
+
+- `src/app/globals.css` — Tailwind import, `@source` exclusions, `:root` tokens, global resets, body styles, focus states, interactive transitions, and the `.app-main` layout class
+- `src/app/components.css` — Reusable component classes: `.card`, `.card-panel`, `.card-section`, `.card-panel-md`, `.btn`, `.btn-primary`, `.btn-secondary`, `.input-surface`, `.heading-2xl`, `.heading-section`, `.nav-dropdown-item`, `.footer-link`, `.stack`, `.field`, `.tag-amber`, `.badge-verified`
+- Tailwind utility classes — Used directly in JSX for layout, spacing, and responsive overrides via `bg-[var(--token)]` arbitrary value syntax
+
+The `cn()` helper in `src/lib/utils.ts` wraps `clsx` + `tailwind-merge` for conditional class composition with proper conflict resolution.
 
 ## Environment
 
@@ -305,6 +323,7 @@ Not implemented yet:
 
 - Apple OAuth
 - CAPTCHA / Turnstile
+- server-revoked sessions (JWT sessions are time-bounded but not individually revocable)
 
 ## Getting Started
 
@@ -436,7 +455,6 @@ Git note:
 - keep trust, moderation, and admin workflows aligned with real marketplace risk
 - expand the blog and content cluster around high-intent clinician searches
 - continue improving creator listing quality, trust signals, and conversion
-- implement password reset flow
 - keep docs, setup notes, and infrastructure guidance aligned with the shipped app
 
 ## License

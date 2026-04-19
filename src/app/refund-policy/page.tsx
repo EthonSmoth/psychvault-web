@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
-import { RefundPolicyContent } from "@/components/legal/refund-policy-content";
+import type { Metadata } from"next";
+import { RefundPolicyContent } from"@/components/legal/refund-policy-content";
 
 export const metadata: Metadata = {
-  title: "Refund Policy",
+  title:"Refund Policy",
   description:
-    "Understand how PsychVault handles digital delivery, cancellations, refund requests, and customer support for marketplace purchases.",
+"Understand how PsychVault handles digital delivery, cancellations, refund requests, and customer support for marketplace purchases.",
   alternates: {
-    canonical: "/refund-policy",
+    canonical:"/refund-policy",
   },
 };
 

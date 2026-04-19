@@ -1,13 +1,13 @@
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { generateCSRFToken } from "@/lib/csrf";
-import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
-import { redirect } from "next/navigation";
-import { getCreatorResourceTaxonomy } from "@/server/services/resource-taxonomy";
-import { getCreatorTrustProfile } from "@/lib/creator-trust";
-import ResourceForm from "@/components/forms/resource-form";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { generateCSRFToken } from"@/lib/csrf";
+import { canBypassPaidResourcePayoutRequirement } from"@/lib/payout-readiness";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from"@/lib/stripe-connect";
+import { redirect } from"next/navigation";
+import { getCreatorResourceTaxonomy } from"@/server/services/resource-taxonomy";
+import { getCreatorTrustProfile } from"@/lib/creator-trust";
+import ResourceForm from"@/components/forms/resource-form";
 
 export default async function NewCreatorResourcePage() {
   const session = await auth();
@@ -39,7 +39,7 @@ export default async function NewCreatorResourcePage() {
     redirect("/login");
   }
 
-  await requireVerifiedEmailOrRedirect(user.id, "/creator/resources/new");
+  await requireVerifiedEmailOrRedirect(user.id,"/creator/resources/new");
 
   if (!user.store) {
     redirect("/creator/store");
@@ -64,7 +64,7 @@ export default async function NewCreatorResourcePage() {
         <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
           New resource
         </span>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)]">
           Create a new resource
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
@@ -76,7 +76,7 @@ export default async function NewCreatorResourcePage() {
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           Existing creators can keep creating free resources right away, but paid resources
           now require Stripe payout onboarding.
-          {" "}
+          {""}
           <a href="/creator/payouts" className="font-semibold underline">
             Complete payout setup
           </a>
@@ -90,7 +90,7 @@ export default async function NewCreatorResourcePage() {
           tags={tags}
           csrfToken={csrfToken}
           paidResourcePayoutRequired={requiresPaidResourcePayoutSetup}
-          isTrusted={trustProfile.tier === "trusted"}
+          isTrusted={trustProfile.tier ==="trusted"}
         />
       </div>
     </div>

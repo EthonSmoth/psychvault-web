@@ -1,13 +1,13 @@
 "use client";
 
-import { startTransition, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ResourceGrid } from "@/components/resources/resource-grid";
+import { startTransition, useEffect, useMemo, useState } from"react";
+import { usePathname, useRouter, useSearchParams } from"next/navigation";
+import { ResourceGrid } from"@/components/resources/resource-grid";
 import type {
   PublicBrowsePageInfo,
   PublicCategorySummary,
   PublicResourceCard,
-} from "@/types/public";
+} from"@/types/public";
 
 type BrowsePayload = {
   resources: PublicResourceCard[];
@@ -38,18 +38,18 @@ function normalisePage(value: string | null) {
 
 function getFiltersFromSearchParams(searchParams: URLSearchParams): ResourceBrowseFilters {
   return {
-    q: searchParams.get("q")?.trim() || "",
-    category: searchParams.get("category")?.trim() || "",
-    tag: searchParams.get("tag")?.trim() || "",
-    price: searchParams.get("price")?.trim() || "",
-    store: searchParams.get("store")?.trim() || "",
-    sort: searchParams.get("sort")?.trim() || "newest",
+    q: searchParams.get("q")?.trim() ||"",
+    category: searchParams.get("category")?.trim() ||"",
+    tag: searchParams.get("tag")?.trim() ||"",
+    price: searchParams.get("price")?.trim() ||"",
+    store: searchParams.get("store")?.trim() ||"",
+    sort: searchParams.get("sort")?.trim() ||"newest",
     page: normalisePage(searchParams.get("page")),
   };
 }
 
 function getResourceBrowsePath(filters: ResourceBrowseFilters) {
-  return filters.q ? "/search" : "/resources";
+  return filters.q ?"/search" :"/resources";
 }
 
 function buildSearchUrl(filters: ResourceBrowseFilters) {
@@ -60,7 +60,7 @@ function buildSearchUrl(filters: ResourceBrowseFilters) {
   if (filters.tag) params.set("tag", filters.tag);
   if (filters.price) params.set("price", filters.price);
   if (filters.store) params.set("store", filters.store);
-  if (filters.sort && filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.sort && filters.sort !=="newest") params.set("sort", filters.sort);
   if (filters.page > 1) params.set("page", String(filters.page));
 
   const pathname = getResourceBrowsePath(filters);
@@ -75,7 +75,7 @@ function hasActiveFilters(filters: ResourceBrowseFilters) {
       filters.tag ||
       filters.price ||
       filters.store ||
-      filters.sort !== "newest" ||
+      filters.sort !=="newest" ||
       filters.page > 1
   );
 }
@@ -88,7 +88,7 @@ function buildRequestParams(filters: ResourceBrowseFilters) {
   if (filters.tag) params.set("tag", filters.tag);
   if (filters.price) params.set("price", filters.price);
   if (filters.store) params.set("store", filters.store);
-  if (filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.sort !=="newest") params.set("sort", filters.sort);
   if (filters.page > 1) params.set("page", String(filters.page));
 
   return params;
@@ -104,7 +104,7 @@ export function ResourcesBrowseClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const filters = useMemo(() => getFiltersFromSearchParams(searchParams), [searchParams]);
-  const isSearchSurface = pathname === "/search";
+  const isSearchSurface = pathname ==="/search";
   const formKey = useMemo(() => buildSearchUrl(filters), [filters]);
   const categoryLabels = useMemo(
     () => new Map(categories.map((item) => [item.slug, item.name])),
@@ -141,7 +141,7 @@ export function ResourcesBrowseClient({
     setError(null);
 
     fetch(requestUrl, {
-      cache: "force-cache",
+      cache:"force-cache",
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -161,7 +161,7 @@ export function ResourcesBrowseClient({
         }
 
         setError(
-          fetchError instanceof Error ? fetchError.message : "Unable to load resources."
+          fetchError instanceof Error ? fetchError.message :"Unable to load resources."
         );
       })
       .finally(() => {
@@ -185,12 +185,12 @@ export function ResourcesBrowseClient({
 
   function handleSubmit(formData: FormData) {
     const nextFilters: ResourceBrowseFilters = {
-      q: String(formData.get("q") || "").trim(),
-      category: String(formData.get("category") || "").trim(),
-      tag: String(formData.get("tag") || "").trim(),
-      price: String(formData.get("price") || "").trim(),
-      store: String(formData.get("store") || "").trim(),
-      sort: String(formData.get("sort") || "").trim() || "newest",
+      q: String(formData.get("q") ||"").trim(),
+      category: String(formData.get("category") ||"").trim(),
+      tag: String(formData.get("tag") ||"").trim(),
+      price: String(formData.get("price") ||"").trim(),
+      store: String(formData.get("store") ||"").trim(),
+      sort: String(formData.get("sort") ||"").trim() ||"newest",
       page: 1,
     };
 
@@ -221,21 +221,21 @@ export function ResourcesBrowseClient({
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
-            {isSearchSurface ? "Search Resources" : "Browse Resources"}
+            {isSearchSurface ?"Search Resources" :"Browse Resources"}
           </h1>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
             {isSearchSurface
-              ? "Search psychology resources by keyword, topic, creator, store, or tag."
-              : "Discover worksheets, handouts, templates, psychoeducation packs, and more."}
+              ?"Search psychology resources by keyword, topic, creator, store, or tag."
+              :"Discover worksheets, handouts, templates, psychoeducation packs, and more."}
           </p>
         </div>
 
         <div className="text-sm text-[var(--text-light)]">
           {loading
-            ? "Updating results..."
-            : `${resources.length} resource${resources.length === 1 ? "" : "s"}`}
-          {activeFiltersCount > 0 ? " matched your filters" : ""}
-          {pageInfo.page > 1 ? ` on page ${pageInfo.page}` : ""}
+            ?"Updating results..."
+            : `${resources.length} resource${resources.length === 1 ?"" :"s"}`}
+          {activeFiltersCount > 0 ?" matched your filters" :""}
+          {pageInfo.page > 1 ? ` on page ${pageInfo.page}` :""}
         </div>
       </div>
 
@@ -395,7 +395,7 @@ export function ResourcesBrowseClient({
 
       {isSearchSurface && !filters.q ? (
         <div className="rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-10 text-center shadow-sm">
-          <h2 className="text-lg font-semibold text-[var(--text)]">Start with a keyword</h2>
+          <h2 className="heading-section">Start with a keyword</h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
             Search by resource title, creator, store, topic, or tag to see matching results.
           </p>

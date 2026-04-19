@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useMemo, useRef, useState } from"react";
+import { useRouter } from"next/navigation";
 import {
   saveResourceAction,
   type ResourceFormState,
-} from "@/server/actions/resource-actions";
-import { TAG_GROUPS } from "@/lib/resource-taxonomy";
+} from"@/server/actions/resource-actions";
+import { TAG_GROUPS } from"@/lib/resource-taxonomy";
 
 const initialState: ResourceFormState = {};
 
@@ -71,19 +71,19 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-async function uploadFile(file: File, uploadKind: "thumbnail" | "preview" | "main"): Promise<UploadedFile> {
+async function uploadFile(file: File, uploadKind:"thumbnail" |"preview" |"main"): Promise<UploadedFile> {
   const fd = new FormData();
   fd.append("file", file);
   fd.append("uploadKind", uploadKind);
 
   const res = await fetch("/api/upload", {
-    method: "POST",
+    method:"POST",
     body: fd,
   });
 
   if (!res.ok) {
     const payload = await res.json().catch(() => null);
-    throw new Error(payload?.error || "Upload failed");
+    throw new Error(payload?.error ||"Upload failed");
   }
 
   return res.json();
@@ -104,17 +104,17 @@ export default function ResourceForm({
   );
 
   const existingMainFile =
-    resource?.files?.find((file) => file.kind === "MAIN_DOWNLOAD") ?? null;
+    resource?.files?.find((file) => file.kind ==="MAIN_DOWNLOAD") ?? null;
 
   const existingPreviews =
-    resource?.files?.filter((file) => file.kind === "PREVIEW") ?? [];
+    resource?.files?.filter((file) => file.kind ==="PREVIEW") ?? [];
 
   const [thumbnail, setThumbnail] = useState<UploadedFile | null>(
     resource?.thumbnailUrl
       ? {
           url: resource.thumbnailUrl,
-          name: "thumbnail",
-          mime: "image/*",
+          name:"thumbnail",
+          mime:"image/*",
           size: 0,
         }
       : null
@@ -126,9 +126,9 @@ export default function ResourceForm({
   const [mainFile, setMainFile] = useState<UploadedFile | null>(
     existingMainFile
       ? {
-          url: existingMainFile.fileUrl || existingMainFile.url || "",
-          name: existingMainFile.fileName || existingMainFile.name || "download",
-          mime: existingMainFile.mimeType || existingMainFile.mime || "",
+          url: existingMainFile.fileUrl || existingMainFile.url ||"",
+          name: existingMainFile.fileName || existingMainFile.name ||"download",
+          mime: existingMainFile.mimeType || existingMainFile.mime ||"",
           size: existingMainFile.fileSizeBytes || existingMainFile.size || 0,
         }
       : null
@@ -139,9 +139,9 @@ export default function ResourceForm({
 
   const [previews, setPreviews] = useState<UploadedFile[]>(
     existingPreviews.map((file, index) => ({
-      url: file.fileUrl || file.url || "",
+      url: file.fileUrl || file.url ||"",
       name: file.fileName || file.name || `preview-${index + 1}`,
-      mime: file.mimeType || file.mime || "image/*",
+      mime: file.mimeType || file.mime ||"image/*",
       size: file.fileSizeBytes || file.size || 0,
     }))
   );
@@ -149,7 +149,7 @@ export default function ResourceForm({
   const [previewsError, setPreviewsError] = useState("");
   const [previewsStatus, setPreviewsStatus] = useState("");
   const [publishResource, setPublishResource] = useState(
-    resource ? resource.status === "PUBLISHED" : true
+    resource ? resource.status ==="PUBLISHED" : true
   );
 
   const thumbnailRef = useRef<HTMLInputElement>(null);
@@ -159,9 +159,9 @@ export default function ResourceForm({
   const isUploading = thumbnailLoading || mainFileLoading || previewsLoading;
   const isSubmitDisabled = pending || isUploading;
   const activeUploadMessages = [
-    thumbnailLoading ? thumbnailStatus || "Uploading thumbnail..." : null,
-    mainFileLoading ? mainFileStatus || "Uploading main file..." : null,
-    previewsLoading ? previewsStatus || "Uploading preview images..." : null,
+    thumbnailLoading ? thumbnailStatus ||"Uploading thumbnail..." : null,
+    mainFileLoading ? mainFileStatus ||"Uploading main file..." : null,
+    previewsLoading ? previewsStatus ||"Uploading preview images..." : null,
   ].filter(Boolean) as string[];
 
   useEffect(() => {
@@ -174,14 +174,14 @@ export default function ResourceForm({
   const previewSlotsRemaining = useMemo(() => 4 - previews.length, [previews.length]);
 
   // Controlled field state — persists across form action failures (React 19 resets defaultValue)
-  const [title, setTitle] = useState(resource?.title ?? "");
-  const [shortDescription, setShortDescription] = useState(resource?.shortDescription ?? "");
-  const [description, setDescription] = useState(resource?.description ?? "");
+  const [title, setTitle] = useState(resource?.title ??"");
+  const [shortDescription, setShortDescription] = useState(resource?.shortDescription ??"");
+  const [description, setDescription] = useState(resource?.description ??"");
   const [price, setPrice] = useState(
-    resource ? (resource.priceCents / 100).toFixed(2) : "0.00"
+    resource ? (resource.priceCents / 100).toFixed(2) :"0.00"
   );
   const [categoryId, setCategoryId] = useState(
-    resource?.categories?.[0]?.categoryId ?? ""
+    resource?.categories?.[0]?.categoryId ??""
   );
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(
     new Set(resource?.tags?.map((tag) => tag.tagId) ?? [])
@@ -225,12 +225,12 @@ export default function ResourceForm({
     setThumbnailStatus(`Uploading ${file.name}...`);
 
     try {
-      const result = await uploadFile(file, "thumbnail");
+      const result = await uploadFile(file,"thumbnail");
       setThumbnail(result);
       setThumbnailStatus(`Thumbnail uploaded: ${result.name}`);
     } catch (error) {
       setThumbnailStatus("");
-      setThumbnailError(error instanceof Error ? error.message : "Thumbnail upload failed. Try again.");
+      setThumbnailError(error instanceof Error ? error.message :"Thumbnail upload failed. Try again.");
     } finally {
       setThumbnailLoading(false);
     }
@@ -245,12 +245,12 @@ export default function ResourceForm({
     setMainFileStatus(`Uploading ${file.name}...`);
 
     try {
-      const result = await uploadFile(file, "main");
+      const result = await uploadFile(file,"main");
       setMainFile(result);
       setMainFileStatus(`Main file uploaded: ${result.name}`);
     } catch (error) {
       setMainFileStatus("");
-      setMainFileError(error instanceof Error ? error.message : "Main file upload failed. Try again.");
+      setMainFileError(error instanceof Error ? error.message :"Main file upload failed. Try again.");
     } finally {
       setMainFileLoading(false);
     }
@@ -266,21 +266,21 @@ export default function ResourceForm({
     setPreviewsLoading(true);
     setPreviewsError("");
     setPreviewsStatus(
-      `Uploading ${allowedFiles.length} preview image${allowedFiles.length === 1 ? "" : "s"}...`
+      `Uploading ${allowedFiles.length} preview image${allowedFiles.length === 1 ?"" :"s"}...`
     );
 
     try {
-      const results = await Promise.all(allowedFiles.map((file) => uploadFile(file, "preview")));
+      const results = await Promise.all(allowedFiles.map((file) => uploadFile(file,"preview")));
       setPreviews((prev) => [...prev, ...results].slice(0, 4));
       setPreviewsStatus(
-        `${results.length} preview image${results.length === 1 ? "" : "s"} uploaded.`
+        `${results.length} preview image${results.length === 1 ?"" :"s"} uploaded.`
       );
     } catch (error) {
       setPreviewsStatus("");
-      setPreviewsError(error instanceof Error ? error.message : "One or more preview uploads failed. Try again.");
+      setPreviewsError(error instanceof Error ? error.message :"One or more preview uploads failed. Try again.");
     } finally {
       setPreviewsLoading(false);
-      if (previewsRef.current) previewsRef.current.value = "";
+      if (previewsRef.current) previewsRef.current.value ="";
     }
   }
 
@@ -289,9 +289,9 @@ export default function ResourceForm({
       <input type="hidden" name="_csrf" value={csrfToken} />
       {resource?.id ? <input type="hidden" name="resourceId" value={resource.id} /> : null}
 
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[var(--text)]">
-          {resource ? "Edit resource" : "Create resource"}
+      <div className="card-section">
+        <h2 className="heading-section">
+          {resource ?"Edit resource" :"Create resource"}
         </h2>
         <p className="mt-2 text-sm text-[var(--text-muted)]">
           Add the core details buyers will see before download or purchase.
@@ -302,31 +302,31 @@ export default function ResourceForm({
         </p>
         <p className="mt-2 text-sm text-[var(--text-muted)]">
           {paidResourcePayoutRequired
-            ? "Paid resources also require completed Stripe payout onboarding for the creator account before they can be published."
-            : "This admin-owned creator account can publish paid resources without completed Stripe payout onboarding."}
+            ?"Paid resources also require completed Stripe payout onboarding for the creator account before they can be published."
+            :"This admin-owned creator account can publish paid resources without completed Stripe payout onboarding."}
         </p>
 
-        {resource?.moderationStatus === "PENDING_REVIEW" ? (
+        {resource?.moderationStatus ==="PENDING_REVIEW" ? (
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             <div className="font-semibold">Moderation status: Pending review</div>
             <div className="mt-1">
               {resource.moderationReason ||
-                "This resource is waiting for admin review before it can be published again."}
+"This resource is waiting for admin review before it can be published again."}
             </div>
           </div>
         ) : null}
 
-        {resource?.moderationStatus === "REJECTED" ? (
+        {resource?.moderationStatus ==="REJECTED" ? (
           <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             <div className="font-semibold">Moderation status: Rejected</div>
             <div className="mt-1">
               {resource.moderationReason ||
-                "This resource was rejected during moderation. Update it before trying to publish again."}
+"This resource was rejected during moderation. Update it before trying to publish again."}
             </div>
           </div>
         ) : null}
 
-        {resource?.moderationStatus === "APPROVED" && resource?.status === "DRAFT" ? (
+        {resource?.moderationStatus ==="APPROVED" && resource?.status ==="DRAFT" ? (
           <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             <div className="font-semibold">Moderation status: Approved</div>
             <div className="mt-1">
@@ -421,8 +421,8 @@ export default function ResourceForm({
             />
             <p className="mt-2 text-xs text-[var(--text-light)]">
               {paidResourcePayoutRequired
-                ? "Free resources can go live without payout setup. Paid resources require Stripe payout onboarding first."
-                : "Free and paid resources can both go live on this admin-owned account without Stripe payout onboarding."}
+                ?"Free resources can go live without payout setup. Paid resources require Stripe payout onboarding first."
+                :"Free and paid resources can both go live on this admin-owned account without Stripe payout onboarding."}
             </p>
           </div>
 
@@ -659,8 +659,8 @@ export default function ResourceForm({
         </div>
       </div>
 
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Files and media</h2>
+      <div className="card-section">
+        <h2 className="heading-section">Files and media</h2>
         <p className="mt-2 text-sm text-[var(--text-muted)]">
           Manage the main download, browse thumbnail, and preview images.
         </p>
@@ -686,7 +686,7 @@ export default function ResourceForm({
                   onClick={() => {
                     setThumbnail(null);
                     setThumbnailStatus("");
-                    if (thumbnailRef.current) thumbnailRef.current.value = "";
+                    if (thumbnailRef.current) thumbnailRef.current.value ="";
                   }}
                   className="absolute right-3 top-3 rounded-lg bg-[var(--card)]/90 px-2 py-1 text-xs font-medium text-[var(--text)] shadow transition hover:bg-[var(--card)]"
                 >
@@ -749,7 +749,7 @@ export default function ResourceForm({
                     {mainFile.name}
                   </div>
                   <div className="mt-0.5 text-xs text-[var(--text-light)]">
-                    {mainFile.size > 0 ? formatBytes(mainFile.size) : "Existing file"}
+                    {mainFile.size > 0 ? formatBytes(mainFile.size) :"Existing file"}
                   </div>
                 </div>
 
@@ -758,7 +758,7 @@ export default function ResourceForm({
                   onClick={() => {
                     setMainFile(null);
                     setMainFileStatus("");
-                    if (mainFileRef.current) mainFileRef.current.value = "";
+                    if (mainFileRef.current) mainFileRef.current.value ="";
                   }}
                   className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] transition hover:bg-[var(--surface)]"
                 >
@@ -862,7 +862,7 @@ export default function ResourceForm({
                   <>
                     <span className="text-2xl">🖼️</span>
                     <span className="font-medium text-[var(--text)]">
-                      {previews.length === 0 ? "Add preview images" : "Add more previews"}
+                      {previews.length === 0 ?"Add preview images" :"Add more previews"}
                     </span>
                     <span className="text-xs">{previewSlotsRemaining} remaining</span>
                   </>
@@ -913,7 +913,7 @@ export default function ResourceForm({
           disabled={isSubmitDisabled}
           className="inline-flex rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? "Saving..." : isUploading ? "Waiting for uploads..." : resource ? "Update resource" : "Save resource"}
+          {pending ?"Saving..." : isUploading ?"Waiting for uploads..." : resource ?"Update resource" :"Save resource"}
         </button>
 
         <button

@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { generateCSRFToken } from "@/lib/csrf";
-import { db } from "@/lib/db";
-import { canBypassPaidResourcePayoutRequirement } from "@/lib/payout-readiness";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
-import { redirect } from "next/navigation";
-import { StoreForm } from "@/components/forms/store-form";
+import Link from"next/link";
+import { auth } from"@/lib/auth";
+import { generateCSRFToken } from"@/lib/csrf";
+import { db } from"@/lib/db";
+import { canBypassPaidResourcePayoutRequirement } from"@/lib/payout-readiness";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from"@/lib/stripe-connect";
+import { redirect } from"next/navigation";
+import { StoreForm } from"@/components/forms/store-form";
 
 export default async function CreatorStorePage() {
   const session = await auth();
@@ -47,7 +47,7 @@ export default async function CreatorStorePage() {
     redirect("/login");
   }
 
-  await requireVerifiedEmailOrRedirect(user.id, "/creator/store");
+  await requireVerifiedEmailOrRedirect(user.id,"/creator/store");
 
   const csrfToken = generateCSRFToken(user.id);
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
@@ -57,18 +57,18 @@ export default async function CreatorStorePage() {
     payoutReady,
   });
   const storeChecklist = [
-    { label: "Store name added", done: Boolean(user.store?.name?.trim()) },
-    { label: "Unique store slug set", done: Boolean(user.store?.slug?.trim()) },
-    { label: "Store bio added", done: Boolean(user.store?.bio?.trim()) },
-    { label: "Store logo uploaded", done: Boolean(user.store?.logoUrl) },
-    { label: "Store banner uploaded", done: Boolean(user.store?.bannerUrl) },
+    { label:"Store name added", done: Boolean(user.store?.name?.trim()) },
+    { label:"Unique store slug set", done: Boolean(user.store?.slug?.trim()) },
+    { label:"Store bio added", done: Boolean(user.store?.bio?.trim()) },
+    { label:"Store logo uploaded", done: Boolean(user.store?.logoUrl) },
+    { label:"Store banner uploaded", done: Boolean(user.store?.bannerUrl) },
     {
       label: bypassesPaidPayoutRequirement
-        ? "Admin paid listing access"
-        : "Payout setup complete",
+        ?"Admin paid listing access"
+        :"Payout setup complete",
       done: bypassesPaidPayoutRequirement ? true : payoutReady,
     },
-    { label: "Store published", done: Boolean(user.store?.isPublished) },
+    { label:"Store published", done: Boolean(user.store?.isPublished) },
   ];
   const completedChecklistCount = storeChecklist.filter((item) => item.done).length;
 
@@ -79,7 +79,7 @@ export default async function CreatorStorePage() {
           Store settings
         </span>
         <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)]">
-          {user.store ? "Edit your store" : "Create your store"}
+          {user.store ?"Edit your store" :"Create your store"}
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
           Your store is your public creator profile.
@@ -92,35 +92,35 @@ export default async function CreatorStorePage() {
         {user.store ? (
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="inline-flex rounded-full bg-[var(--surface-alt)] px-3 py-1 text-xs font-semibold text-[var(--text)]">
-              {user.store.isPublished ? "Published" : "Draft"}
+              {user.store.isPublished ?"Published" :"Draft"}
             </span>
             <span
               className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                user.store.moderationStatus === "APPROVED"
-                  ? "bg-emerald-100 text-emerald-700"
-                  : user.store.moderationStatus === "PENDING_REVIEW"
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-red-100 text-red-700"
+                user.store.moderationStatus ==="APPROVED"
+                  ?"bg-emerald-100 text-emerald-700"
+                  : user.store.moderationStatus ==="PENDING_REVIEW"
+                  ?"bg-amber-100 text-amber-800"
+                  :"bg-red-100 text-red-700"
               }`}
             >
-              {user.store.moderationStatus === "PENDING_REVIEW"
-                ? "Pending review"
-                : user.store.moderationStatus === "REJECTED"
-                ? "Rejected"
-                : "Approved"}
+              {user.store.moderationStatus ==="PENDING_REVIEW"
+                ?"Pending review"
+                : user.store.moderationStatus ==="REJECTED"
+                ?"Rejected"
+                :"Approved"}
             </span>
           </div>
         ) : null}
 
         {user.store?.moderationReason ? (
           <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
-            <span className="font-semibold text-[var(--text)]">Publishing note:</span>{" "}
+            <span className="font-semibold text-[var(--text)]">Publishing note:</span>{""}
             {user.store.moderationReason}
           </div>
         ) : null}
       </div>
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="card-panel-md">
         <StoreForm store={user.store ?? undefined} csrfToken={csrfToken} />
       </div>
 
@@ -128,7 +128,7 @@ export default async function CreatorStorePage() {
         <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           Paid listings now require Stripe payout setup so creator earnings can be sent to
           the right connected account.
-          {" "}
+          {""}
           <Link href="/creator/payouts" className="font-semibold underline">
             Complete payouts
           </Link>
@@ -136,8 +136,8 @@ export default async function CreatorStorePage() {
         </div>
       ) : null}
 
-      <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Go-live checklist</h2>
+      <div className="card-panel-md mt-6">
+        <h2 className="heading-section">Go-live checklist</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
           These details help your public store look complete for buyers and platform reviewers.
         </p>
@@ -154,11 +154,11 @@ export default async function CreatorStorePage() {
               <span
                 className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
                   item.done
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-amber-100 text-amber-800"
+                    ?"bg-emerald-100 text-emerald-700"
+                    :"bg-amber-100 text-amber-800"
                 }`}
               >
-                {item.done ? "OK" : "!"}
+                {item.done ?"OK" :"!"}
               </span>
               <span>{item.label}</span>
             </div>

@@ -1,14 +1,14 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { flagReviewAction, type FlagReviewFormState } from "@/server/actions/review-actions";
-import { useResourceViewerState } from "@/components/resources/resource-viewer";
+import { useActionState, useState } from"react";
+import { flagReviewAction, type FlagReviewFormState } from"@/server/actions/review-actions";
+import { useResourceViewerState } from"@/components/resources/resource-viewer";
 
 const REPORT_REASONS = [
-  { value: "spam", label: "Spam or advertising" },
-  { value: "fake", label: "Fake or incentivised review" },
-  { value: "offensive", label: "Offensive or inappropriate" },
-  { value: "irrelevant", label: "Irrelevant to the resource" },
+  { value:"spam", label:"Spam or advertising" },
+  { value:"fake", label:"Fake or incentivised review" },
+  { value:"offensive", label:"Offensive or inappropriate" },
+  { value:"irrelevant", label:"Irrelevant to the resource" },
 ] as const;
 
 const initialState: FlagReviewFormState = {};
@@ -62,7 +62,7 @@ export function FlagReviewButton({ reviewId }: { reviewId: string }) {
           disabled={isPending}
           className="rounded-lg border border-[var(--border)] bg-[var(--surface-alt)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition hover:bg-[var(--surface)] disabled:opacity-50"
         >
-          {isPending ? "Submitting…" : "Submit report"}
+          {isPending ?"Submitting…" :"Submit report"}
         </button>
         <button
           type="button"

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from"next/link";
 
 type ConversationListItem = {
   id: string;
@@ -48,18 +48,18 @@ export function ConversationList({ conversations }: ConversationListProps) {
               </div>
               <p className="mt-2 text-sm text-[var(--text-muted)]">
                 {conversation.lastMessageBody
-                  ? `${conversation.lastMessageSenderName || "Someone"}: ${trimMessage(
+                  ? `${conversation.lastMessageSenderName ||"Someone"}: ${trimMessage(
                       conversation.lastMessageBody
                     )}`
-                  : "No messages yet."}
+                  :"No messages yet."}
               </p>
             </div>
 
             <div className="shrink-0 text-xs text-[var(--text-light)]">
               {new Intl.DateTimeFormat("en-AU", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
+                day:"numeric",
+                month:"short",
+                year:"numeric",
               }).format(new Date(conversation.lastMessageCreatedAt))}
             </div>
           </div>

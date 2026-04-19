@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from"next/navigation";
+import { useState } from"react";
 
 type MessageComposerProps = {
   conversationId: string;
@@ -25,16 +25,16 @@ export default function MessageComposer({ conversationId }: MessageComposerProps
     setIsSending(true);
 
     const response = await fetch(`/api/messages/${conversationId}/messages`, {
-      method: "POST",
+      method:"POST",
       headers: {
-        "Content-Type": "application/json",
+"Content-Type":"application/json",
       },
       body: JSON.stringify({ body: body.trim() }),
     });
 
     if (!response.ok) {
       const payload = await response.json().catch(() => null);
-      setError(payload?.error || "Unable to send your message. Please try again.");
+      setError(payload?.error ||"Unable to send your message. Please try again.");
       setIsSending(false);
       return;
     }
@@ -68,7 +68,7 @@ export default function MessageComposer({ conversationId }: MessageComposerProps
         disabled={isSending}
         className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isSending ? "Sending…" : "Send message"}
+        {isSending ?"Sending…" :"Send message"}
       </button>
     </form>
   );

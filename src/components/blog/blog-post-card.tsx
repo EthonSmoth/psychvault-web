@@ -1,6 +1,6 @@
-import Image from "next/image";
-import Link from "next/link";
-import { formatBlogDate, type BlogPostListItem } from "@/lib/blog";
+import Image from"next/image";
+import Link from"next/link";
+import { formatBlogDate, type BlogPostListItem } from"@/lib/blog";
 
 type BlogPostCardProps = {
   post: BlogPostListItem;
@@ -14,7 +14,7 @@ export function BlogPostCard({
   return (
     <article
       className={`group flex h-full flex-col overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
-        featured ? "lg:grid lg:grid-cols-[1.15fr_0.85fr]" : ""
+        featured ?"lg:grid lg:grid-cols-[1.15fr_0.85fr]" :""
       }`}
     >
       <Link href={`/blog/${post.slug}`} className="relative block overflow-hidden bg-[var(--surface-alt)]" tabIndex={-1} aria-hidden="true">
@@ -26,8 +26,8 @@ export function BlogPostCard({
               fill
               sizes={
                 featured
-                  ? "(max-width: 1024px) 100vw, 48vw"
-                  : "(max-width: 1024px) 100vw, 33vw"
+                  ?"(max-width: 1024px) 100vw, 48vw"
+                  :"(max-width: 1024px) 100vw, 33vw"
               }
               className="object-cover transition duration-300 group-hover:scale-[1.02]"
             />
@@ -52,15 +52,15 @@ export function BlogPostCard({
           <div>
             <div
               className={`text-sm ${
-                post.coverImage ? "text-white/85" : "text-[var(--text-light)]"
+                post.coverImage ?"text-white/85" :"text-[var(--text-light)]"
               }`}
             >
               {formatBlogDate(post.publishedAt)} / {post.readingTimeMinutes} min read
             </div>
             <h2
               className={`mt-3 font-semibold tracking-tight ${
-                post.coverImage ? "text-white" : "text-[var(--text)]"
-              } ${featured ? "text-3xl sm:text-4xl" : "text-2xl"}`}
+                post.coverImage ?"text-white" :"text-[var(--text)]"
+              } ${featured ?"text-3xl sm:text-4xl" :"text-2xl"}`}
             >
               {post.title}
             </h2>
@@ -71,7 +71,7 @@ export function BlogPostCard({
       <div className="flex flex-1 flex-col p-6">
         <p
           className={`text-[var(--text-muted)] ${
-            featured ? "text-base leading-7" : "text-sm leading-6"
+            featured ?"text-base leading-7" :"text-sm leading-6"
           }`}
         >
           {post.description}

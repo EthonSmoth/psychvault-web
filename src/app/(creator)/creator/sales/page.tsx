@@ -1,19 +1,19 @@
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
-import { redirect } from "next/navigation";
-import { formatPrice } from "@/lib/utils";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from"@/lib/stripe-connect";
+import { redirect } from"next/navigation";
+import { formatPrice } from"@/lib/utils";
 
 export default async function CreatorSalesPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  await requireVerifiedEmailOrRedirect(session.user.id, "/creator/sales");
+  await requireVerifiedEmailOrRedirect(session.user.id,"/creator/sales");
 
   const resources = await db.resource.findMany({
     where: { creatorId: session.user.id },
     include: { purchases: true },
-    orderBy: { createdAt: "desc" }
+    orderBy: { createdAt:"desc" }
   });
   const payoutAccount = await db.payoutAccount.findUnique({
     where: { userId: session.user.id },
@@ -29,7 +29,7 @@ export default async function CreatorSalesPage() {
   });
 
   const totalRevenue = resources.flatMap((r) => r.purchases).reduce((sum, purchase) => sum + purchase.creatorShareCents, 0);
-  const publishedPaidResources = resources.filter((resource) => resource.status === "PUBLISHED" && resource.priceCents > 0).length;
+  const publishedPaidResources = resources.filter((resource) => resource.status ==="PUBLISHED" && resource.priceCents > 0).length;
 
   return (
     <main className="page">
@@ -39,8 +39,8 @@ export default async function CreatorSalesPage() {
             <h2 style={{ marginBottom: 8 }}>Payout setup required</h2>
             <p className="muted" style={{ margin: 0 }}>
               {publishedPaidResources > 0
-                ? `${publishedPaidResources} paid resource${publishedPaidResources === 1 ? "" : "s"} from older creator accounts now need Stripe payout onboarding before they can stay sale-ready.`
-                : "Complete Stripe payout onboarding before you publish paid resources."}
+                ? `${publishedPaidResources} paid resource${publishedPaidResources === 1 ?"" :"s"} from older creator accounts now need Stripe payout onboarding before they can stay sale-ready.`
+                :"Complete Stripe payout onboarding before you publish paid resources."}
             </p>
             <a href="/creator/payouts" className="btn btn-primary" style={{ marginTop: 12 }}>
               Finish payout setup

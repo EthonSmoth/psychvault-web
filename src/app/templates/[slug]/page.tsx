@@ -1,14 +1,14 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { ResourceGrid } from "@/components/resources/resource-grid";
-import { getAppBaseUrl } from "@/lib/env";
-import { serializeJsonLd } from "@/lib/input-safety";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { notFound } from"next/navigation";
+import { ResourceGrid } from"@/components/resources/resource-grid";
+import { getAppBaseUrl } from"@/lib/env";
+import { serializeJsonLd } from"@/lib/input-safety";
 import {
   TEMPLATE_LANDING_PAGES,
   getTemplateLandingPage,
-} from "@/lib/template-landing-pages";
-import { getPublishedTemplateLandingResources } from "@/server/queries/public-content";
+} from"@/lib/template-landing-pages";
+import { getPublishedTemplateLandingResources } from"@/server/queries/public-content";
 
 type TemplateLandingPageProps = {
   params: Promise<{
@@ -32,7 +32,7 @@ export async function generateMetadata({
 
   if (!page) {
     return {
-      title: "Template page not found | PsychVault",
+      title:"Template page not found | PsychVault",
       robots: {
         index: false,
         follow: false,
@@ -61,10 +61,10 @@ export async function generateMetadata({
       title: page.metaTitle,
       description: page.metaDescription,
       url,
-      type: "website",
+      type:"website",
     },
     twitter: {
-      card: "summary_large_image",
+      card:"summary_large_image",
       title: page.metaTitle,
       description: page.metaDescription,
     },
@@ -94,15 +94,15 @@ export default async function TemplateLandingPage({ params }: TemplateLandingPag
 
   const url = `${baseUrl}/templates/${page.slug}`;
   const collectionSchema = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
+"@context":"https://schema.org",
+"@type":"CollectionPage",
     name: page.metaTitle,
     description: page.metaDescription,
     url,
     mainEntity: {
-      "@type": "ItemList",
+"@type":"ItemList",
       itemListElement: resources.map((resource, index) => ({
-        "@type": "ListItem",
+"@type":"ListItem",
         position: index + 1,
         url: `${baseUrl}/resources/${resource.slug}`,
         name: resource.title,
@@ -161,7 +161,7 @@ export default async function TemplateLandingPage({ params }: TemplateLandingPag
       <section className="mt-10 rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+            <h2 className="heading-2xl">
               Filtered results
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
@@ -170,7 +170,7 @@ export default async function TemplateLandingPage({ params }: TemplateLandingPag
             </p>
           </div>
           <div className="text-sm text-[var(--text-light)]">
-            {resources.length} resource{resources.length === 1 ? "" : "s"} shown
+            {resources.length} resource{resources.length === 1 ?"" :"s"} shown
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export default async function TemplateLandingPage({ params }: TemplateLandingPag
 
       <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_1fr]">
         <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             Why this page exists
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
@@ -190,7 +190,7 @@ export default async function TemplateLandingPage({ params }: TemplateLandingPag
         </div>
 
         <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             Canonical and indexing rules
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">

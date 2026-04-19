@@ -1,9 +1,9 @@
-import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { db } from "@/lib/db";
-import { findUserConversations } from "@/server/actions/message-actions";
-import { ConversationList } from "@/components/messages/conversation-list";
+import Link from"next/link";
+import { auth } from"@/lib/auth";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { db } from"@/lib/db";
+import { findUserConversations } from"@/server/actions/message-actions";
+import { ConversationList } from"@/components/messages/conversation-list";
 
 export default async function MessagesPage() {
   const session = await auth();
@@ -30,13 +30,13 @@ export default async function MessagesPage() {
     );
   }
 
-  await requireVerifiedEmailOrRedirect(userId, "/messages");
+  await requireVerifiedEmailOrRedirect(userId,"/messages");
 
   const conversations = await findUserConversations(userId);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col gap-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+      <div className="card-panel mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium text-[var(--text-light)]">Inbox</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--text)]">Your conversations</h1>
@@ -56,7 +56,7 @@ export default async function MessagesPage() {
       <ConversationList
         conversations={conversations.map((conversation) => ({
           id: conversation.id,
-          otherUserName: conversation.otherUser.name ?? conversation.otherUser.email ?? "Unknown User",
+          otherUserName: conversation.otherUser.name ?? conversation.otherUser.email ??"Unknown User",
           lastMessageBody: conversation.lastMessage?.body ?? null,
           lastMessageSenderName: conversation.lastMessage?.senderName ?? null,
           lastMessageCreatedAt: conversation.lastMessage?.createdAt.toISOString() ?? conversation.updatedAt.toISOString(),

@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { getSupportEmail, getSupportPhone } from "@/lib/env";
+import Link from"next/link";
+import { getSupportEmail, getSupportPhone } from"@/lib/env";
 
 const currentYear = new Date().getFullYear();
 
@@ -29,7 +29,7 @@ export function Footer() {
               </a>
               {supportPhone ? (
                 <a
-                  href={`tel:${supportPhone.replace(/[^\d+]/g, "")}`}
+                  href={`tel:${supportPhone.replace(/[^\d+]/g,"")}`}
                   className="block underline transition-colors hover:text-[var(--accent)]"
                 >
                   {supportPhone}
@@ -45,36 +45,36 @@ export function Footer() {
             </h3>
 
             <div className="mt-4 space-y-2 text-sm text-[var(--text-muted)]">
-              <Link href="/resources" className="block transition-colors hover:text-[var(--accent)]">
+              <Link href="/resources" className="footer-link">
                 All resources
               </Link>
-              <Link href="/stores" className="block transition-colors hover:text-[var(--accent)]">
+              <Link href="/stores" className="footer-link">
                 Creator stores
               </Link>
-              <Link href="/blog" className="block transition-colors hover:text-[var(--accent)]">
+              <Link href="/blog" className="footer-link">
                 Blog
               </Link>
               <Link
                 href="/templates"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Templates
               </Link>
               <Link
                 href="/resources?price=free"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Free resources
               </Link>
               <Link
                 href="/resources?sort=popular"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Best sellers
               </Link>
               <Link
                 href="/resources?sort=rating"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Top rated
               </Link>
@@ -87,18 +87,18 @@ export function Footer() {
             </h3>
 
             <div className="mt-4 space-y-2 text-sm text-[var(--text-muted)]">
-              <Link href="/creator" className="block transition-colors hover:text-[var(--accent)]">
+              <Link href="/creator" className="footer-link">
                 Dashboard
               </Link>
               <Link
                 href="/creator/resources/new"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Upload
               </Link>
               <Link
                 href="/creator/store"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Store
               </Link>
@@ -113,43 +113,43 @@ export function Footer() {
             <div className="mt-4 space-y-2 text-sm text-[var(--text-muted)]">
               <Link
                 href="/privacy-policy"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Privacy policy
               </Link>
               <Link
                 href="/terms-of-service"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Terms of service
               </Link>
               <Link
                 href="/refund-policy"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Refund policy
               </Link>
-              <Link href="/contact" className="block transition-colors hover:text-[var(--accent)]">
+              <Link href="/contact" className="footer-link">
                 Contact
               </Link>
-              <Link href="/faq" className="block transition-colors hover:text-[var(--accent)]">
+              <Link href="/faq" className="footer-link">
                 FAQ
               </Link>
-              <Link href="/feedback" className="block transition-colors hover:text-[var(--accent)]">
+              <Link href="/feedback" className="footer-link">
                 Feedback
               </Link>
-              <Link href="/careers" className="block transition-colors hover:text-[var(--accent)]">
+              <Link href="/careers" className="footer-link">
                 Careers
               </Link>
               <a
                 href="/feed.xml"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 RSS feed
               </a>
               <a
                 href="/sitemap.xml"
-                className="block transition-colors hover:text-[var(--accent)]"
+                className="footer-link"
               >
                 Sitemap
               </a>

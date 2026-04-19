@@ -1,19 +1,19 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import { getAppBaseUrl } from "@/lib/env";
-import { ResourcesBrowseClient } from "@/components/resources/resources-browse-client";
+import type { Metadata } from"next";
+import { Suspense } from"react";
+import { getAppBaseUrl } from"@/lib/env";
+import { ResourcesBrowseClient } from"@/components/resources/resources-browse-client";
 import {
   PUBLIC_RESOURCE_BROWSE_PAGE_SIZE,
   getResourceBrowseFacets,
-} from "@/server/queries/public-content";
+} from"@/server/queries/public-content";
 
 export const revalidate = 300;
 
 const baseUrl = getAppBaseUrl();
 
 export const metadata: Metadata = {
-  title: "Search Resources",
-  description: "Search psychology resources, creators, and marketplace listings on PsychVault.",
+  title:"Search Resources",
+  description:"Search psychology resources, creators, and marketplace listings on PsychVault.",
   alternates: {
     canonical: `${baseUrl}/search`,
   },

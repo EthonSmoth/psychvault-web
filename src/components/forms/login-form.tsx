@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useState } from"react";
+import { signIn } from"next-auth/react";
+import { useRouter } from"next/navigation";
 
 export function LoginForm() {
   const router = useRouter();
@@ -15,15 +15,15 @@ export function LoginForm() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") || "");
-    const password = String(formData.get("password") || "");
+    const email = String(formData.get("email") ||"");
+    const password = String(formData.get("password") ||"");
 
     
     const result = await signIn("credentials", {
       email,
       password,
       redirect: false,
-      callbackUrl: "/creator",
+      callbackUrl:"/creator",
     });
 
     setLoading(false);
@@ -33,7 +33,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push(result.url ?? "/creator");
+    router.push(result.url ??"/creator");
     router.refresh();
   }
   return (
@@ -46,8 +46,8 @@ export function LoginForm() {
         <label htmlFor="password">Password</label>
         <input id="password" name="password" type="password" required />
       </div>
-      {error ? <p style={{ color: "crimson", margin: 0 }}>{error}</p> : null}
-      <button className="btn btn-primary" disabled={loading}>{loading ? "Logging in..." : "Log in"}</button>
+      {error ? <p style={{ color:"crimson", margin: 0 }}>{error}</p> : null}
+      <button className="btn btn-primary" disabled={loading}>{loading ?"Logging in..." :"Log in"}</button>
     </form>
   );
 }

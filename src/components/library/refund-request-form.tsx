@@ -1,14 +1,14 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { submitRefundRequestAction, type RefundFormState } from "@/server/actions/refund-actions";
+import { useActionState, useState } from"react";
+import { submitRefundRequestAction, type RefundFormState } from"@/server/actions/refund-actions";
 
 const REFUND_REASONS = [
-  "Resource not as described",
-  "Duplicate purchase",
-  "Technical issue — file could not be downloaded",
-  "Purchased by mistake",
-  "Other",
+"Resource not as described",
+"Duplicate purchase",
+"Technical issue — file could not be downloaded",
+"Purchased by mistake",
+"Other",
 ] as const;
 
 type RefundRequestFormProps = {
@@ -92,7 +92,7 @@ export function RefundRequestForm({
 
         <div>
           <label htmlFor={`message-${purchaseId}`} className="block text-xs font-medium text-[var(--text)]">
-            Additional details{" "}
+            Additional details{""}
             <span className="font-normal text-[var(--text-light)]">(optional)</span>
           </label>
           <textarea
@@ -122,7 +122,7 @@ export function RefundRequestForm({
             disabled={pending}
             className="rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[var(--primary-dark)] disabled:opacity-60"
           >
-            {pending ? "Submitting…" : "Submit request"}
+            {pending ?"Submitting…" :"Submit request"}
           </button>
         </div>
       </form>

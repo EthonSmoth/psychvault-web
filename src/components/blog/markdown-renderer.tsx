@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { Fragment, createElement, type ReactNode } from "react";
-import { slugifyHeading, type BlogHeading } from "@/lib/blog";
+import Link from"next/link";
+import { Fragment, createElement, type ReactNode } from"react";
+import { slugifyHeading, type BlogHeading } from"@/lib/blog";
 
 type MarkdownRendererProps = {
   content: string;
@@ -32,8 +32,8 @@ function renderMarkdownImage({
       loading="lazy"
       className={
         inline
-          ? "inline-block max-h-64 rounded-2xl border border-[var(--border)] align-middle shadow-sm"
-          : "w-full rounded-[1.75rem] border border-[var(--border)] bg-[var(--surface-alt)] object-cover shadow-sm"
+          ?"inline-block max-h-64 rounded-2xl border border-[var(--border)] align-middle shadow-sm"
+          :"w-full rounded-[1.75rem] border border-[var(--border)] bg-[var(--surface-alt)] object-cover shadow-sm"
       }
     />
   );
@@ -56,11 +56,11 @@ function renderMarkdownImage({
 
 function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
   const tokens = [
-    { type: "image", regex: /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]+)")?\)/ },
-    { type: "code", regex: /`([^`]+)`/ },
-    { type: "link", regex: /\[([^\]]+)\]\(([^)]+)\)/ },
-    { type: "strong", regex: /\*\*([^*\n]+)\*\*/ },
-    { type: "em", regex: /\*(?!\*)([^*\n]+)\*(?!\*)/ },
+    { type:"image", regex: /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]+)")?\)/ },
+    { type:"code", regex: /`([^`]+)`/ },
+    { type:"link", regex: /\[([^\]]+)\]\(([^)]+)\)/ },
+    { type:"strong", regex: /\*\*([^*\n]+)\*\*/ },
+    { type:"em", regex: /\*(?!\*)([^*\n]+)\*(?!\*)/ },
   ] as const;
 
   const parts: ReactNode[] = [];
@@ -104,17 +104,17 @@ function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
     const key = `${keyPrefix}-${index}`;
     const [fullMatch, firstGroup, secondGroup, thirdGroup] = earliest.match;
 
-    if (earliest.type === "image") {
+    if (earliest.type ==="image") {
       parts.push(
         renderMarkdownImage({
-          alt: firstGroup || "Blog image",
+          alt: firstGroup ||"Blog image",
           src: secondGroup.trim(),
           title: thirdGroup?.trim(),
           key,
           inline: true,
         })
       );
-    } else if (earliest.type === "code") {
+    } else if (earliest.type ==="code") {
       parts.push(
         <code
           key={key}
@@ -123,7 +123,7 @@ function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
           {firstGroup}
         </code>
       );
-    } else if (earliest.type === "link") {
+    } else if (earliest.type ==="link") {
       const href = secondGroup.trim();
       const label = renderInlineMarkdown(firstGroup, `${key}-label`);
 
@@ -148,13 +148,13 @@ function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
           </Link>
         )
       );
-    } else if (earliest.type === "strong") {
+    } else if (earliest.type ==="strong") {
       parts.push(
         <strong key={key} className="font-semibold text-[var(--text)]">
           {renderInlineMarkdown(firstGroup, `${key}-strong`)}
         </strong>
       );
-    } else if (earliest.type === "em") {
+    } else if (earliest.type ==="em") {
       parts.push(
         <em key={key} className="italic text-[var(--text)]">
           {renderInlineMarkdown(firstGroup, `${key}-em`)}
@@ -237,7 +237,7 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
 
       blocks.push(
         renderMarkdownImage({
-          alt: alt || "Blog image",
+          alt: alt ||"Blog image",
           src: src.trim(),
           title: title?.trim(),
           key: `block-${key}`,
@@ -258,12 +258,12 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
         headings[headingIndex]?.id || slugifyHeading(text) || `section-${key}`;
       const className =
         level === 1
-          ? "text-4xl font-semibold tracking-tight text-[var(--text)]"
+          ?"text-4xl font-semibold tracking-tight text-[var(--text)]"
           : level === 2
-          ? "scroll-mt-28 text-2xl font-semibold tracking-tight text-[var(--text)]"
+          ?"scroll-mt-28 text-2xl font-semibold tracking-tight text-[var(--text)]"
           : level === 3
-          ? "scroll-mt-28 text-xl font-semibold text-[var(--text)]"
-          : "scroll-mt-28 text-lg font-semibold text-[var(--text)]";
+          ?"scroll-mt-28 text-xl font-semibold text-[var(--text)]"
+          :"scroll-mt-28 text-lg font-semibold text-[var(--text)]";
 
       blocks.push(
         createElement(
@@ -296,7 +296,7 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
       const quoteLines: string[] = [];
 
       while (index < lines.length && /^>\s?/.test(lines[index].trim())) {
-        quoteLines.push(lines[index].trim().replace(/^>\s?/, ""));
+        quoteLines.push(lines[index].trim().replace(/^>\s?/,""));
         index += 1;
       }
 
@@ -305,7 +305,7 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
           key={`block-${key}`}
           className="rounded-r-3xl border-l-4 border-[var(--accent)] bg-[var(--surface-alt)] px-5 py-4 text-base leading-7 text-[var(--text-muted)]"
         >
-          {renderInlineMarkdown(quoteLines.join(" "), `quote-${key}`)}
+          {renderInlineMarkdown(quoteLines.join(""), `quote-${key}`)}
         </blockquote>
       );
 
@@ -317,7 +317,7 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
       const items: string[] = [];
 
       while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
-        items.push(lines[index].trim().replace(/^[-*]\s+/, ""));
+        items.push(lines[index].trim().replace(/^[-*]\s+/,""));
         index += 1;
       }
 
@@ -343,7 +343,7 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
       const items: string[] = [];
 
       while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
-        items.push(lines[index].trim().replace(/^\d+\.\s+/, ""));
+        items.push(lines[index].trim().replace(/^\d+\.\s+/,""));
         index += 1;
       }
 
@@ -377,7 +377,7 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
 
     blocks.push(
       <p key={`block-${key}`} className="text-lg leading-8 text-[var(--text-muted)]">
-        {renderInlineMarkdown(paragraphLines.join(" "), `paragraph-${key}`)}
+        {renderInlineMarkdown(paragraphLines.join(""), `paragraph-${key}`)}
       </p>
     );
     key += 1;
@@ -408,7 +408,7 @@ export function BlogTableOfContents({ headings }: { headings: BlogHeading[] }) {
             <a
               href={`#${heading.id}`}
               className={`block rounded-2xl px-3 py-2 text-sm text-[var(--text)] transition hover:bg-[var(--surface-alt)] hover:text-[var(--accent)] ${
-                heading.level === 3 ? "ml-4 text-[var(--text-muted)]" : ""
+                heading.level === 3 ?"ml-4 text-[var(--text-muted)]" :""
               }`}
             >
               {heading.text}

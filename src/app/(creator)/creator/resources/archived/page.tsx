@@ -1,36 +1,36 @@
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { generateCSRFToken } from "@/lib/csrf";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { redirect } from "next/navigation";
-import Link from "next/link";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { generateCSRFToken } from"@/lib/csrf";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { redirect } from"next/navigation";
+import Link from"next/link";
 import {
   restoreOwnResourceAction,
   restoreOwnResourceAndPublishAction,
-} from "@/server/actions/creator-resource-actions";
+} from"@/server/actions/creator-resource-actions";
 
 function formatPrice(priceCents: number, isFree: boolean) {
-  if (isFree || priceCents === 0) return "Free";
+  if (isFree || priceCents === 0) return"Free";
 
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
+    style:"currency",
+    currency:"AUD",
   }).format(priceCents / 100);
 }
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-AU", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+    day:"numeric",
+    month:"short",
+    year:"numeric",
   }).format(date);
 }
 
 function getModerationBadgeClasses(status: string) {
-  if (status === "APPROVED") return "bg-emerald-100 text-emerald-700";
-  if (status === "PENDING_REVIEW") return "bg-amber-100 text-amber-800";
-  if (status === "REJECTED") return "bg-red-100 text-red-700";
-  return "bg-slate-100 text-slate-600";
+  if (status ==="APPROVED") return"bg-emerald-100 text-emerald-700";
+  if (status ==="PENDING_REVIEW") return"bg-amber-100 text-amber-800";
+  if (status ==="REJECTED") return"bg-red-100 text-red-700";
+  return"bg-slate-100 text-slate-600";
 }
 
 export default async function ArchivedResourcesPage() {
@@ -53,7 +53,7 @@ export default async function ArchivedResourcesPage() {
   });
 
   if (!user) redirect("/login");
-  await requireVerifiedEmailOrRedirect(user.id, "/creator/resources/archived");
+  await requireVerifiedEmailOrRedirect(user.id,"/creator/resources/archived");
   if (!user.store) redirect("/creator/store");
 
   const csrfToken = generateCSRFToken(user.id);
@@ -61,9 +61,9 @@ export default async function ArchivedResourcesPage() {
   const resources = await db.resource.findMany({
     where: {
       storeId: user.store.id,
-      status: "ARCHIVED",
+      status:"ARCHIVED",
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { updatedAt:"desc" },
   });
 
   return (
@@ -73,7 +73,7 @@ export default async function ArchivedResourcesPage() {
           <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
             Archived resources
           </span>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)]">
             Archived
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -106,7 +106,7 @@ export default async function ArchivedResourcesPage() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="truncate text-base font-semibold text-slate-900">
+                    <span className="truncate text-base font-semibold text-[var(--text)]">
                       {r.title}
                     </span>
 
@@ -125,11 +125,11 @@ export default async function ArchivedResourcesPage() {
                         r.moderationStatus
                       )}`}
                     >
-                      {r.moderationStatus === "PENDING_REVIEW"
-                        ? "Pending review"
-                        : r.moderationStatus === "REJECTED"
-                        ? "Rejected"
-                        : "Approved"}
+                      {r.moderationStatus ==="PENDING_REVIEW"
+                        ?"Pending review"
+                        : r.moderationStatus ==="REJECTED"
+                        ?"Rejected"
+                        :"Approved"}
                     </span>
                   </div>
 

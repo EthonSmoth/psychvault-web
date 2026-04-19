@@ -1,34 +1,34 @@
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { generateCSRFToken } from "@/lib/csrf";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { deleteOwnResourceAction } from "@/server/actions/creator-resource-actions";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { generateCSRFToken } from"@/lib/csrf";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from"@/lib/stripe-connect";
+import { redirect } from"next/navigation";
+import Link from"next/link";
+import { deleteOwnResourceAction } from"@/server/actions/creator-resource-actions";
 
 function formatPrice(priceCents: number, isFree: boolean) {
-  if (isFree || priceCents === 0) return "Free";
+  if (isFree || priceCents === 0) return"Free";
 
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
+    style:"currency",
+    currency:"AUD",
   }).format(priceCents / 100);
 }
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-AU", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+    day:"numeric",
+    month:"short",
+    year:"numeric",
   }).format(date);
 }
 
 function getModerationBadgeClasses(status: string) {
-  if (status === "APPROVED") return "bg-emerald-100 text-emerald-700";
-  if (status === "PENDING_REVIEW") return "bg-amber-100 text-amber-800";
-  if (status === "REJECTED") return "bg-red-100 text-red-700";
-  return "bg-slate-100 text-slate-600";
+  if (status ==="APPROVED") return"bg-emerald-100 text-emerald-700";
+  if (status ==="PENDING_REVIEW") return"bg-amber-100 text-amber-800";
+  if (status ==="REJECTED") return"bg-red-100 text-red-700";
+  return"bg-slate-100 text-slate-600";
 }
 
 export default async function CreatorResourcesPage() {
@@ -58,7 +58,7 @@ export default async function CreatorResourcesPage() {
   });
 
   if (!user) redirect("/login");
-  await requireVerifiedEmailOrRedirect(user.id, "/creator/resources");
+  await requireVerifiedEmailOrRedirect(user.id,"/creator/resources");
   if (!user.store) redirect("/creator/store");
 
   const csrfToken = generateCSRFToken(user.id);
@@ -68,15 +68,15 @@ export default async function CreatorResourcesPage() {
       where: {
         storeId: user.store.id,
         status: {
-          not: "ARCHIVED",
+          not:"ARCHIVED",
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt:"desc" },
     }),
     db.resource.count({
       where: {
         storeId: user.store.id,
-        status: "ARCHIVED",
+        status:"ARCHIVED",
       },
     }),
   ]);
@@ -86,7 +86,7 @@ export default async function CreatorResourcesPage() {
     payoutReady,
   });
   const publishedPaidResources = resources.filter(
-    (resource) => resource.status === "PUBLISHED" && resource.priceCents > 0
+    (resource) => resource.status ==="PUBLISHED" && resource.priceCents > 0
   ).length;
 
   return (
@@ -96,7 +96,7 @@ export default async function CreatorResourcesPage() {
           <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
             Your resources
           </span>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)]">
             Resources
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -124,9 +124,9 @@ export default async function CreatorResourcesPage() {
       {!paidResourcePayoutReady ? (
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
           {publishedPaidResources > 0
-            ? `${publishedPaidResources} published paid resource${publishedPaidResources === 1 ? "" : "s"} from your older creator setup now need Stripe payout onboarding before they can stay sale-ready.`
-            : "Connect Stripe before publishing paid resources. Free resources can still go live normally."}
-          {" "}
+            ? `${publishedPaidResources} published paid resource${publishedPaidResources === 1 ?"" :"s"} from your older creator setup now need Stripe payout onboarding before they can stay sale-ready.`
+            :"Connect Stripe before publishing paid resources. Free resources can still go live normally."}
+          {""}
           <Link href="/creator/payouts" className="font-semibold underline">
             Finish payout setup
           </Link>
@@ -157,18 +157,18 @@ export default async function CreatorResourcesPage() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="truncate text-base font-semibold text-slate-900">
+                    <span className="truncate text-base font-semibold text-[var(--text)]">
                       {r.title}
                     </span>
 
                     <span
                       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        r.status === "PUBLISHED"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-slate-100 text-slate-600"
+                        r.status ==="PUBLISHED"
+                          ?"bg-emerald-100 text-emerald-700"
+                          :"bg-slate-100 text-slate-600"
                       }`}
                     >
-                      {r.status === "PUBLISHED" ? "Published" : "Draft"}
+                      {r.status ==="PUBLISHED" ?"Published" :"Draft"}
                     </span>
 
                     {r.isFree ? (
@@ -188,11 +188,11 @@ export default async function CreatorResourcesPage() {
                         r.moderationStatus
                       )}`}
                     >
-                      {r.moderationStatus === "PENDING_REVIEW"
-                        ? "Pending review"
-                        : r.moderationStatus === "REJECTED"
-                        ? "Rejected"
-                        : "Approved"}
+                      {r.moderationStatus ==="PENDING_REVIEW"
+                        ?"Pending review"
+                        : r.moderationStatus ==="REJECTED"
+                        ?"Rejected"
+                        :"Approved"}
                     </span>
                   </div>
 
@@ -208,7 +208,7 @@ export default async function CreatorResourcesPage() {
                     </div>
                   ) : null}
 
-                  {r.moderationStatus === "PENDING_REVIEW" ? (
+                  {r.moderationStatus ==="PENDING_REVIEW" ? (
                     <p className="mt-2 text-xs text-slate-500">
                       This listing can stay saved as a draft while admin review is pending.
                     </p>

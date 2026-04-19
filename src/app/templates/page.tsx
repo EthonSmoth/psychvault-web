@@ -1,14 +1,14 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { getAppBaseUrl } from "@/lib/env";
-import { TEMPLATE_LANDING_PAGES } from "@/lib/template-landing-pages";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { getAppBaseUrl } from"@/lib/env";
+import { TEMPLATE_LANDING_PAGES } from"@/lib/template-landing-pages";
 
 const baseUrl = getAppBaseUrl();
 
 export const metadata: Metadata = {
-  title: "Template Library",
+  title:"Template Library",
   description:
-    "Browse PsychVault template landing pages for therapy worksheets, report templates, intake forms, and more.",
+"Browse PsychVault template landing pages for therapy worksheets, report templates, intake forms, and more.",
   alternates: {
     canonical: `${baseUrl}/templates`,
   },
@@ -44,7 +44,7 @@ export default function TemplatesIndexPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
               {page.eyebrow}
             </p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text)]">
+            <h2 className="heading-2xl mt-3">
               {page.title}
             </h2>
             <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">{page.intro}</p>

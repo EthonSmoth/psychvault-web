@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { startTransition, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
-import type { PublicBrowsePageInfo, PublicStoreCard } from "@/types/public";
+import Image from"next/image";
+import Link from"next/link";
+import { startTransition, useEffect, useMemo, useState } from"react";
+import { useRouter, useSearchParams } from"next/navigation";
+import { VerifiedBadge } from"@/components/ui/verified-badge";
+import type { PublicBrowsePageInfo, PublicStoreCard } from"@/types/public";
 
 type StoresPayload = {
   stores: PublicStoreCard[];
@@ -13,9 +13,9 @@ type StoresPayload = {
 };
 
 const SORT_OPTIONS = [
-  { value: "newest", label: "Recently updated" },
-  { value: "resources", label: "Most resources" },
-  { value: "alphabetical", label: "A to Z" },
+  { value:"newest", label:"Recently updated" },
+  { value:"resources", label:"Most resources" },
+  { value:"alphabetical", label:"A to Z" },
 ] as const;
 
 type StoreFilters = {
@@ -30,13 +30,13 @@ function normalisePage(value: string | null) {
 }
 
 function getFiltersFromSearchParams(searchParams: URLSearchParams): StoreFilters {
-  const sortValue = searchParams.get("sort")?.trim() || "newest";
+  const sortValue = searchParams.get("sort")?.trim() ||"newest";
 
   return {
-    q: searchParams.get("q")?.trim() || "",
+    q: searchParams.get("q")?.trim() ||"",
     sort: SORT_OPTIONS.some((option) => option.value === sortValue)
       ? (sortValue as StoreFilters["sort"])
-      : "newest",
+      :"newest",
     page: normalisePage(searchParams.get("page")),
   };
 }
@@ -45,15 +45,15 @@ function buildSearchUrl(filters: StoreFilters) {
   const params = new URLSearchParams();
 
   if (filters.q) params.set("q", filters.q);
-  if (filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.sort !=="newest") params.set("sort", filters.sort);
   if (filters.page > 1) params.set("page", String(filters.page));
 
   const queryString = params.toString();
-  return queryString ? `/stores?${queryString}` : "/stores";
+  return queryString ? `/stores?${queryString}` :"/stores";
 }
 
 function hasActiveFilters(filters: StoreFilters) {
-  return Boolean(filters.q || filters.sort !== "newest" || filters.page > 1);
+  return Boolean(filters.q || filters.sort !=="newest" || filters.page > 1);
 }
 
 export function StoresBrowseClient({
@@ -86,7 +86,7 @@ export function StoresBrowseClient({
     const params = new URLSearchParams();
 
     if (filters.q) params.set("q", filters.q);
-    if (filters.sort !== "newest") params.set("sort", filters.sort);
+    if (filters.sort !=="newest") params.set("sort", filters.sort);
     if (filters.page > 1) params.set("page", String(filters.page));
 
     const requestUrl = `/api/stores?${params.toString()}`;
@@ -95,7 +95,7 @@ export function StoresBrowseClient({
     setError(null);
 
     fetch(requestUrl, {
-      cache: "force-cache",
+      cache:"force-cache",
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -114,7 +114,7 @@ export function StoresBrowseClient({
           return;
         }
 
-        setError(fetchError instanceof Error ? fetchError.message : "Unable to load stores.");
+        setError(fetchError instanceof Error ? fetchError.message :"Unable to load stores.");
       })
       .finally(() => {
         if (!controller.signal.aborted) {
@@ -129,10 +129,10 @@ export function StoresBrowseClient({
 
   function handleSubmit(formData: FormData) {
     const nextFilters: StoreFilters = {
-      q: String(formData.get("q") || "").trim(),
-      sort: SORT_OPTIONS.some((option) => option.value === String(formData.get("sort") || ""))
+      q: String(formData.get("q") ||"").trim(),
+      sort: SORT_OPTIONS.some((option) => option.value === String(formData.get("sort") ||""))
         ? (String(formData.get("sort")) as StoreFilters["sort"])
-        : "newest",
+        :"newest",
       page: 1,
     };
 
@@ -222,12 +222,12 @@ export function StoresBrowseClient({
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm text-[var(--text-muted)]">
             {loading
-              ? "Updating stores..."
-              : `${stores.length} ${stores.length === 1 ? "store" : "stores"} found`}
-            {filters.q ? ` for "${filters.q}"` : ""}
-            {pageInfo.page > 1 ? ` on page ${pageInfo.page}` : ""}
+              ?"Updating stores..."
+              : `${stores.length} ${stores.length === 1 ?"store" :"stores"} found`}
+            {filters.q ? ` for"${filters.q}"` :""}
+            {pageInfo.page > 1 ? ` on page ${pageInfo.page}` :""}
           </div>
-          {filters.q || filters.sort !== "newest" || filters.page > 1 ? (
+          {filters.q || filters.sort !=="newest" || filters.page > 1 ? (
             <button
               type="button"
               onClick={clearSearch}
@@ -306,7 +306,7 @@ export function StoresBrowseClient({
                         <div className="flex flex-wrap items-center gap-2">
                           <Link
                             href={`/stores/${store.slug}`}
-                            className="text-lg font-semibold text-[var(--text)] hover:text-[var(--accent)]"
+                            className="heading-section hover:text-[var(--accent)]"
                           >
                             {store.name}
                           </Link>
@@ -316,14 +316,14 @@ export function StoresBrowseClient({
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-[var(--text-light)]">
                           <span>{store.resourceCount} resources</span>
                           <span>{store.followerCount} followers</span>
-                          <span>{store.location || "Australia"}</span>
+                          <span>{store.location ||"Australia"}</span>
                         </div>
                       </div>
                     </div>
 
                     <p className="mt-4 line-clamp-4 min-h-[6rem] text-sm leading-6 text-[var(--text-muted)]">
                       {store.bio?.trim() ||
-                        "Browse this creator's published resources and store updates on PsychVault."}
+"Browse this creator's published resources and store updates on PsychVault."}
                     </p>
 
                     <div className="mt-5 flex gap-3">

@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { PolicyContactPanel } from "@/components/legal/policy-contact-panel";
-import { LEGAL_LAST_UPDATED } from "@/lib/legal";
-import { getMarketplacePolicyLinks } from "@/lib/payments";
+import Link from"next/link";
+import { PolicyContactPanel } from"@/components/legal/policy-contact-panel";
+import { LEGAL_LAST_UPDATED } from"@/lib/legal";
+import { getMarketplacePolicyLinks } from"@/lib/payments";
 
 // Explains how digital purchases, refunds, and support are handled on the marketplace.
 export function RefundPolicyContent() {
@@ -24,7 +24,7 @@ export function RefundPolicyContent() {
           </p>
         </div>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Digital delivery and cancellations</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -41,7 +41,7 @@ export function RefundPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">When a refund may be approved</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>A refund may be approved where we reasonably determine that:</p>
@@ -55,7 +55,7 @@ export function RefundPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">When refunds are usually not available</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>Refunds are usually not available for:</p>
@@ -68,7 +68,7 @@ export function RefundPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">How to request a refund</h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
@@ -89,19 +89,19 @@ export function RefundPolicyContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Consumer law rights</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             Nothing in this policy excludes rights or remedies that cannot be excluded
             under Australian Consumer Law or other mandatory laws. You can also review
-            our{" "}
+            our{""}
             <Link href={links.terms} className="font-medium text-[var(--text)] underline">
               Terms of Service
-            </Link>{" "}
-            and{" "}
+            </Link>{""}
+            and{""}
             <Link href={links.privacy} className="font-medium text-[var(--text)] underline">
               Privacy Policy
-            </Link>{" "}
+            </Link>{""}
             for related information.
           </p>
         </section>

@@ -1,22 +1,22 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { getAppBaseUrl } from "@/lib/env";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { getAppBaseUrl } from"@/lib/env";
 
 const baseUrl = getAppBaseUrl();
 
 export const metadata: Metadata = {
-  title: "About PsychVault",
+  title:"About PsychVault",
   description:
-    "PsychVault is a clinician-built marketplace for psychology resources — templates, handouts, report tools, and more, made by practitioners for real clinical work.",
+"PsychVault is a clinician-built marketplace for psychology resources — templates, handouts, report tools, and more, made by practitioners for real clinical work.",
   alternates: {
     canonical: `${baseUrl}/about`,
   },
   openGraph: {
-    title: "About PsychVault",
+    title:"About PsychVault",
     description:
-      "PsychVault is a clinician-built marketplace for psychology resources — templates, handouts, report tools, and more, made by practitioners for real clinical work.",
+"PsychVault is a clinician-built marketplace for psychology resources — templates, handouts, report tools, and more, made by practitioners for real clinical work.",
     url: `${baseUrl}/about`,
-    type: "website",
+    type:"website",
   },
   robots: {
     index: true,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 // Explains what PsychVault is, who it serves, and how the marketplace operates.
 export default function AboutPage() {
-  const supportEmail = process.env.SUPPORT_EMAIL || "hello@psychvault.com.au";
+  const supportEmail = process.env.SUPPORT_EMAIL ||"hello@psychvault.com.au";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
@@ -52,7 +52,7 @@ export default function AboutPage() {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+          <section className="card-panel">
             <h2 className="text-2xl font-semibold text-[var(--text)]">For buyers</h2>
             <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
               Browse clinician-designed psychology resources, access downloads
@@ -61,7 +61,7 @@ export default function AboutPage() {
             </p>
           </section>
 
-          <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+          <section className="card-panel">
             <h2 className="text-2xl font-semibold text-[var(--text)]">For creators</h2>
             <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
               Create your own store, publish resources, and reach clinicians who
@@ -72,7 +72,7 @@ export default function AboutPage() {
           </section>
         </div>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-2xl font-semibold text-[var(--text)]">Our mission</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             We believe that quality psychology resources should be easy to find
@@ -82,7 +82,7 @@ export default function AboutPage() {
           </p>
         </section>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <section className="card-panel">
           <h2 className="text-2xl font-semibold text-[var(--text)]">Marketplace trust</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl bg-[var(--surface-alt)] p-5">
@@ -103,11 +103,11 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <div className="card-panel">
           <h2 className="text-2xl font-semibold text-[var(--text)]">Want to know more?</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             If you have questions about how PsychVault works, creator
-            partnerships, or support, please visit our{" "}
+            partnerships, or support, please visit our{""}
             <Link
               href="/contact"
               className="font-semibold text-[var(--text)] underline hover:text-[var(--accent)]"
@@ -117,7 +117,7 @@ export default function AboutPage() {
             .
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
-            Support email:{" "}
+            Support email:{""}
             <a
               href={`mailto:${supportEmail}`}
               className="font-semibold text-[var(--text)] underline hover:text-[var(--accent)]"

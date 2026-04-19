@@ -1,4 +1,4 @@
-import "./product.css";
+import"./product.css";
 
 export default function PublicLayout({
   children,

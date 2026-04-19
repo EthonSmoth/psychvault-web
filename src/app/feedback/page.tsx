@@ -1,31 +1,31 @@
-import type { Metadata } from "next";
-import ContactForm from "@/components/forms/contact-form";
-import { getAppBaseUrl } from "@/lib/env";
+import type { Metadata } from"next";
+import ContactForm from"@/components/forms/contact-form";
+import { getAppBaseUrl } from"@/lib/env";
 
 const baseUrl = getAppBaseUrl();
 
 const feedbackTopics = [
-  "Search and discovery",
-  "Resource pages",
-  "Creator dashboard",
-  "Uploads and previews",
-  "Checkout and downloads",
-  "Trust and moderation",
+"Search and discovery",
+"Resource pages",
+"Creator dashboard",
+"Uploads and previews",
+"Checkout and downloads",
+"Trust and moderation",
 ];
 
 export const metadata: Metadata = {
-  title: "Feedback",
+  title:"Feedback",
   description:
-    "Share product feedback, feature requests, and bug reports to help improve PsychVault.",
+"Share product feedback, feature requests, and bug reports to help improve PsychVault.",
   alternates: {
     canonical: `${baseUrl}/feedback`,
   },
   openGraph: {
-    title: "PsychVault Feedback",
+    title:"PsychVault Feedback",
     description:
-      "Share product feedback, feature requests, and bug reports to help improve PsychVault.",
+"Share product feedback, feature requests, and bug reports to help improve PsychVault.",
     url: `${baseUrl}/feedback`,
-    type: "website",
+    type:"website",
   },
   robots: {
     index: true,
@@ -50,7 +50,7 @@ export default function FeedbackPage() {
           </p>
 
           <div className="mt-8 rounded-3xl border border-[var(--border)] bg-[var(--surface-alt)] p-5">
-            <h2 className="text-lg font-semibold text-[var(--text)]">Useful things to include</h2>
+            <h2 className="heading-section">Useful things to include</h2>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--text-muted)]">
               <li>What you were trying to do</li>
               <li>What happened instead</li>
@@ -60,7 +60,7 @@ export default function FeedbackPage() {
           </div>
 
           <div className="mt-8">
-            <h2 className="text-lg font-semibold text-[var(--text)]">Common feedback areas</h2>
+            <h2 className="heading-section">Common feedback areas</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {feedbackTopics.map((topic) => (
                 <div
@@ -75,7 +75,7 @@ export default function FeedbackPage() {
         </section>
 
         <section className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             Send feedback
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">

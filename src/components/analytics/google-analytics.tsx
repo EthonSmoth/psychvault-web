@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Script from "next/script";
-import { usePathname, useSearchParams } from "next/navigation";
-import { GA_MEASUREMENT_ID, isAnalyticsEnabled, trackPageView } from "@/lib/analytics";
+import { useEffect, useState } from"react";
+import Script from"next/script";
+import { usePathname, useSearchParams } from"next/navigation";
+import { GA_MEASUREMENT_ID, isAnalyticsEnabled, trackPageView } from"@/lib/analytics";
 
 type IdleWindow = Window & {
   requestIdleCallback?: (
@@ -29,7 +29,7 @@ export function GoogleAnalytics() {
     const scheduleLoad = () => {
       const idleWindow = window as IdleWindow;
 
-      if (typeof idleWindow.requestIdleCallback === "function") {
+      if (typeof idleWindow.requestIdleCallback ==="function") {
         idleId = idleWindow.requestIdleCallback(() => {
           setShouldLoadScripts(true);
         }, { timeout: 4000 });
@@ -41,7 +41,7 @@ export function GoogleAnalytics() {
       }, 2500);
     };
 
-    if (document.readyState === "complete") {
+    if (document.readyState ==="complete") {
       scheduleLoad();
     } else {
       window.addEventListener("load", scheduleLoad, { once: true });
@@ -54,7 +54,7 @@ export function GoogleAnalytics() {
         window.clearTimeout(timeoutId);
       }
 
-      if (idleId !== null && typeof (window as IdleWindow).cancelIdleCallback === "function") {
+      if (idleId !== null && typeof (window as IdleWindow).cancelIdleCallback ==="function") {
         (window as IdleWindow).cancelIdleCallback!(idleId);
       }
     };
@@ -66,7 +66,7 @@ export function GoogleAnalytics() {
     }
 
     const query = searchParams?.toString();
-    const url = `${window.location.origin}${pathname}${query ? `?${query}` : ""}`;
+    const url = `${window.location.origin}${pathname}${query ? `?${query}` :""}`;
     trackPageView(url, document.title);
   }, [pathname, searchParams, shouldLoadScripts]);
 

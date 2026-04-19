@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState } from"react";
 
-type ContactFormState = "idle" | "sending" | "success" | "error";
+type ContactFormState ="idle" |"sending" |"success" |"error";
 
 type ContactErrorPayload = {
   error?: string;
@@ -22,11 +22,11 @@ type ContactFormProps = {
 };
 
 export default function ContactForm({
-  defaultSubject = "",
-  submitLabel = "Send message",
-  successMessage = "Your message has been sent. We'll respond as soon as possible.",
-  subjectLabel = "Subject",
-  messageLabel = "Message",
+  defaultSubject ="",
+  submitLabel ="Send message",
+  successMessage ="Your message has been sent. We'll respond as soon as possible.",
+  subjectLabel ="Subject",
+  messageLabel ="Message",
   subjectPlaceholder,
   messagePlaceholder,
 }: ContactFormProps) {
@@ -46,9 +46,9 @@ export default function ContactForm({
     setFieldErrors({});
 
     const response = await fetch("/api/contact", {
-      method: "POST",
+      method:"POST",
       headers: {
-        "Content-Type": "application/json",
+"Content-Type":"application/json",
       },
       body: JSON.stringify({
         name: name.trim(),
@@ -69,7 +69,7 @@ export default function ContactForm({
 
     const payload = (await response.json().catch(() => null)) as ContactErrorPayload | null;
     setFieldErrors(payload?.details?.fieldErrors || {});
-    setErrorMessage(payload?.error || "Something went wrong. Please try again.");
+    setErrorMessage(payload?.error ||"Something went wrong. Please try again.");
     setStatus("error");
   };
 
@@ -142,13 +142,13 @@ export default function ContactForm({
         ) : null}
       </label>
 
-      {status === "success" ? (
+      {status ==="success" ? (
         <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
           {successMessage}
         </div>
       ) : null}
 
-      {status === "error" && errorMessage ? (
+      {status ==="error" && errorMessage ? (
         <div className="rounded-3xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
           {errorMessage}
         </div>
@@ -156,10 +156,10 @@ export default function ContactForm({
 
       <button
         type="submit"
-        disabled={status === "sending"}
+        disabled={status ==="sending"}
         className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "sending" ? "Sending..." : submitLabel}
+        {status ==="sending" ?"Sending..." : submitLabel}
       </button>
     </form>
   );

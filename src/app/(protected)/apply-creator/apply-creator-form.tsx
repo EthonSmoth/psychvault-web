@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState } from"react";
 import {
   applyToBeCreatorAction,
   type CreatorApplicationFormState,
-} from "@/server/actions/creator-application-actions";
+} from"@/server/actions/creator-application-actions";
 
 const initialState: CreatorApplicationFormState = {};
 
@@ -45,7 +45,7 @@ export function ApplyCreatorForm({ csrfToken }: { csrfToken: string }) {
         disabled={isPending}
         className="inline-flex w-full items-center justify-center rounded-2xl bg-[var(--primary)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
       >
-        {isPending ? "Submitting…" : "Apply to become a creator"}
+        {isPending ?"Submitting…" :"Apply to become a creator"}
       </button>
     </form>
   );

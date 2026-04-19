@@ -1,13 +1,13 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { getPubliclyVisiblePublishedResourceWhere } from "@/lib/public-resource-visibility";
-import { ResourceGrid } from "@/components/resources/resource-grid";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
-import type { PublicResourceCard } from "@/types/public";
+import Link from"next/link";
+import { redirect } from"next/navigation";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { getPubliclyVisiblePublishedResourceWhere } from"@/lib/public-resource-visibility";
+import { ResourceGrid } from"@/components/resources/resource-grid";
+import { VerifiedBadge } from"@/components/ui/verified-badge";
+import type { PublicResourceCard } from"@/types/public";
 
-export const dynamic = "force-dynamic";
+export const dynamic ="force-dynamic";
 
 export default async function FollowingFeedPage() {
   const session = await auth();
@@ -88,7 +88,7 @@ export default async function FollowingFeedPage() {
                 },
               },
             },
-            orderBy: [{ createdAt: "desc" }, { salesCount: "desc" }],
+            orderBy: [{ createdAt:"desc" }, { salesCount:"desc" }],
             take: 24,
           })
         ).map((resource) => ({
@@ -126,7 +126,7 @@ export default async function FollowingFeedPage() {
           <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
             Following feed
           </span>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)]">
             Latest from creators you follow
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
@@ -144,7 +144,7 @@ export default async function FollowingFeedPage() {
 
       {user.follows.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-900">
+          <h2 className="text-xl font-semibold text-[var(--text)]">
             You are not following any stores yet
           </h2>
           <p className="mt-2 text-sm text-slate-600">
@@ -162,7 +162,7 @@ export default async function FollowingFeedPage() {
       ) : (
         <>
           <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Following</h2>
+            <h2 className="text-lg font-semibold text-[var(--text)]">Following</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {user.follows.map((follow) => (
                 <Link
@@ -179,7 +179,7 @@ export default async function FollowingFeedPage() {
 
           {resources.length === 0 ? (
             <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-              <h2 className="text-xl font-semibold text-slate-900">
+              <h2 className="text-xl font-semibold text-[var(--text)]">
                 No recent resources yet
               </h2>
               <p className="mt-2 text-sm text-slate-600">

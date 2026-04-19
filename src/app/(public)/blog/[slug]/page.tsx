@@ -1,17 +1,17 @@
-import Image from "next/image";
-import Link from "next/link";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getAppBaseUrl } from "@/lib/env";
-import { serializeJsonLd } from "@/lib/input-safety";
+import Image from"next/image";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { notFound } from"next/navigation";
+import { getAppBaseUrl } from"@/lib/env";
+import { serializeJsonLd } from"@/lib/input-safety";
 import {
   formatBlogDate,
   getBlogPostBySlug,
   getRelatedBlogPosts,
-} from "@/lib/blog";
-import { BlogPostCard } from "@/components/blog/blog-post-card";
-import { BlogTableOfContents, MarkdownRenderer } from "@/components/blog/markdown-renderer";
-import { BlogCommentsSection } from "@/components/blog/blog-comments-section";
+} from"@/lib/blog";
+import { BlogPostCard } from"@/components/blog/blog-post-card";
+import { BlogTableOfContents, MarkdownRenderer } from"@/components/blog/markdown-renderer";
+import { BlogCommentsSection } from"@/components/blog/blog-comments-section";
 
 export const revalidate = 300;
 
@@ -45,8 +45,8 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: "Article not found | PsychVault",
-      description: "The requested article could not be found.",
+      title:"Article not found | PsychVault",
+      description:"The requested article could not be found.",
       robots: {
         index: false,
         follow: false,
@@ -67,7 +67,7 @@ export async function generateMetadata({
       canonical: url,
     },
     openGraph: {
-      type: "article",
+      type:"article",
       url,
       title: post.title,
       description: post.description,
@@ -86,7 +86,7 @@ export async function generateMetadata({
       tags: post.tags,
     },
     twitter: {
-      card: "summary_large_image",
+      card:"summary_large_image",
       title: post.title,
       description: post.description,
       images: [imageUrl],
@@ -111,23 +111,23 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const postUrl = `${baseUrl}/blog/${post.slug}`;
   const imageUrl = resolveBlogImageUrl(baseUrl, post.coverImage);
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+"@context":"https://schema.org",
+"@type":"BreadcrumbList",
     itemListElement: [
       {
-        "@type": "ListItem",
+"@type":"ListItem",
         position: 1,
-        name: "Home",
+        name:"Home",
         item: baseUrl,
       },
       {
-        "@type": "ListItem",
+"@type":"ListItem",
         position: 2,
-        name: "Blog",
+        name:"Blog",
         item: `${baseUrl}/blog`,
       },
       {
-        "@type": "ListItem",
+"@type":"ListItem",
         position: 3,
         name: post.title,
         item: postUrl,
@@ -135,8 +135,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     ],
   };
   const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
+"@context":"https://schema.org",
+"@type":"BlogPosting",
     headline: post.title,
     description: post.description,
     articleSection: post.category,
@@ -148,17 +148,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     mainEntityOfPage: postUrl,
     url: postUrl,
     image: imageUrl,
-    inLanguage: "en-AU",
+    inLanguage:"en-AU",
     author: {
-      "@type": "Person",
+"@type":"Person",
       name: post.author,
     },
     publisher: {
-      "@type": "Organization",
-      name: "PsychVault",
+"@type":"Organization",
+      name:"PsychVault",
       url: baseUrl,
       logo: {
-        "@type": "ImageObject",
+"@type":"ImageObject",
         url: `${baseUrl}/logo-PNG.png`,
       },
     },
@@ -244,7 +244,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             {/* Comments Section */}
             <section className="mt-14 space-y-8">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+                <h2 className="heading-2xl">
                   Discussion
                 </h2>
                 <p className="mt-2 text-[var(--text-muted)]">
@@ -258,12 +258,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <section className="mt-10 grid gap-5 md:grid-cols-2">
               <Link
                 href="/resources"
-                className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="card-section transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-light)]">
                   Next step
                 </div>
-                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text)]">
+                <h2 className="heading-2xl mt-3">
                   Browse real clinician-made resources
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
@@ -274,12 +274,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
               <Link
                 href="/creator"
-                className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="card-section transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-light)]">
                   For creators
                 </div>
-                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text)]">
+                <h2 className="heading-2xl mt-3">
                   Turn your own resources into a polished store
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
@@ -320,11 +320,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   <span className="font-semibold text-[var(--text)]">Category:</span> {post.category}
                 </div>
                 <div>
-                  <span className="font-semibold text-[var(--text)]">Published:</span>{" "}
+                  <span className="font-semibold text-[var(--text)]">Published:</span>{""}
                   {formatBlogDate(post.publishedAt)}
                 </div>
                 <div>
-                  <span className="font-semibold text-[var(--text)]">Reading time:</span>{" "}
+                  <span className="font-semibold text-[var(--text)]">Reading time:</span>{""}
                   {post.readingTimeMinutes} min
                 </div>
               </div>

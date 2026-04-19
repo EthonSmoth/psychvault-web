@@ -8,6 +8,8 @@
 - Stripe Checkout + verified webhooks
 - Resend for transactional email
 - Supabase Storage for public previews and private downloads
+- Tailwind CSS v4 with CSS-native configuration (no tailwind.config.js)
+- `clsx` + `tailwind-merge` for conditional class composition (`cn()` helper)
 
 ## Main Application Areas
 
@@ -68,3 +70,15 @@
 - keep protected operations checked server-side
 - prefer shared helpers for auth, redirects, caching, storage, and rate limits
 - keep perceived performance high by avoiding wrong-state flashes during session/viewer hydration
+
+## CSS Architecture
+
+Tailwind CSS v4 uses CSS-native configuration with no `tailwind.config.js`. Theme tokens are CSS custom properties defined in `:root` in `src/app/globals.css`. Content scanning is scoped via `@source` directives to exclude non-template files (`*.md`, `*.txt`, `*.ps1`, `prisma/`, `vault/`, `content/`, `public/`).
+
+Three CSS layers:
+
+- `src/app/globals.css` — Tailwind import, `@source` directives, `:root` design tokens, global resets, body styles
+- `src/app/components.css` — reusable component utility classes (`.card`, `.card-panel`, `.card-section`, `.btn`, `.btn-primary`, `.btn-secondary`, `.input-surface`, `.heading-2xl`, `.heading-section`, `.nav-dropdown-item`, `.footer-link`, `.stack`, `.field`, `.tag-amber`, `.badge-verified`)
+- Tailwind utility classes — used in JSX for layout, spacing, and responsive overrides via `bg-[var(--token)]` arbitrary value syntax
+
+All components use semantic tokens (`var(--text)`, `var(--primary)`, `var(--border)`) rather than hardcoded Tailwind color classes. The `cn()` helper in `src/lib/utils.ts` wraps `clsx` + `tailwind-merge` for conditional class composition with automatic Tailwind conflict resolution.

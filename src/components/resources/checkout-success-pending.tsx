@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import Link from"next/link";
+import { useRouter } from"next/navigation";
+import { useEffect, useState } from"react";
 
 export function CheckoutSuccessPending({
   resourceSlug,
@@ -31,9 +31,9 @@ export function CheckoutSuccessPending({
   return (
     <div className="mx-auto max-w-xl px-4 py-20 text-center sm:px-6">
       <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">
-        {timedOut ? "!" : "..."}
+        {timedOut ?"!" :"..."}
       </div>
-      <h1 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+      <h1 className="heading-2xl">
         Finalising your purchase
       </h1>
       <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">

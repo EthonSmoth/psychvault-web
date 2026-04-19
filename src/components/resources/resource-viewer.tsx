@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { createContext, useContext, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import ReviewForm from "@/components/resources/review-form";
-import { ReportResourceForm } from "@/components/resources/report-resource-form";
-import type { ResourceViewerState } from "@/types/resource-viewer";
+import Link from"next/link";
+import { createContext, useContext, useEffect, useState } from"react";
+import { useSearchParams } from"next/navigation";
+import ReviewForm from"@/components/resources/review-form";
+import { ReportResourceForm } from"@/components/resources/report-resource-form";
+import type { ResourceViewerState } from"@/types/resource-viewer";
 
 type ResourceViewerContextValue = {
   viewerState: ResourceViewerState | null;
@@ -21,12 +21,12 @@ const ResourceViewerContext = createContext<ResourceViewerContextValue>({
 
 function formatPrice(priceCents: number, isFree?: boolean) {
   if (isFree || priceCents === 0) {
-    return "Free";
+    return"Free";
   }
 
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
+    style:"currency",
+    currency:"AUD",
   }).format(priceCents / 100);
 }
 
@@ -48,7 +48,7 @@ export function ResourceViewerProvider({
     setFailed(false);
 
     fetch(`/api/resources/${resourceId}/viewer`, {
-      cache: "no-store",
+      cache:"no-store",
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -110,12 +110,12 @@ export function ResourcePageNotices() {
   const errorCode = searchParams.get("error");
 
   const errorMessage =
-    errorCode === "download-missing"
-      ? "This resource cannot be purchased yet because it does not have a downloadable file attached."
-      : errorCode === "creator-payouts-unavailable"
-      ? "This creator needs to finish Stripe payout onboarding before paid checkout can go live for this resource."
-      : errorCode === "payments-unavailable"
-      ? "Paid checkout is temporarily unavailable while payment activation is being finalised. Free resources are still available as normal."
+    errorCode ==="download-missing"
+      ?"This resource cannot be purchased yet because it does not have a downloadable file attached."
+      : errorCode ==="creator-payouts-unavailable"
+      ?"This creator needs to finish Stripe payout onboarding before paid checkout can go live for this resource."
+      : errorCode ==="payments-unavailable"
+      ?"Paid checkout is temporarily unavailable while payment activation is being finalised. Free resources are still available as normal."
       : null;
 
   if (!errorMessage) {
@@ -144,7 +144,7 @@ export function ResourcePurchaseActions({
   hasMainFile: boolean;
   isFree: boolean;
   priceCents: number;
-  checkoutUnavailableReason: "platform" | "creator-payouts" | null;
+  checkoutUnavailableReason:"platform" |"creator-payouts" | null;
 }) {
   const { viewerState, loading, failed } = useResourceViewerState();
   const viewer = viewerState?.authenticated ? viewerState.viewer : null;
@@ -226,9 +226,9 @@ export function ResourcePurchaseActions({
     <>
       {checkoutUnavailableReason ? (
         <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          {checkoutUnavailableReason === "creator-payouts"
-            ? "This creator still needs to complete Stripe payout onboarding before paid checkout can go live."
-            : "Paid checkout is temporarily unavailable. You can still message the creator or browse free resources while payment activation is completed."}
+          {checkoutUnavailableReason ==="creator-payouts"
+            ?"This creator still needs to complete Stripe payout onboarding before paid checkout can go live."
+            :"Paid checkout is temporarily unavailable. You can still message the creator or browse free resources while payment activation is completed."}
         </div>
       ) : (
         <form method="POST" action="/api/checkout">
@@ -238,7 +238,7 @@ export function ResourcePurchaseActions({
             type="submit"
             className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white"
           >
-            {isFree ? "Get for free" : `Buy for ${formatPrice(priceCents)}`}
+            {isFree ?"Get for free" : `Buy for ${formatPrice(priceCents)}`}
           </button>
         </form>
       )}
@@ -287,7 +287,7 @@ export function ResourceReportBox({
           className="font-medium text-[var(--text)] underline"
         >
           Log in
-        </Link>{" "}
+        </Link>{""}
         to report this resource.
       </div>
     );
@@ -309,7 +309,7 @@ export function ResourceReportBox({
           className="font-medium text-[var(--text)] underline"
         >
           Verify your email
-        </Link>{" "}
+        </Link>{""}
         to report this resource.
       </div>
     );
@@ -350,7 +350,7 @@ export function ResourceReviewGate({
           className="font-medium text-[var(--text)] underline"
         >
           Log in
-        </Link>{" "}
+        </Link>{""}
         and get this resource to leave a review.
       </div>
     );

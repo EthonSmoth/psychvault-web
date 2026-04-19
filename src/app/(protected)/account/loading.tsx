@@ -8,7 +8,7 @@ export default function AccountLoading() {
       </div>
 
       {/* Profile card */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="card-panel-md">
         <div className="h-6 w-16 animate-pulse rounded-xl bg-[var(--surface-alt)]" />
         <div className="mt-6 space-y-5">
           <div className="flex items-center gap-4">
@@ -27,7 +27,7 @@ export default function AccountLoading() {
       </div>
 
       {/* Password card */}
-      <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="card-panel-md mt-8">
         <div className="h-6 w-20 animate-pulse rounded-xl bg-[var(--surface-alt)]" />
         <div className="mt-6 space-y-4">
           {[1, 2, 3].map((i) => (

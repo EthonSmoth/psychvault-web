@@ -1,12 +1,12 @@
-import { redirect } from "next/navigation";
-import type { Metadata } from "next";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { generateCSRFToken } from "@/lib/csrf";
-import { ApplyCreatorForm } from "./apply-creator-form";
+import { redirect } from"next/navigation";
+import type { Metadata } from"next";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { generateCSRFToken } from"@/lib/csrf";
+import { ApplyCreatorForm } from"./apply-creator-form";
 
 export const metadata: Metadata = {
-  title: "Become a creator | PsychVault",
+  title:"Become a creator | PsychVault",
   robots: { index: false, follow: false },
 };
 
@@ -30,7 +30,7 @@ export default async function ApplyCreatorPage() {
     redirect("/login");
   }
 
-  if (user.role === "CREATOR" || user.role === "ADMIN") {
+  if (user.role ==="CREATOR" || user.role ==="ADMIN") {
     redirect("/creator");
   }
 
@@ -49,8 +49,8 @@ export default async function ApplyCreatorPage() {
         </p>
       </div>
 
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-        {existingApplication?.status === "PENDING" ? (
+      <div className="card-section">
+        {existingApplication?.status ==="PENDING" ? (
           <div>
             <div className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">
               Under review
@@ -59,7 +59,7 @@ export default async function ApplyCreatorPage() {
               Your application is being reviewed. We&apos;ll update your account once a decision is made — usually within a few business days.
             </p>
           </div>
-        ) : existingApplication?.status === "APPROVED" ? (
+        ) : existingApplication?.status ==="APPROVED" ? (
           <div>
             <div className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
               Approved
@@ -70,7 +70,7 @@ export default async function ApplyCreatorPage() {
           </div>
         ) : (
           <>
-            {existingApplication?.status === "REJECTED" && (
+            {existingApplication?.status ==="REJECTED" && (
               <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4">
                 <p className="text-sm font-medium text-red-700">Your previous application was not approved.</p>
                 {existingApplication.adminNotes && (
@@ -81,7 +81,7 @@ export default async function ApplyCreatorPage() {
             )}
 
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-[var(--text)]">What we look for</h2>
+              <h2 className="heading-section">What we look for</h2>
               <ul className="mt-3 space-y-2 text-sm text-[var(--text-muted)]">
                 <li className="flex gap-2"><span className="text-[var(--primary)]">✓</span> Practising or provisionally registered psychologist, OT, speechie, or related allied health professional</li>
                 <li className="flex gap-2"><span className="text-[var(--primary)]">✓</span> Materials that are professional, evidence-based, and useful to other practitioners</li>

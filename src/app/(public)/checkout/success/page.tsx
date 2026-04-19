@@ -1,14 +1,14 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { stripe } from "@/lib/stripe";
-import { redirect } from "next/navigation";
-import { CheckoutSuccessPending } from "@/components/resources/checkout-success-pending";
-import { fulfillCheckoutSessionPurchase } from "@/server/services/purchase-fulfillment";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { stripe } from"@/lib/stripe";
+import { redirect } from"next/navigation";
+import { CheckoutSuccessPending } from"@/components/resources/checkout-success-pending";
+import { fulfillCheckoutSessionPurchase } from"@/server/services/purchase-fulfillment";
 
 export const metadata: Metadata = {
-  title: "Payment successful — PsychVault",
+  title:"Payment successful — PsychVault",
   robots: { index: false, follow: false },
 };
 
@@ -25,8 +25,8 @@ function isValidSlug(value: string) {
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
+    style:"currency",
+    currency:"AUD",
   }).format(cents / 100);
 }
 
@@ -34,9 +34,9 @@ export default async function CheckoutSuccessPage({
   searchParams,
 }: CheckoutSuccessPageProps) {
   const resolvedSearchParams = await searchParams;
-  const sessionId = String(resolvedSearchParams.session_id || "").trim();
+  const sessionId = String(resolvedSearchParams.session_id ||"").trim();
   const fallbackResourceSlug =
-    typeof resolvedSearchParams.resource === "string" &&
+    typeof resolvedSearchParams.resource ==="string" &&
     isValidSlug(resolvedSearchParams.resource)
       ? resolvedSearchParams.resource
       : null;
@@ -53,18 +53,18 @@ export default async function CheckoutSuccessPage({
         const resourceSlug = fulfillmentResult.resourceSlug ?? fallbackResourceSlug;
 
         if (
-          fulfillmentResult.status === "created" ||
-          fulfillmentResult.status === "existing"
+          fulfillmentResult.status ==="created" ||
+          fulfillmentResult.status ==="existing"
         ) {
           const libraryUrl = resourceSlug
             ? `/library?purchase=success&resource=${encodeURIComponent(resourceSlug)}`
-            : "/library?purchase=success";
+            :"/library?purchase=success";
           redirect(libraryUrl);
         }
 
         if (
-          checkoutSession.payment_status === "paid" ||
-          checkoutSession.status === "complete"
+          checkoutSession.payment_status ==="paid" ||
+          checkoutSession.status ==="complete"
         ) {
           return <CheckoutSuccessPending resourceSlug={resourceSlug} />;
         }
@@ -90,7 +90,7 @@ export default async function CheckoutSuccessPage({
       if (user) {
         recentPurchase = await db.purchase.findFirst({
           where: { buyerId: user.id },
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt:"desc" },
           select: {
             amountCents: true,
             resource: {
@@ -114,7 +114,7 @@ export default async function CheckoutSuccessPage({
       <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">
         ✅
       </div>
-      <h1 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+      <h1 className="heading-2xl">
         Payment successful
       </h1>
       <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
@@ -133,7 +133,7 @@ export default async function CheckoutSuccessPage({
             </p>
             <p className="shrink-0 text-sm font-semibold text-[var(--text)]">
               {recentPurchase.amountCents === 0 || recentPurchase.resource.isFree
-                ? "Free"
+                ?"Free"
                 : formatPrice(recentPurchase.amountCents)}
             </p>
           </div>

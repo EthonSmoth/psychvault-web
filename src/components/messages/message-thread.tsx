@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from"react";
+import { useRouter } from"next/navigation";
 
 export type ThreadMessage = {
   id: string;
@@ -28,7 +28,7 @@ export default function MessageThread({
 
   useEffect(() => {
     fetch(`/api/messages/${conversationId}/read`, {
-      method: "POST",
+      method:"POST",
     }).catch(() => undefined);
   }, [conversationId]);
 
@@ -38,7 +38,7 @@ export default function MessageThread({
   }, [conversationId, router]);
 
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+    <div className="card-section">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-[var(--text)]">{otherUserName}</h1>
@@ -59,22 +59,22 @@ export default function MessageThread({
                 key={message.id}
                 className={`rounded-3xl p-4 shadow-sm ${
                   isMine
-                    ? "ml-auto max-w-[85%] bg-[var(--primary)] text-white"
-                    : "mr-auto max-w-[85%] bg-[var(--surface-alt)] text-[var(--text)]"
+                    ?"ml-auto max-w-[85%] bg-[var(--primary)] text-white"
+                    :"mr-auto max-w-[85%] bg-[var(--surface-alt)] text-[var(--text)]"
                 }`}
               >
                 <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-light)]">
-                  {isMine ? "You" : message.senderName || otherUserName}
+                  {isMine ?"You" : message.senderName || otherUserName}
                 </div>
                 <div className="whitespace-pre-wrap text-sm leading-6">
                   {message.body}
                 </div>
-                <div className={`mt-3 text-right text-xs ${isMine ? "text-white/70" : "text-[var(--text-muted)]"}`}>
+                <div className={`mt-3 text-right text-xs ${isMine ?"text-white/70" :"text-[var(--text-muted)]"}`}>
                   {new Intl.DateTimeFormat("en-AU", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    day: "numeric",
-                    month: "short",
+                    hour:"2-digit",
+                    minute:"2-digit",
+                    day:"numeric",
+                    month:"short",
                   }).format(new Date(message.createdAt))}
                 </div>
               </div>

@@ -1,28 +1,28 @@
-import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
-import type { Metadata } from "next";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { getAppBaseUrl } from "@/lib/env";
-import { PrintButton } from "./print-button";
+import { notFound, redirect } from"next/navigation";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { getAppBaseUrl } from"@/lib/env";
+import { PrintButton } from"./print-button";
 
 export const metadata: Metadata = {
-  title: "Receipt | PsychVault",
+  title:"Receipt | PsychVault",
   robots: { index: false, follow: false },
 };
 
-function formatMoney(cents: number, currency = "AUD") {
+function formatMoney(cents: number, currency ="AUD") {
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
+    style:"currency",
     currency,
   }).format(cents / 100);
 }
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-AU", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+    day:"numeric",
+    month:"long",
+    year:"numeric",
   }).format(date);
 }
 
@@ -75,14 +75,14 @@ export default async function ReceiptPage({ params }: Props) {
       </div>
 
       {/* Receipt card */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+      <div className="card-panel">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-light)]">
               Receipt
             </div>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--text)]">
+            <h1 className="heading-2xl mt-1">
               PsychVault
             </h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">{appBaseUrl}</p>
@@ -139,11 +139,11 @@ export default async function ReceiptPage({ params }: Props) {
               <td className="py-4 text-[var(--text)]">
                 <div className="font-medium">{purchase.resource.title}</div>
                 <div className="mt-0.5 text-xs text-[var(--text-muted)]">
-                  Creator: {purchase.resource.store?.name ?? "PsychVault creator"}
+                  Creator: {purchase.resource.store?.name ??"PsychVault creator"}
                 </div>
               </td>
               <td className="py-4 text-right font-medium text-[var(--text)]">
-                {isFree ? "Free" : formatMoney(purchase.amountCents, purchase.currency)}
+                {isFree ?"Free" : formatMoney(purchase.amountCents, purchase.currency)}
               </td>
             </tr>
           </tbody>
@@ -151,7 +151,7 @@ export default async function ReceiptPage({ params }: Props) {
             <tr className="border-t border-[var(--border)]">
               <td className="pt-4 font-semibold text-[var(--text)]">Total</td>
               <td className="pt-4 text-right font-semibold text-[var(--text)]">
-                {isFree ? "Free" : formatMoney(purchase.amountCents, purchase.currency)}
+                {isFree ?"Free" : formatMoney(purchase.amountCents, purchase.currency)}
               </td>
             </tr>
             {purchase.stripePaymentId && (
@@ -169,7 +169,7 @@ export default async function ReceiptPage({ params }: Props) {
 
         {/* Footer */}
         <p className="text-center text-xs text-[var(--text-muted)]">
-          Questions? Contact us at{" "}
+          Questions? Contact us at{""}
           <a href="mailto:support@psychvault.com.au" className="underline">
             support@psychvault.com.au
           </a>

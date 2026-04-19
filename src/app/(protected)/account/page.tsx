@@ -1,12 +1,12 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { generateCSRFToken } from "@/lib/csrf";
-import { AccountForm } from "@/components/forms/account-form";
+import { redirect } from"next/navigation";
+import Link from"next/link";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { generateCSRFToken } from"@/lib/csrf";
+import { AccountForm } from"@/components/forms/account-form";
 
 export const metadata = {
-  title: "Account settings",
+  title:"Account settings",
   robots: { index: false, follow: false },
 };
 
@@ -60,8 +60,8 @@ export default async function AccountPage() {
         csrfToken={csrfToken}
       />
 
-      <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Quick links</h2>
+      <div className="card-panel-md mt-8">
+        <h2 className="heading-section">Quick links</h2>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href="/library"
@@ -75,7 +75,7 @@ export default async function AccountPage() {
           >
             Messages
           </Link>
-          {user.role === "CREATOR" || user.role === "ADMIN" ? (
+          {user.role ==="CREATOR" || user.role ==="ADMIN" ? (
             <Link
               href="/creator"
               className="inline-flex rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"

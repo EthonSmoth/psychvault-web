@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import Link from"next/link";
+import { useState } from"react";
+import { useSearchParams } from"next/navigation";
+import { Suspense } from"react";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const token = searchParams.get("token") ?? "";
+  const token = searchParams.get("token") ??"";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -49,15 +49,15 @@ function ResetPasswordForm() {
 
     try {
       const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({ token, password }),
       });
 
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong. Please try again.");
+        setError(data.error ??"Something went wrong. Please try again.");
       } else {
         setDone(true);
       }
@@ -87,7 +87,7 @@ function ResetPasswordForm() {
   return (
     <>
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+        <h2 className="heading-2xl">
           Choose a new password
         </h2>
         <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
@@ -146,7 +146,7 @@ function ResetPasswordForm() {
           disabled={pending}
           className="w-full rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:opacity-60"
         >
-          {pending ? "Updating…" : "Update password"}
+          {pending ?"Updating…" :"Update password"}
         </button>
       </form>
     </>
@@ -172,13 +172,13 @@ export default function ResetPasswordPage() {
       </div>
 
       <div className="mx-auto w-full max-w-md">
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm sm:p-10">
+        <div className="card-panel sm:p-10">
           <Suspense fallback={<div className="h-8 w-48 animate-pulse rounded bg-[var(--surface)]" />}>
             <ResetPasswordForm />
           </Suspense>
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
-            Need a new link?{" "}
+            Need a new link?{""}
             <Link href="/forgot-password" className="font-semibold text-[var(--text)] hover:text-[var(--accent)]">
               Request one
             </Link>

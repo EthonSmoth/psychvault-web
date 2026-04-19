@@ -1,30 +1,30 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Suspense } from "react";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getAppBaseUrl } from "@/lib/env";
-import { serializeJsonLd } from "@/lib/input-safety";
-import { getMarketplacePolicyLinks, getPaymentsAvailability } from "@/lib/payments";
-import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
+import Image from"next/image";
+import Link from"next/link";
+import { Suspense } from"react";
+import type { Metadata } from"next";
+import { notFound } from"next/navigation";
+import { getAppBaseUrl } from"@/lib/env";
+import { serializeJsonLd } from"@/lib/input-safety";
+import { getMarketplacePolicyLinks, getPaymentsAvailability } from"@/lib/payments";
+import { isPaidResourcePayoutReady, isPayoutAccountReady } from"@/lib/stripe-connect";
 import {
   getPublishedResourceReviews,
   getPublishedResourceMetadata,
   getPublishedResourcePageData,
   getRelatedPublishedResources,
-} from "@/server/queries/public-content";
-import { FlagReviewButton } from "@/components/resources/flag-review-button";
-import { ResourceGallery } from "@/components/resources/resource-gallery";
-import { ResourceGrid } from "@/components/resources/resource-grid";
+} from"@/server/queries/public-content";
+import { FlagReviewButton } from"@/components/resources/flag-review-button";
+import { ResourceGallery } from"@/components/resources/resource-gallery";
+import { ResourceGrid } from"@/components/resources/resource-grid";
 import {
   ResourcePageNotices,
   ResourcePurchaseActions,
   ResourceReportBox,
   ResourceReviewGate,
   ResourceViewerProvider,
-} from "@/components/resources/resource-viewer";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
+} from"@/components/resources/resource-viewer";
+import { Breadcrumb } from"@/components/ui/breadcrumb";
+import { VerifiedBadge } from"@/components/ui/verified-badge";
 
 export const revalidate = 300;
 
@@ -37,10 +37,10 @@ export async function generateMetadata({ params }: ResourcePageProps): Promise<M
   const { slug } = await params;
   const resource = await getPublishedResourceMetadata(slug);
 
-  if (!resource || resource.status !== "PUBLISHED") {
+  if (!resource || resource.status !=="PUBLISHED") {
     return {
-      title: "Resource not found | PsychVault",
-      description: "The requested resource could not be found.",
+      title:"Resource not found | PsychVault",
+      description:"The requested resource could not be found.",
       robots: {
         index: false,
         follow: false,
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: ResourcePageProps): Promise<M
       canonical: url,
     },
     openGraph: {
-      type: "article",
+      type:"article",
       url,
       title: resource.title,
       description,
@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: ResourcePageProps): Promise<M
         : undefined,
     },
     twitter: {
-      card: "summary_large_image",
+      card:"summary_large_image",
       title: resource.title,
       description,
       images: resource.thumbnailUrl ? [resource.thumbnailUrl] : undefined,
@@ -82,27 +82,27 @@ export async function generateMetadata({ params }: ResourcePageProps): Promise<M
 
 // Formats a resource price for the buy box while keeping free resources human-friendly.
 function formatPrice(priceCents: number, isFree?: boolean) {
-  if (isFree || priceCents === 0) return "Free";
+  if (isFree || priceCents === 0) return"Free";
 
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
+    style:"currency",
+    currency:"AUD",
   }).format(priceCents / 100);
 }
 
 // Formats dates for reviews and marketplace timestamps using the local AU format.
 function formatDate(date: Date | string) {
   return new Intl.DateTimeFormat("en-AU", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+    day:"numeric",
+    month:"short",
+    year:"numeric",
   }).format(new Date(date));
 }
 
 // Renders a simple five-star string from a numeric rating value.
 function renderStars(rating: number) {
   const rounded = Math.round(rating);
-  return "\u2605".repeat(rounded) + "\u2606".repeat(5 - rounded);
+  return"\u2605".repeat(rounded) +"\u2606".repeat(5 - rounded);
 }
 
 // Extracts the uppercase file extension shown in the resource specs card.
@@ -129,7 +129,7 @@ async function ResourceReviewsSection({
   const reviews = await getPublishedResourceReviews({ resourceId, resourceSlug });
 
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+    <div className="card-section">
       <h2 className="text-xl font-semibold text-[var(--text)]">Recent reviews</h2>
 
       {reviews.length === 0 ? (
@@ -144,7 +144,7 @@ async function ResourceReviewsSection({
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <div className="font-medium text-[var(--text)]">
-                    {review.buyer.name || "Buyer"}
+                    {review.buyer.name ||"Buyer"}
                   </div>
                   <div className="mt-1 text-sm text-[var(--text-muted)]">
                     {renderStars(review.rating)} <span className="ml-2">{review.rating}/5</span>
@@ -200,7 +200,7 @@ async function RelatedResourcesSection({
     <section className="defer-section mt-16">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             You might also like
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -228,7 +228,7 @@ function DeferredCardFallback({
   copy: string;
 }) {
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+    <div className="card-section">
       <div className="h-6 w-40 animate-pulse rounded-lg bg-[var(--surface-alt)]" aria-hidden="true" />
       <p className="mt-4 text-sm leading-6 text-[var(--text-muted)]">{copy}</p>
       <div className="mt-6 space-y-3" aria-hidden="true">
@@ -253,15 +253,15 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const { resource } = publicData;
   const resourceData = resource as NonNullable<typeof resource>;
 
-  const previewFiles = resource.files.filter((file) => file.kind === "PREVIEW" && /\.(jpg|jpeg|png|webp|gif)$/i.test(file.fileUrl));
+  const previewFiles = resource.files.filter((file) => file.kind ==="PREVIEW" && /\.(jpg|jpeg|png|webp|gif)$/i.test(file.fileUrl));
   const galleryImages = [
     ...(resource.thumbnailUrl
       ? [
           {
-            id: "thumbnail",
+            id:"thumbnail",
             url: resource.thumbnailUrl,
             alt: resource.title,
-            label: "Cover",
+            label:"Cover",
           },
         ]
       : []),
@@ -273,7 +273,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
     })),
   ];
 
-  const mainFile = resource.files.find((file) => file.kind === "MAIN_DOWNLOAD");
+  const mainFile = resource.files.find((file) => file.kind ==="MAIN_DOWNLOAD");
   const hasMainFile = resource.hasMainFile || Boolean(mainFile);
   const fileFormat = getFileExtension(mainFile?.fileName);
   const primaryCategory = resource.categories[0]?.category;
@@ -292,9 +292,9 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
     !resource.isFree && (!paymentAvailability.enabled || !creatorPayoutReady);
   const checkoutUnavailableReason = !resource.isFree
     ? !paymentAvailability.enabled
-      ? "platform"
+      ?"platform"
       : !creatorPayoutReady
-      ? "creator-payouts"
+      ?"creator-payouts"
       : null
     : null;
 
@@ -303,35 +303,35 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const resourceUrl = `${baseUrl}/resources/${resource.slug}`;
   
   const productSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
+"@context":"https://schema.org",
+"@type":"Product",
     name: resource.title,
     description: resource.shortDescription || resource.description.slice(0, 160),
     image: resource.thumbnailUrl || undefined,
     url: resourceUrl,
     brand: {
-      "@type": "Brand",
-      name: resource.store?.name || "PsychVault Creator",
+"@type":"Brand",
+      name: resource.store?.name ||"PsychVault Creator",
     },
     author: {
-      "@type": "Person",
-      name: resource.store?.name || resource.creator?.name || "Unknown",
+"@type":"Person",
+      name: resource.store?.name || resource.creator?.name ||"Unknown",
     },
     offers: {
-      "@type": "Offer",
+"@type":"Offer",
       url: resourceUrl,
-      priceCurrency: "AUD",
-      price: resource.isFree ? "0" : (resource.priceCents / 100).toString(),
-      availability: "https://schema.org/InStock",
+      priceCurrency:"AUD",
+      price: resource.isFree ?"0" : (resource.priceCents / 100).toString(),
+      availability:"https://schema.org/InStock",
       seller: {
-        "@type": "Organization",
-        name: resource.store?.name || "PsychVault",
+"@type":"Organization",
+        name: resource.store?.name ||"PsychVault",
       },
     },
     ...(resource.reviewCount > 0 && {
       aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: resource.averageRating?.toFixed(1) || "0",
+"@type":"AggregateRating",
+        ratingValue: resource.averageRating?.toFixed(1) ||"0",
         reviewCount: resource.reviewCount,
       },
     }),
@@ -341,51 +341,51 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
   const cleanSchema = JSON.parse(JSON.stringify(productSchema));
 
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+"@context":"https://schema.org",
+"@type":"BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
-      { "@type": "ListItem", position: 2, name: "Resources", item: `${baseUrl}/resources` },
+      {"@type":"ListItem", position: 1, name:"Home", item: baseUrl },
+      {"@type":"ListItem", position: 2, name:"Resources", item: `${baseUrl}/resources` },
       ...(primaryCategory
-        ? [{ "@type": "ListItem", position: 3, name: primaryCategory.name, item: `${baseUrl}/resources?category=${primaryCategory.slug}` }]
+        ? [{"@type":"ListItem", position: 3, name: primaryCategory.name, item: `${baseUrl}/resources?category=${primaryCategory.slug}` }]
         : []),
-      { "@type": "ListItem", position: primaryCategory ? 4 : 3, name: resource.title, item: resourceUrl },
+      {"@type":"ListItem", position: primaryCategory ? 4 : 3, name: resource.title, item: resourceUrl },
     ],
   };
 
-  function renderPurchasePanel(extraClassName = "") {
+  function renderPurchasePanel(extraClassName ="") {
     return (
       <aside className={`min-w-0 ${extraClassName}`}>
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+        <div className="card-section">
           <div className="text-3xl font-semibold text-[var(--text)]">
             {formatPrice(resourceData.priceCents, resourceData.isFree)}
           </div>
 
           <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
             {resourceData.isFree
-              ? "Create an account to add this free resource to your library and download it."
-              : checkoutUnavailableReason === "platform"
-              ? "Paid checkout is temporarily paused while payment activation is being completed."
-              : checkoutUnavailableReason === "creator-payouts"
-              ? "This creator still needs to finish Stripe payout onboarding before paid checkout can go live."
-              : "Purchase once and access the downloadable resource through your library."}
+              ?"Create an account to add this free resource to your library and download it."
+              : checkoutUnavailableReason ==="platform"
+              ?"Paid checkout is temporarily paused while payment activation is being completed."
+              : checkoutUnavailableReason ==="creator-payouts"
+              ?"This creator still needs to finish Stripe payout onboarding before paid checkout can go live."
+              :"Purchase once and access the downloadable resource through your library."}
           </p>
 
           <div className="mt-4 rounded-2xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--text)]">
             <div className="flex items-start justify-between gap-4">
               <span className="min-w-0 font-medium text-[var(--text)]">File format</span>
               <span className="file-name min-w-0 text-right text-[var(--text-muted)]">
-                {fileFormat || "Not specified"}
+                {fileFormat ||"Not specified"}
               </span>
             </div>
             <div className="mt-3 flex items-start justify-between gap-4">
               <span className="min-w-0 font-medium text-[var(--text)]">Access</span>
               <span className="min-w-0 text-right text-[var(--text-muted)]">
                 {resourceData.isFree
-                  ? "Instant after claim"
+                  ?"Instant after claim"
                   : checkoutUnavailableReason
-                  ? "Temporarily paused"
-                  : "Instant after payment"}
+                  ?"Temporarily paused"
+                  :"Instant after payment"}
               </span>
             </div>
             <div className="mt-3 flex items-start justify-between gap-4">
@@ -397,7 +397,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
           </div>
 
           <div className="mt-4 inline-flex rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)]">
-            {hasMainFile ? "Download ready" : "No download attached"}
+            {hasMainFile ?"Download ready" :"No download attached"}
           </div>
 
           <div className="mt-6 flex flex-col gap-3">
@@ -415,25 +415,25 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
           {!resourceData.isFree && hasMainFile ? (
             <div className="mt-6 rounded-2xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--text)]">
               <div className="font-semibold text-[var(--text)]">
-                {checkoutUnavailableReason === "platform"
-                  ? "Payment activation in progress"
-                  : checkoutUnavailableReason === "creator-payouts"
-                  ? "Creator payout setup required"
-                  : "Secure purchase"}
+                {checkoutUnavailableReason ==="platform"
+                  ?"Payment activation in progress"
+                  : checkoutUnavailableReason ==="creator-payouts"
+                  ?"Creator payout setup required"
+                  :"Secure purchase"}
               </div>
               <p className="mt-2">
-                {checkoutUnavailableReason === "platform"
-                  ? "This listing is ready for sale, but paid checkout is temporarily paused while live payments are being finalised."
-                  : checkoutUnavailableReason === "creator-payouts"
-                  ? "This listing has a downloadable file, but the creator has not completed Stripe payout onboarding yet."
-                  : "Stripe checkout protects the transaction and grants instant access once payment clears."}
+                {checkoutUnavailableReason ==="platform"
+                  ?"This listing is ready for sale, but paid checkout is temporarily paused while live payments are being finalised."
+                  : checkoutUnavailableReason ==="creator-payouts"
+                  ?"This listing has a downloadable file, but the creator has not completed Stripe payout onboarding yet."
+                  :"Stripe checkout protects the transaction and grants instant access once payment clears."}
               </p>
               <p className="mt-3 text-xs text-[var(--text-muted)]">
-                By purchasing, you agree to the{" "}
+                By purchasing, you agree to the{""}
                 <Link href={policyLinks.terms} className="font-medium underline">
                   Terms of Service
                 </Link>
-                {" "}and{" "}
+                {""}and{""}
                 <Link href={policyLinks.refunds} className="font-medium underline">
                   Refund Policy
                 </Link>
@@ -475,7 +475,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                   <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
                     <div className="font-medium text-[var(--text)]">Delivery</div>
                     <div className="mt-1">
-                      {resourceData.isFree ? "Instant library access" : "Digital delivery after checkout"}
+                      {resourceData.isFree ?"Instant library access" :"Digital delivery after checkout"}
                     </div>
                   </div>
                   <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
@@ -508,8 +508,8 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <Breadcrumb
         items={[
-          { label: "Home", href: "/" },
-          { label: "Browse", href: "/resources" },
+          { label:"Home", href:"/" },
+          { label:"Browse", href:"/resources" },
           ...(primaryCategory
             ? [{ label: primaryCategory.name, href: `/resources?category=${primaryCategory.slug}` }]
             : []),
@@ -576,13 +576,13 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
 
             {resourceData.reviewCount > 0 ? (
               <>
-                <span>{resource.averageRating?.toFixed(1) || "0.0"} rating</span>
+                <span>{resource.averageRating?.toFixed(1) ||"0.0"} rating</span>
                 <span>{resourceData.reviewCount} reviews</span>
               </>
             ) : (
               <span>New listing</span>
             )}
-            <span>{resourceData.salesCount > 0 ? `${resourceData.salesCount} sales` : "No sales yet"}</span>
+            <span>{resourceData.salesCount > 0 ? `${resourceData.salesCount} sales` :"No sales yet"}</span>
           </div>
 
           <div className="mt-8 overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
@@ -599,7 +599,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
             {renderPurchasePanel()}
           </div>
 
-          <div className="mt-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+          <div className="card-section mt-10">
             <h2 className="text-xl font-semibold text-[var(--text)]">About this resource</h2>
             <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text)]">
               {resourceData.shortDescription ? (
@@ -613,8 +613,8 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-2">
-            <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-[var(--text)]">What&apos;s included</h2>
+            <div className="card-section">
+              <h2 className="heading-section">What&apos;s included</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
                 A quick snapshot of what buyers receive and how this resource is packaged.
               </p>
@@ -627,7 +627,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                     </div>
                   </div>
                   <div className="file-name min-w-0 max-w-[55%] text-right font-medium text-[var(--text-muted)]">
-                    {mainFile?.fileName || "To be uploaded"}
+                    {mainFile?.fileName ||"To be uploaded"}
                   </div>
                 </div>
                 <div className="flex items-start justify-between gap-4 rounded-2xl bg-[var(--surface-alt)] px-4 py-3">
@@ -638,7 +638,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                     </div>
                   </div>
                   <div className="min-w-0 text-right font-medium text-[var(--text-muted)]">
-                    {previewFiles.length > 0 ? `${previewFiles.length} in gallery` : "None uploaded"}
+                    {previewFiles.length > 0 ? `${previewFiles.length} in gallery` :"None uploaded"}
                   </div>
                 </div>
                 <div className="flex items-start justify-between gap-4 rounded-2xl bg-[var(--surface-alt)] px-4 py-3">
@@ -649,7 +649,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                     </div>
                   </div>
                   <div className="file-name min-w-0 text-right font-medium text-[var(--text-muted)]">
-                    {fileFormat || "Not specified"}
+                    {fileFormat ||"Not specified"}
                   </div>
                 </div>
                 <div className="flex items-start justify-between gap-4 rounded-2xl bg-[var(--surface-alt)] px-4 py-3">
@@ -675,8 +675,8 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-[var(--text)]">Good fit for</h2>
+            <div className="card-section">
+              <h2 className="heading-section">Good fit for</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
                 Explore more resources for the same client group, theme, or workflow.
               </p>

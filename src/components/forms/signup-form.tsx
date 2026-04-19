@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useState } from"react";
+import { useRouter } from"next/navigation";
 
 export function SignupForm() {
   const router = useRouter();
@@ -15,14 +15,14 @@ export function SignupForm() {
 
     const formData = new FormData(event.currentTarget);
     const payload = {
-      name: String(formData.get("name") || ""),
-      email: String(formData.get("email") || ""),
-      password: String(formData.get("password") || "")
+      name: String(formData.get("name") ||""),
+      email: String(formData.get("email") ||""),
+      password: String(formData.get("password") ||"")
     };
 
     const response = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method:"POST",
+      headers: {"Content-Type":"application/json" },
       body: JSON.stringify(payload)
     });
 
@@ -30,7 +30,7 @@ export function SignupForm() {
 
     if (!response.ok) {
       const data = await response.json().catch(() => null);
-      setError(data?.error || "Could not create account.");
+      setError(data?.error ||"Could not create account.");
       return;
     }
 
@@ -51,8 +51,8 @@ export function SignupForm() {
         <label htmlFor="password">Password</label>
         <input id="password" name="password" type="password" required minLength={8} />
       </div>
-      {error ? <p style={{ color: "crimson", margin: 0 }}>{error}</p> : null}
-      <button className="btn btn-primary" disabled={loading}>{loading ? "Creating account..." : "Create account"}</button>
+      {error ? <p style={{ color:"crimson", margin: 0 }}>{error}</p> : null}
+      <button className="btn btn-primary" disabled={loading}>{loading ?"Creating account..." :"Create account"}</button>
     </form>
   );
 }

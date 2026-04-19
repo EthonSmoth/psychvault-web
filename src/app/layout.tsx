@@ -1,12 +1,12 @@
-import "./globals.css";
-import "./components.css";
-import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
-import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from "@/lib/env";
-import { serializeJsonLd } from "@/lib/input-safety";
-import { GoogleAnalytics } from "@/components/analytics/google-analytics";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
+import"./globals.css";
+import"./components.css";
+import type { Metadata, Viewport } from"next";
+import { Suspense } from"react";
+import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from"@/lib/env";
+import { serializeJsonLd } from"@/lib/input-safety";
+import { GoogleAnalytics } from"@/components/analytics/google-analytics";
+import { Navbar } from"@/components/layout/navbar";
+import { Footer } from"@/components/layout/footer";
 
 const baseUrl = getAppBaseUrl();
 const supportEmail = getSupportEmail();
@@ -16,56 +16,56 @@ const businessAddress = getBusinessAddress();
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "PsychVault - Psychology Resources Marketplace",
-    template: "%s | PsychVault",
+    default:"PsychVault - Psychology Resources Marketplace",
+    template:"%s | PsychVault",
   },
   description:
-    "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
-  applicationName: "PsychVault",
+"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+  applicationName:"PsychVault",
   keywords: [
-    "psychology resources",
-    "psychologist templates",
-    "therapy worksheets",
-    "psychoeducation handouts",
-    "clinical report templates",
-    "NDIS psychology resources",
-    "assessment tools",
-    "mental health resources",
+"psychology resources",
+"psychologist templates",
+"therapy worksheets",
+"psychoeducation handouts",
+"clinical report templates",
+"NDIS psychology resources",
+"assessment tools",
+"mental health resources",
   ],
-  authors: [{ name: "PsychVault" }],
-  creator: "PsychVault",
-  publisher: "PsychVault",
+  authors: [{ name:"PsychVault" }],
+  creator:"PsychVault",
+  publisher:"PsychVault",
   other: {
-    "contact:email": supportEmail,
-    ...(supportPhone ? { "contact:phone_number": supportPhone } : {}),
+"contact:email": supportEmail,
+    ...(supportPhone ? {"contact:phone_number": supportPhone } : {}),
   },
   icons: {
-    icon: "/logo-PNG.png",
-    shortcut: "/logo-PNG.png",
-    apple: "/logo-PNG.png",
+    icon:"/logo-PNG.png",
+    shortcut:"/logo-PNG.png",
+    apple:"/logo-PNG.png",
   },
   openGraph: {
-    type: "website",
-    locale: "en_AU",
+    type:"website",
+    locale:"en_AU",
     url: baseUrl,
-    siteName: "PsychVault",
-    title: "PsychVault - Psychology Resources Marketplace",
+    siteName:"PsychVault",
+    title:"PsychVault - Psychology Resources Marketplace",
     description:
-      "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
     images: [
       {
-        url: "/opengraph-image",
+        url:"/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "PsychVault",
+        alt:"PsychVault",
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "PsychVault - Psychology Resources Marketplace",
+    card:"summary_large_image",
+    title:"PsychVault - Psychology Resources Marketplace",
     description:
-      "Discover clinician-made psychology resources for real clinical work.",
+"Discover clinician-made psychology resources for real clinical work.",
     images: ["/opengraph-image"],
   },
   robots: {
@@ -74,16 +74,16 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
+"max-image-preview":"large",
+"max-snippet": -1,
+"max-video-preview": -1,
     },
   },
-  category: "healthcare",
+  category:"healthcare",
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width:"device-width",
   initialScale: 1,
 };
 
@@ -93,16 +93,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const organizationSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "PsychVault",
+"@context":"https://schema.org",
+"@type":"Organization",
+    name:"PsychVault",
     description:
-      "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
     url: baseUrl,
     logo: `${baseUrl}/logo-PNG.png`,
     contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "customer support",
+"@type":"ContactPoint",
+      contactType:"customer support",
       email: supportEmail,
       ...(supportPhone ? { telephone: supportPhone } : {}),
     },
@@ -110,58 +110,58 @@ export default function RootLayout({
   };
 
   const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "PsychVault",
+"@context":"https://schema.org",
+"@type":"WebSite",
+    name:"PsychVault",
     url: baseUrl,
     description:
-      "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
     publisher: {
-      "@type": "Organization",
-      name: "PsychVault",
+"@type":"Organization",
+      name:"PsychVault",
       url: baseUrl,
     },
     potentialAction: {
-      "@type": "SearchAction",
+"@type":"SearchAction",
       target: `${baseUrl}/resources?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
+"query-input":"required name=search_term_string",
     },
   };
 
   const webApplicationSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    name: "PsychVault",
+"@context":"https://schema.org",
+"@type":"WebApplication",
+    name:"PsychVault",
     description:
-      "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
     url: baseUrl,
-    applicationCategory: "E-commerce",
+    applicationCategory:"E-commerce",
     provider: {
-      "@type": "Organization",
-      name: "PsychVault",
+"@type":"Organization",
+      name:"PsychVault",
       url: baseUrl,
       contactPoint: {
-        "@type": "ContactPoint",
-        contactType: "customer support",
+"@type":"ContactPoint",
+        contactType:"customer support",
         email: supportEmail,
         ...(supportPhone ? { telephone: supportPhone } : {}),
       },
     },
     offers: {
-      "@type": "AggregateOffer",
-      priceCurrency: "AUD",
+"@type":"AggregateOffer",
+      priceCurrency:"AUD",
       offerDetails: [
         {
-          "@type": "Offer",
-          price: "0",
-          priceCurrency: "AUD",
-          name: "Free psychology resources",
+"@type":"Offer",
+          price:"0",
+          priceCurrency:"AUD",
+          name:"Free psychology resources",
         },
         {
-          "@type": "Offer",
-          price: "1.00",
-          priceCurrency: "AUD",
-          name: "Paid psychology resources",
+"@type":"Offer",
+          price:"1.00",
+          priceCurrency:"AUD",
+          name:"Paid psychology resources",
         },
       ],
     },

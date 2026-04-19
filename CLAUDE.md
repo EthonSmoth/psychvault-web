@@ -92,7 +92,9 @@ Transactional email via Resend. HTML content is escaped with `escape-goat` befor
 
 ## Design system
 
-All components use CSS custom property tokens from `src/app/globals.css`. Do not use hardcoded Tailwind color classes — use semantic tokens like `bg-[var(--card)]`, `text-[var(--text)]`, `border-[var(--border)]`. Primary palette is warm beige/amber (`--background: #fbf0e4`, `--primary: #c47f2c`).
+Tailwind CSS v4 with CSS-native configuration (no `tailwind.config.js`). All components use CSS custom property tokens from `src/app/globals.css`. Do not use hardcoded Tailwind color classes — use semantic tokens like `bg-[var(--card)]`, `text-[var(--text)]`, `border-[var(--border)]`. Primary palette is warm beige/walnut (`--background: #f4eadc`, `--primary: #80502d`).
+
+Reusable component classes live in `src/app/components.css` (e.g. `.card-panel`, `.btn-primary`, `.heading-2xl`). The `cn()` helper in `src/lib/utils.ts` wraps `clsx` + `tailwind-merge` for conditional class composition.
 
 ## Environment
 

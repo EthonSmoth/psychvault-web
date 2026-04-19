@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { createContext, useContext, useEffect, useState } from "react";
-import { toggleFollowStoreAction } from "@/server/actions/follow-actions";
-import { ReportStoreForm } from "@/components/stores/report-store-form";
-import type { StoreViewerState } from "@/types/store-viewer";
+import Link from"next/link";
+import { createContext, useContext, useEffect, useState } from"react";
+import { toggleFollowStoreAction } from"@/server/actions/follow-actions";
+import { ReportStoreForm } from"@/components/stores/report-store-form";
+import type { StoreViewerState } from"@/types/store-viewer";
 
 type StoreViewerContextValue = {
   viewerState: StoreViewerState | null;
@@ -32,7 +32,7 @@ export function StoreViewerProvider({
     setViewerState(null);
 
     fetch(`/api/stores/viewer/${storeId}`, {
-      cache: "no-store",
+      cache:"no-store",
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -147,11 +147,11 @@ export function StorePrimaryActions({
           type="submit"
           className={`inline-flex rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
             viewer.isFollowing
-              ? "border border-[var(--border)] bg-[var(--card)] text-[var(--text)] hover:bg-[var(--surface-alt)]"
-              : "bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] hover:text-white"
+              ?"border border-[var(--border)] bg-[var(--card)] text-[var(--text)] hover:bg-[var(--surface-alt)]"
+              :"bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] hover:text-white"
           }`}
         >
-          {viewer.isFollowing ? "Following" : "Follow"}
+          {viewer.isFollowing ?"Following" :"Follow"}
         </button>
       </form>
 
@@ -163,7 +163,7 @@ export function StorePrimaryActions({
         }
         className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
       >
-        {viewer.emailVerified ? "Message creator" : "Verify email to message"}
+        {viewer.emailVerified ?"Message creator" :"Verify email to message"}
       </Link>
     </>
   );
@@ -191,7 +191,7 @@ export function StoreReportSection({
           className="font-medium text-[var(--text)] underline"
         >
           Log in
-        </Link>{" "}
+        </Link>{""}
         to report this store.
       </div>
     );
@@ -213,7 +213,7 @@ export function StoreReportSection({
           className="font-medium text-[var(--text)] underline"
         >
           Verify your email
-        </Link>{" "}
+        </Link>{""}
         to report this store.
       </div>
     );

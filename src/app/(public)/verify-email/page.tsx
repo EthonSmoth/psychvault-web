@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { verifyEmailAddress } from "@/lib/email-verification";
-import { getSafeRedirectTarget } from "@/lib/redirects";
-import { resendVerificationEmailFormAction } from "@/server/actions/email-verification-actions";
+import Link from"next/link";
+import { auth } from"@/lib/auth";
+import { verifyEmailAddress } from"@/lib/email-verification";
+import { getSafeRedirectTarget } from"@/lib/redirects";
+import { resendVerificationEmailFormAction } from"@/server/actions/email-verification-actions";
 
 type VerifyEmailPageProps = {
   searchParams?: Promise<{
@@ -18,8 +18,8 @@ type VerifyEmailPageProps = {
 // Handles verification links and provides resend instructions for unverified users.
 export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) {
   const params = (await searchParams) ?? {};
-  const token = String(params.token ?? "").trim();
-  const redirectTo = getSafeRedirectTarget(params.redirectTo, "/library");
+  const token = String(params.token ??"").trim();
+  const redirectTo = getSafeRedirectTarget(params.redirectTo,"/library");
   const session = await auth();
 
   const verificationResult = token ? await verifyEmailAddress(token) : null;
@@ -32,7 +32,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
 
   return (
     <div className="mx-auto grid min-h-[calc(100vh-180px)] max-w-4xl items-center px-4 py-12 sm:px-6 lg:px-8">
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm sm:p-10">
+      <div className="card-panel sm:p-10">
         <div className="mb-8">
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
             Verify your email
@@ -55,9 +55,9 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             {successMessage}
           </div>
-        ) : params.sent === "1" ? (
+        ) : params.sent ==="1" ? (
           <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-            Verification email sent to {params.email || "your address"}. Open the link in that
+            Verification email sent to {params.email ||"your address"}. Open the link in that
             email to finish setup.
           </div>
         ) : null}
@@ -92,10 +92,10 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
 
           <div className="flex flex-wrap gap-3">
             <Link
-              href={verified ? redirectTo : "/resources"}
+              href={verified ? redirectTo :"/resources"}
               className="inline-flex rounded-xl border border-[var(--border-strong)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
             >
-              {verified ? "Continue" : "Browse resources"}
+              {verified ?"Continue" :"Browse resources"}
             </Link>
             <Link
               href="/contact"

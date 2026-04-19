@@ -1,22 +1,22 @@
-import type { Metadata } from "next";
-import ContactForm from "@/components/forms/contact-form";
-import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from "@/lib/env";
+import type { Metadata } from"next";
+import ContactForm from"@/components/forms/contact-form";
+import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from"@/lib/env";
 
 const baseUrl = getAppBaseUrl();
 
 export const metadata: Metadata = {
-  title: "Contact PsychVault",
+  title:"Contact PsychVault",
   description:
-    "Get in touch with the PsychVault team for support, creator enquiries, or general questions.",
+"Get in touch with the PsychVault team for support, creator enquiries, or general questions.",
   alternates: {
     canonical: `${baseUrl}/contact`,
   },
   openGraph: {
-    title: "Contact PsychVault",
+    title:"Contact PsychVault",
     description:
-      "Get in touch with the PsychVault team for support, creator enquiries, or general questions.",
+"Get in touch with the PsychVault team for support, creator enquiries, or general questions.",
     url: `${baseUrl}/contact`,
-    type: "website",
+    type:"website",
   },
   robots: {
     index: true,
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 function toTelephoneHref(phone: string) {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+  return `tel:${phone.replace(/[^\d+]/g,"")}`;
 }
 
 // Gives buyers, creators, and reviewers a clear way to contact the marketplace team.
@@ -48,7 +48,7 @@ export default function ContactPage() {
             as possible.
           </p>
 
-          <div className="mt-10 space-y-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+          <div className="card-panel mt-10 space-y-6">
             <div>
               <p className="text-sm font-semibold text-[var(--text)]">General support</p>
               <a
@@ -108,7 +108,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+        <div className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Send a message</h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
             Use this form to send a message to our support team. We will reply to

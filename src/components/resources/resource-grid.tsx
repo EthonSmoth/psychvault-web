@@ -1,6 +1,6 @@
-import Link from "next/link";
-import type { PublicResourceCard } from "@/types/public";
-import ResourceCard from "./resource-card";
+import Link from"next/link";
+import type { PublicResourceCard } from"@/types/public";
+import ResourceCard from"./resource-card";
 
 type ResourceGridProps = {
   resources: PublicResourceCard[];
@@ -9,12 +9,12 @@ type ResourceGridProps = {
 
 export function ResourceGrid({
   resources,
-  className = "grid gap-6 sm:grid-cols-2 xl:grid-cols-3",
+  className ="grid gap-6 sm:grid-cols-2 xl:grid-cols-3",
 }: ResourceGridProps) {
   if (!resources.length) {
     return (
       <div className="rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-10 text-center shadow-sm">
-        <h3 className="text-lg font-semibold text-[var(--text)]">No resources found</h3>
+        <h3 className="heading-section">No resources found</h3>
         <p className="mt-2 text-sm text-[var(--text-muted)]">
           Try a broader search, remove some filters, or browse all resources again.
         </p>

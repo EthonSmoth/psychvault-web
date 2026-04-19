@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
-import { TermsOfServiceContent } from "@/components/legal/terms-of-service-content";
+import type { Metadata } from"next";
+import { TermsOfServiceContent } from"@/components/legal/terms-of-service-content";
 
 export const metadata: Metadata = {
-  title: "Terms of Service",
+  title:"Terms of Service",
   description:
-    "Review the marketplace rules for using PsychVault, including accounts, digital purchases, licensing, refunds, and creator responsibilities.",
+"Review the marketplace rules for using PsychVault, including accounts, digital purchases, licensing, refunds, and creator responsibilities.",
   alternates: {
-    canonical: "/terms-of-service",
+    canonical:"/terms-of-service",
   },
 };
 

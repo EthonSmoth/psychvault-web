@@ -1,9 +1,9 @@
-import Image from "next/image";
-import Link from "next/link";
+import Image from"next/image";
+import Link from"next/link";
 import {
   NavbarSessionBanner,
   NavbarSessionControls,
-} from "@/components/layout/navbar-session";
+} from"@/components/layout/navbar-session";
 
 export function Navbar() {
   return (

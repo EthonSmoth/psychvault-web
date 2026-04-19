@@ -7,6 +7,7 @@
 - keep README, vault notes, and infra docs aligned with the shipped app
 - decide whether Apple OAuth is worth the setup cost
 - add Cloudflare Turnstile only if signup abuse becomes meaningful
+- maintain CSS design system consistency and component class coverage
 
 ## Medium-Term
 

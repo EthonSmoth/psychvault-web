@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState } from"react";
 import {
   submitResourceReportAction,
   type ReportResourceFormState,
-} from "@/server/actions/report-actions";
+} from"@/server/actions/report-actions";
 
 const initialState: ReportResourceFormState = {};
 
@@ -16,24 +16,24 @@ type ReportResourceFormProps = {
 
 const REPORT_REASONS = [
   {
-    value: "INAPPROPRIATE_CONTENT",
-    label: "Inappropriate content",
+    value:"INAPPROPRIATE_CONTENT",
+    label:"Inappropriate content",
   },
   {
-    value: "COPYRIGHT",
-    label: "Copyright issue",
+    value:"COPYRIGHT",
+    label:"Copyright issue",
   },
   {
-    value: "MISLEADING_OR_UNSAFE",
-    label: "Misleading or unsafe",
+    value:"MISLEADING_OR_UNSAFE",
+    label:"Misleading or unsafe",
   },
   {
-    value: "SPAM",
-    label: "Spam",
+    value:"SPAM",
+    label:"Spam",
   },
   {
-    value: "IMPERSONATION",
-    label: "Impersonation",
+    value:"IMPERSONATION",
+    label:"Impersonation",
   },
 ] as const;
 
@@ -111,7 +111,7 @@ export function ReportResourceForm({
         disabled={pending}
         className="mt-4 inline-flex items-center justify-center rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {pending ? "Sending..." : "Submit report"}
+        {pending ?"Sending..." :"Submit report"}
       </button>
     </form>
   );

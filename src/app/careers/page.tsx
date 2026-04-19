@@ -1,45 +1,45 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { getAppBaseUrl, getSupportEmail } from "@/lib/env";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { getAppBaseUrl, getSupportEmail } from"@/lib/env";
 
 const baseUrl = getAppBaseUrl();
 const supportEmail = getSupportEmail();
 
 const values = [
   {
-    title: "Build for real clinical work",
-    body: "We care about tools that save time, sharpen reasoning, and help clinicians trust what they are buying or publishing.",
+    title:"Build for real clinical work",
+    body:"We care about tools that save time, sharpen reasoning, and help clinicians trust what they are buying or publishing.",
   },
   {
-    title: "Move with care",
-    body: "Safety, copyright, moderation, and accurate representation matter here. Shipping fast only works when the foundation stays trustworthy.",
+    title:"Move with care",
+    body:"Safety, copyright, moderation, and accurate representation matter here. Shipping fast only works when the foundation stays trustworthy.",
   },
   {
-    title: "Prefer practical over performative",
-    body: "We like sharp product thinking, clear writing, and people who can turn fuzzy workflow problems into something useful.",
+    title:"Prefer practical over performative",
+    body:"We like sharp product thinking, clear writing, and people who can turn fuzzy workflow problems into something useful.",
   },
 ];
 
 const perks = [
-  "Small-team ownership and broad product impact",
-  "Work close to clinicians, creators, and real marketplace behaviour",
-  "Flexible scope for product, operations, and growth-minded roles",
-  "Thoughtful asynchronous collaboration with room for deep work",
+"Small-team ownership and broad product impact",
+"Work close to clinicians, creators, and real marketplace behaviour",
+"Flexible scope for product, operations, and growth-minded roles",
+"Thoughtful asynchronous collaboration with room for deep work",
 ];
 
 export const metadata: Metadata = {
-  title: "Join the Team",
+  title:"Join the Team",
   description:
-    "Learn how PsychVault works, what we value, and how to express interest in joining the team.",
+"Learn how PsychVault works, what we value, and how to express interest in joining the team.",
   alternates: {
     canonical: `${baseUrl}/careers`,
   },
   openGraph: {
-    title: "Join the Team at PsychVault",
+    title:"Join the Team at PsychVault",
     description:
-      "Learn how PsychVault works, what we value, and how to express interest in joining the team.",
+"Learn how PsychVault works, what we value, and how to express interest in joining the team.",
     url: `${baseUrl}/careers`,
-    type: "website",
+    type:"website",
   },
   robots: {
     index: true,
@@ -95,7 +95,7 @@ export default function CareersPage() {
 
       <section className="mt-10 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             Life at a small product team
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
@@ -113,7 +113,7 @@ export default function CareersPage() {
         </div>
 
         <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             Current openings
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">

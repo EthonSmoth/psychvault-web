@@ -1,16 +1,16 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useActionState, useState, useEffect } from"react";
 import {
   saveReviewAction,
   type ReviewFormState,
-} from "@/server/actions/review-actions";
+} from"@/server/actions/review-actions";
 import {
   getFirstReviewNotice,
   getReviewGuidanceText,
   isLikelyFirstReview,
   suggestReviewRewrite,
-} from "@/lib/review-compliance";
+} from"@/lib/review-compliance";
 
 const initialState: ReviewFormState = {};
 
@@ -37,7 +37,7 @@ export default function ReviewForm({
     initialState
   );
 
-  const [reviewBody, setReviewBody] = useState(existingReview?.body ?? "");
+  const [reviewBody, setReviewBody] = useState(existingReview?.body ??"");
   const [showFirstNotice, setShowFirstNotice] = useState(false);
   const [noticeAcknowledged, setNoticeAcknowledged] = useState(false);
   const [rewriteSuggestion, setRewriteSuggestion] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export default function ReviewForm({
   useEffect(() => {
     if (isFirstReview && !sessionStorage.getItem("reviewNoticeShown")) {
       setShowFirstNotice(true);
-      sessionStorage.setItem("reviewNoticeShown", "true");
+      sessionStorage.setItem("reviewNoticeShown","true");
     }
   }, [isFirstReview]);
 
@@ -66,8 +66,8 @@ export default function ReviewForm({
   return (
     <form action={formAction} className="space-y-4 rounded-3xl border border-soft bg-[var(--card)] p-6 shadow-soft">
       <div>
-        <h3 className="text-lg font-semibold text-[var(--text)]">
-          {existingReview ? "Update your review" : "Leave a review"}
+        <h3 className="heading-section">
+          {existingReview ?"Update your review" :"Leave a review"}
         </h3>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Share what this resource was like to use.
@@ -106,7 +106,7 @@ export default function ReviewForm({
           id="rating"
           name="rating"
           required
-          defaultValue={existingReview?.rating?.toString() ?? ""}
+          defaultValue={existingReview?.rating?.toString() ??""}
           className="w-full rounded-xl border border-soft bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[rgba(183,110,10,0.12)]"
         >
           <option value="" disabled>
@@ -175,7 +175,7 @@ export default function ReviewForm({
         disabled={pending}
         className="inline-flex rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {pending ? "Saving..." : existingReview ? "Update review" : "Submit review"}
+        {pending ?"Saving..." : existingReview ?"Update review" :"Submit review"}
       </button>
     </form>
   );

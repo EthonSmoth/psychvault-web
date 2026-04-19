@@ -1,24 +1,24 @@
-import Image from "next/image";
-import Link from "next/link";
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import { getAppBaseUrl } from "@/lib/env";
-import { getPaymentsAvailability } from "@/lib/payments";
-import { getFeaturedBlogPosts } from "@/lib/blog";
+import Image from"next/image";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { Suspense } from"react";
+import { getAppBaseUrl } from"@/lib/env";
+import { getPaymentsAvailability } from"@/lib/payments";
+import { getFeaturedBlogPosts } from"@/lib/blog";
 import {
   getHomepageCategoryData,
   getHomepageResourceShowcaseData,
   getHomepageStatsData,
-} from "@/server/queries/public-content";
-import { BlogPostCard } from "@/components/blog/blog-post-card";
-import ResourceCard from "@/components/resources/resource-card";
+} from"@/server/queries/public-content";
+import { BlogPostCard } from"@/components/blog/blog-post-card";
+import ResourceCard from"@/components/resources/resource-card";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "PsychVault - Psychology Resources Marketplace",
+  title:"PsychVault - Psychology Resources Marketplace",
   description:
-    "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
   alternates: {
     canonical: getAppBaseUrl(),
   },
@@ -32,64 +32,64 @@ const CATEGORY_PRESENTATION: Record<
     description: string;
   }
 > = {
-  "assessment-tools": {
-    emoji: "🧪",
-    eyebrow: "Decision support",
-    description: "Checklists, screeners, and structured tools that help clinicians assess clearly.",
+"assessment-tools": {
+    emoji:"🧪",
+    eyebrow:"Decision support",
+    description:"Checklists, screeners, and structured tools that help clinicians assess clearly.",
   },
-  "report-templates": {
-    emoji: "📝",
-    eyebrow: "Documentation",
-    description: "Sharper report frameworks, wording packs, and templates that reduce admin drag.",
+"report-templates": {
+    emoji:"📝",
+    eyebrow:"Documentation",
+    description:"Sharper report frameworks, wording packs, and templates that reduce admin drag.",
   },
   psychoeducation: {
-    emoji: "🧠",
-    eyebrow: "Client education",
-    description: "Handouts and explainer resources that make complex ideas easier to share well.",
+    emoji:"🧠",
+    eyebrow:"Client education",
+    description:"Handouts and explainer resources that make complex ideas easier to share well.",
   },
-  "parent-handouts": {
-    emoji: "👨‍👩‍👧",
-    eyebrow: "Family support",
-    description: "Plain-language resources parents can actually use between sessions.",
+"parent-handouts": {
+    emoji:"👨‍👩‍👧",
+    eyebrow:"Family support",
+    description:"Plain-language resources parents can actually use between sessions.",
   },
-  "ndis-resources": {
-    emoji: "📋",
-    eyebrow: "NDIS workflow",
-    description: "Resources for clearer functional language, recommendations, and support planning.",
+"ndis-resources": {
+    emoji:"📋",
+    eyebrow:"NDIS workflow",
+    description:"Resources for clearer functional language, recommendations, and support planning.",
   },
-  "therapy-worksheets": {
-    emoji: "🧰",
-    eyebrow: "Session tools",
-    description: "Practical worksheets you can bring straight into therapy or reflective work.",
+"therapy-worksheets": {
+    emoji:"🧰",
+    eyebrow:"Session tools",
+    description:"Practical worksheets you can bring straight into therapy or reflective work.",
   },
-  "emotional-regulation-tools": {
-    emoji: "🌿",
-    eyebrow: "Regulation",
-    description: "Supports for noticing overwhelm, tracking cues, and building steadier coping plans.",
+"emotional-regulation-tools": {
+    emoji:"🌿",
+    eyebrow:"Regulation",
+    description:"Supports for noticing overwhelm, tracking cues, and building steadier coping plans.",
   },
-  "trauma-informed-practice": {
-    emoji: "🛟",
-    eyebrow: "Trauma-aware",
-    description: "Gentle, low-demand tools for safer pacing, stabilisation, and nervous-system support.",
+"trauma-informed-practice": {
+    emoji:"🛟",
+    eyebrow:"Trauma-aware",
+    description:"Gentle, low-demand tools for safer pacing, stabilisation, and nervous-system support.",
   },
-  "adhd-supports": {
-    emoji: "⚡",
-    eyebrow: "ADHD practice",
-    description: "Tools for planning, motivation, daily routines, and more sustainable follow-through.",
+"adhd-supports": {
+    emoji:"⚡",
+    eyebrow:"ADHD practice",
+    description:"Tools for planning, motivation, daily routines, and more sustainable follow-through.",
   },
-  "autism-and-neurodivergent-practice": {
-    emoji: "🧩",
-    eyebrow: "Neurodiversity",
-    description: "Affirming resources for autistic, ADHD, AuDHD, and otherwise neurodivergent clients.",
+"autism-and-neurodivergent-practice": {
+    emoji:"🧩",
+    eyebrow:"Neurodiversity",
+    description:"Affirming resources for autistic, ADHD, AuDHD, and otherwise neurodivergent clients.",
   },
 };
 
 function getCategoryPresentation(slug: string) {
   return (
     CATEGORY_PRESENTATION[slug] || {
-      emoji: "🗂️",
-      eyebrow: "Browse resources",
-      description: "Explore practical tools, templates, and supports in this area of practice.",
+      emoji:"🗂️",
+      eyebrow:"Browse resources",
+      description:"Explore practical tools, templates, and supports in this area of practice.",
     }
   );
 }
@@ -111,7 +111,7 @@ function ResourceSectionPlaceholder({
 }) {
   return (
     <div className="rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-6 shadow-sm">
-      <div className="text-lg font-semibold text-[var(--text)]">{title}</div>
+      <div className="heading-section">{title}</div>
       <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{description}</p>
       <Link
         href={href}
@@ -219,7 +219,7 @@ async function HomeHeroShowcase() {
   if (!heroResource) {
     return (
       <div className="w-full rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-6">
-        <div className="text-lg font-semibold text-[var(--text)]">
+        <div className="heading-section">
           Featured resources coming soon
         </div>
         <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -239,7 +239,7 @@ async function HomeHeroShowcase() {
     <div className="w-full space-y-4">
       <Link
         href={`/resources/${heroResource.slug}`}
-        className="group block rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        className="card-section group block transition hover:-translate-y-0.5 hover:shadow-md"
       >
         <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-light)]">
           Featured resource
@@ -262,7 +262,7 @@ async function HomeHeroShowcase() {
           )}
         </div>
         <div className="mt-4">
-          <div className="text-lg font-semibold text-[var(--text)]">{heroResource.title}</div>
+          <div className="heading-section">{heroResource.title}</div>
           {heroResource.shortDescription ? (
             <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
               {heroResource.shortDescription}
@@ -270,10 +270,10 @@ async function HomeHeroShowcase() {
           ) : null}
           <div className="mt-4 flex items-center justify-between gap-3">
             <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--text)]">
-              {heroResource.categories[0]?.name || "Featured"}
+              {heroResource.categories[0]?.name ||"Featured"}
             </span>
             <span className="text-sm font-semibold text-[var(--text)]">
-              {heroResource.isFree ? "Free" : `$${(heroResource.priceCents / 100).toFixed(2)}`}
+              {heroResource.isFree ?"Free" : `$${(heroResource.priceCents / 100).toFixed(2)}`}
             </span>
           </div>
         </div>
@@ -290,14 +290,14 @@ async function HomeHeroShowcase() {
               {resource.title}
             </div>
             <div className="mt-2 line-clamp-2 text-sm text-[var(--text-muted)]">
-              {resource.shortDescription || "Explore this clinician-made resource."}
+              {resource.shortDescription ||"Explore this clinician-made resource."}
             </div>
             <div className="mt-4 flex items-center justify-between gap-3">
               <span className="truncate text-xs text-[var(--text-light)]">
-                {resource.store?.name || "PsychVault creator"}
+                {resource.store?.name ||"PsychVault creator"}
               </span>
               <span className="shrink-0 text-sm font-semibold text-[var(--text)]">
-                {resource.isFree ? "Free" : `$${(resource.priceCents / 100).toFixed(2)}`}
+                {resource.isFree ?"Free" : `$${(resource.priceCents / 100).toFixed(2)}`}
               </span>
             </div>
           </Link>
@@ -310,7 +310,7 @@ async function HomeHeroShowcase() {
 function HeroShowcaseFallback() {
   return (
     <div className="w-full space-y-4">
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="card-section">
         <div className="mb-3 h-4 w-28 animate-pulse rounded bg-[var(--surface)]" />
         <div className="aspect-[16/10] animate-pulse rounded-2xl bg-[var(--surface)]" />
         <div className="mt-4 h-6 w-3/4 animate-pulse rounded bg-[var(--surface)]" />
@@ -335,54 +335,54 @@ function MarketplaceTrustSection() {
   const paymentsAvailability = getPaymentsAvailability();
   const cards = [
     {
-      emoji: "🏪",
-      title: "Public marketplace",
+      emoji:"🏪",
+      title:"Public marketplace",
       description: (
         <>
-          Explore <Link href="/stores" className="font-medium text-[var(--text)] underline">creator stores</Link>, browse{" "}
+          Explore <Link href="/stores" className="font-medium text-[var(--text)] underline">creator stores</Link>, browse{""}
           <Link href="/resources" className="font-medium text-[var(--text)] underline">published resources</Link>, and
           move between live listings on a real public domain.
         </>
       ),
-      href: "/stores",
-      linkLabel: "Explore stores",
+      href:"/stores",
+      linkLabel:"Explore stores",
     },
     {
-      emoji: "🛡️",
-      title: "Trust and moderation",
+      emoji:"🛡️",
+      title:"Trust and moderation",
       description: (
         <>
           Buyers can review previews, message creators, and report listings while you
-          discover stronger resources through{" "}
+          discover stronger resources through{""}
           <Link
             href="/resources?sort=rating"
             className="font-medium text-[var(--text)] underline"
           >
             top-rated tools
-          </Link>{" "}
-          and the{" "}
+          </Link>{""}
+          and the{""}
           <Link href="/blog" className="font-medium text-[var(--text)] underline">
             clinician blog
           </Link>
           .
         </>
       ),
-      href: "/resources?sort=rating",
-      linkLabel: "See trusted resources",
+      href:"/resources?sort=rating",
+      linkLabel:"See trusted resources",
     },
     {
-      emoji: paymentsAvailability.enabled ? "💳" : "🎁",
-      title: "Checkout status",
+      emoji: paymentsAvailability.enabled ?"💳" :"🎁",
+      title:"Checkout status",
       description: paymentsAvailability.enabled ? (
         <>
-          Paid and free digital resources can be claimed through the platform, including{" "}
+          Paid and free digital resources can be claimed through the platform, including{""}
           <Link
             href="/resources?sort=popular"
             className="font-medium text-[var(--text)] underline"
           >
             best sellers
-          </Link>{" "}
-          and{" "}
+          </Link>{""}
+          and{""}
           <Link
             href="/resources?price=free"
             className="font-medium text-[var(--text)] underline"
@@ -394,22 +394,22 @@ function MarketplaceTrustSection() {
       ) : (
         <>
           Free resources are available now while paid checkout activation is being finalised.
-          You can still browse{" "}
+          You can still browse{""}
           <Link
             href="/resources?price=free"
             className="font-medium text-[var(--text)] underline"
           >
             free resources
-          </Link>{" "}
-          or{" "}
+          </Link>{""}
+          or{""}
           <Link href="/creator" className="font-medium text-[var(--text)] underline">
             start selling
           </Link>
           .
         </>
       ),
-      href: paymentsAvailability.enabled ? "/resources?sort=popular" : "/resources?price=free",
-      linkLabel: paymentsAvailability.enabled ? "Browse popular resources" : "Browse free resources",
+      href: paymentsAvailability.enabled ?"/resources?sort=popular" :"/resources?price=free",
+      linkLabel: paymentsAvailability.enabled ?"Browse popular resources" :"Browse free resources",
     },
   ];
 
@@ -451,7 +451,7 @@ async function HomeCategoriesSection() {
     <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-end justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             Browse by category
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -475,7 +475,7 @@ async function HomeCategoriesSection() {
             <Link
               key={category.id}
               href={`/resources?category=${category.slug}`}
-              className="group rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className="card-section group transition hover:-translate-y-1 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--surface)] text-2xl shadow-sm">
@@ -485,20 +485,20 @@ async function HomeCategoriesSection() {
                 <span
                   className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
                     hasLiveResources
-                      ? "bg-[var(--surface-alt)] text-[var(--text)]"
-                      : "bg-[var(--surface)] text-[var(--text-light)]"
+                      ?"bg-[var(--surface-alt)] text-[var(--text)]"
+                      :"bg-[var(--surface)] text-[var(--text-light)]"
                   }`}
                 >
                   {hasLiveResources
                     ? `${category._count.resources} live`
-                    : "Coming soon"}
+                    :"Coming soon"}
                 </span>
               </div>
 
               <div className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-light)]">
                 {presentation.eyebrow}
               </div>
-              <h3 className="mt-3 text-lg font-semibold text-[var(--text)]">{category.name}</h3>
+              <h3 className="heading-section mt-3">{category.name}</h3>
               <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
                 {presentation.description}
               </p>
@@ -506,9 +506,9 @@ async function HomeCategoriesSection() {
                 <span className="text-xs text-[var(--text-light)]">
                   {hasLiveResources
                     ? `${category._count.resources} ${
-                        category._count.resources === 1 ? "resource" : "resources"
+                        category._count.resources === 1 ?"resource" :"resources"
                       } ready`
-                    : "Help shape this lane"}
+                    :"Help shape this lane"}
                 </span>
                 <span className="text-sm font-medium text-[var(--text)] transition group-hover:text-[var(--accent)]">
                   Browse
@@ -529,7 +529,7 @@ function HomeCategoriesFallback() {
         {[0, 1, 2, 3, 4, 5, 6, 7].map((item) => (
           <div
             key={item}
-            className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm"
+            className="card-section"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="h-12 w-12 animate-pulse rounded-2xl bg-[var(--surface)]" />
@@ -554,7 +554,7 @@ async function HomeFeaturedResourcesSection() {
     <section className="defer-section mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-end justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             Featured resources
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -601,7 +601,7 @@ async function HomeRecentResourcesSection() {
     <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-end justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             Recently added
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -640,7 +640,7 @@ async function HomeRecentResourcesSection() {
               )}
             </div>
             <div className="mt-4">
-              <h3 className="text-lg font-semibold text-[var(--text)]">{resource.title}</h3>
+              <h3 className="heading-section">{resource.title}</h3>
               {resource.shortDescription ? (
                 <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--text-muted)]">
                   {resource.shortDescription}
@@ -648,10 +648,10 @@ async function HomeRecentResourcesSection() {
               ) : null}
               <div className="mt-4 flex items-center justify-between gap-3">
                 <span className="truncate text-sm text-[var(--text-muted)]">
-                  {resource.store?.name || "PsychVault creator"}
+                  {resource.store?.name ||"PsychVault creator"}
                 </span>
                 <span className="shrink-0 text-sm font-semibold text-[var(--text)]">
-                  {resource.isFree ? "Free" : `$${(resource.priceCents / 100).toFixed(2)}`}
+                  {resource.isFree ?"Free" : `$${(resource.priceCents / 100).toFixed(2)}`}
                 </span>
               </div>
             </div>
@@ -728,7 +728,7 @@ async function HomeBlogSection() {
     <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-end justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+          <h2 className="heading-2xl">
             From the blog
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -755,38 +755,38 @@ async function HomeBlogSection() {
 function HomeValueSection() {
   const valueCards = [
     {
-      emoji: "⏱️",
-      title: "Save time",
-      body: "Access templates, handouts, and structured resources that cut admin time.",
-      href: "/resources?sort=popular",
-      label: "Explore popular tools",
+      emoji:"⏱️",
+      title:"Save time",
+      body:"Access templates, handouts, and structured resources that cut admin time.",
+      href:"/resources?sort=popular",
+      label:"Explore popular tools",
     },
     {
-      emoji: "✅",
-      title: "Built on trust",
-      body: "Resources made by clinicians, with previews, ratings, and clear descriptions.",
-      href: "/resources?sort=rating",
-      label: "Browse top rated",
+      emoji:"✅",
+      title:"Built on trust",
+      body:"Resources made by clinicians, with previews, ratings, and clear descriptions.",
+      href:"/resources?sort=rating",
+      label:"Browse top rated",
     },
     {
-      emoji: "💼",
-      title: "Earn from your work",
-      body: "Turn polished templates into a passive income stream alongside your practice.",
-      href: "/creator/resources/new",
-      label: "Upload a resource",
+      emoji:"💼",
+      title:"Earn from your work",
+      body:"Turn polished templates into a passive income stream alongside your practice.",
+      href:"/creator/resources/new",
+      label:"Upload a resource",
     },
     {
-      emoji: "📚",
-      title: "Grow your store",
-      body: "Build a public creator profile with a library that compounds over time.",
-      href: "/creator/store",
-      label: "Set up your store",
+      emoji:"📚",
+      title:"Grow your store",
+      body:"Build a public creator profile with a library that compounds over time.",
+      href:"/creator/store",
+      label:"Set up your store",
     },
   ];
 
   return (
     <section className="defer-section mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm lg:p-12">
+      <div className="card-panel lg:p-12">
         <div className="grid gap-10 lg:grid-cols-2">
           <div className="flex flex-col justify-center">
             <h2 className="text-3xl font-semibold tracking-tight text-[var(--text)]">

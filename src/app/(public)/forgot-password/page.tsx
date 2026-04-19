@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import Link from"next/link";
+import { useState } from"react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -16,15 +16,15 @@ export default function ForgotPasswordPage() {
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json" },
         body: JSON.stringify({ email }),
       });
 
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong. Please try again.");
+        setError(data.error ??"Something went wrong. Please try again.");
       } else {
         setSubmitted(true);
       }
@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="mx-auto w-full max-w-md">
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm sm:p-10">
+        <div className="card-panel sm:p-10">
           {submitted ? (
             <div className="space-y-4">
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
@@ -61,15 +61,15 @@ export default function ForgotPasswordPage() {
                 your inbox — it expires in 1 hour.
               </div>
               <p className="text-sm text-[var(--text-muted)]">
-                Didn&apos;t receive it?{" "}
+                Didn&apos;t receive it?{""}
                 <button
                   type="button"
                   onClick={() => { setSubmitted(false); setEmail(""); }}
                   className="font-semibold text-[var(--text)] hover:text-[var(--accent)]"
                 >
                   Try again
-                </button>{" "}
-                or{" "}
+                </button>{""}
+                or{""}
                 <Link href="/contact" className="font-semibold text-[var(--text)] hover:text-[var(--accent)]">
                   contact support
                 </Link>
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
           ) : (
             <>
               <div className="mb-8">
-                <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+                <h2 className="heading-2xl">
                   Forgot your password?
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
@@ -118,14 +118,14 @@ export default function ForgotPasswordPage() {
                   disabled={pending}
                   className="w-full rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] hover:text-white disabled:opacity-60"
                 >
-                  {pending ? "Sending…" : "Send reset link"}
+                  {pending ?"Sending…" :"Send reset link"}
                 </button>
               </form>
             </>
           )}
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
-            Remembered it?{" "}
+            Remembered it?{""}
             <Link href="/login" className="font-semibold text-[var(--text)] hover:text-[var(--accent)]">
               Log in
             </Link>

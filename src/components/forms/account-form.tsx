@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { useActionState, useEffect, useRef, useState } from"react";
+import Image from"next/image";
 import {
   updateProfileAction,
   changePasswordAction,
   type AccountFormState,
   type PasswordFormState,
-} from "@/server/actions/account-actions";
+} from"@/server/actions/account-actions";
 
 type AccountFormProps = {
   user: {
@@ -28,7 +28,7 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
   );
   const [name, setName] = useState(user.name);
   const [emailNotifications, setEmailNotifications] = useState(user.emailNotifications);
-  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ??"");
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -41,16 +41,16 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("uploadKind", "thumbnail");
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      fd.append("uploadKind","thumbnail");
+      const res = await fetch("/api/upload", { method:"POST", body: fd });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error ?? "Upload failed");
+        throw new Error(data?.error ??"Upload failed");
       }
       const data = await res.json();
-      setAvatarUrl(data.url ?? "");
+      setAvatarUrl(data.url ??"");
     } catch (err) {
-      setAvatarError(err instanceof Error ? err.message : "Upload failed");
+      setAvatarError(err instanceof Error ? err.message :"Upload failed");
     } finally {
       setAvatarUploading(false);
     }
@@ -72,8 +72,8 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
   return (
     <div className="space-y-8">
       {/* Profile card */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Profile</h2>
+      <div className="card-panel-md">
+        <h2 className="heading-section">Profile</h2>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
           Your public display name and avatar.
         </p>
@@ -97,7 +97,7 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xl text-[var(--text-light)]">
-                    {name?.[0]?.toUpperCase() ?? "?"}
+                    {name?.[0]?.toUpperCase() ??"?"}
                   </div>
                 )}
               </div>
@@ -109,7 +109,7 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
                   disabled={avatarUploading}
                   className="inline-flex rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)] disabled:opacity-50"
                 >
-                  {avatarUploading ? "Uploading…" : "Change photo"}
+                  {avatarUploading ?"Uploading…" :"Change photo"}
                 </button>
                 {avatarUrl && (
                   <button
@@ -205,19 +205,19 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
               disabled={profilePending || avatarUploading}
               className="inline-flex rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] disabled:opacity-60"
             >
-              {profilePending ? "Saving…" : "Save changes"}
+              {profilePending ?"Saving…" :"Save changes"}
             </button>
           </div>
         </form>
       </div>
 
       {/* Password card */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Password</h2>
+      <div className="card-panel-md">
+        <h2 className="heading-section">Password</h2>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
           {user.hasPassword
-            ? "Update your password. You will remain signed in."
-            : "Your account uses Google sign-in and has no password set. Use forgot password to create one."}
+            ?"Update your password. You will remain signed in."
+            :"Your account uses Google sign-in and has no password set. Use forgot password to create one."}
         </p>
 
         {user.hasPassword ? (
@@ -284,7 +284,7 @@ export function AccountForm({ user, csrfToken }: AccountFormProps) {
                 disabled={passwordPending}
                 className="inline-flex rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)] disabled:opacity-60"
               >
-                {passwordPending ? "Updating…" : "Update password"}
+                {passwordPending ?"Updating…" :"Update password"}
               </button>
             </div>
           </form>

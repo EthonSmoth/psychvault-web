@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { resendVerificationEmailFormAction } from "@/server/actions/email-verification-actions";
-import { logoutAction } from "@/server/actions/auth-actions";
-import { MobileOverlayMenu } from "@/components/layout/mobile-overlay-menu";
-import { consumeNavbarSessionRefreshRequest } from "@/lib/navbar-session-sync";
+import Link from"next/link";
+import { usePathname } from"next/navigation";
+import { useEffect, useState } from"react";
+import { resendVerificationEmailFormAction } from"@/server/actions/email-verification-actions";
+import { logoutAction } from"@/server/actions/auth-actions";
+import { MobileOverlayMenu } from"@/components/layout/mobile-overlay-menu";
+import { consumeNavbarSessionRefreshRequest } from"@/lib/navbar-session-sync";
 
 type NavbarSessionResponse =
   | {
@@ -30,11 +30,11 @@ let navbarSessionRequest: Promise<NavbarSessionResponse> | null = null;
 function getInitials(name?: string | null) {
   return (
     name
-      ?.split(" ")
+      ?.split("")
       .map((part) => part[0])
       .join("")
       .slice(0, 2)
-      .toUpperCase() || "PV"
+      .toUpperCase() ||"PV"
   );
 }
 
@@ -50,7 +50,7 @@ async function fetchNavbarSession(forceRefresh = false) {
 
   if (!navbarSessionRequest) {
     navbarSessionRequest = fetch("/api/session/nav", {
-      cache: "no-store",
+      cache:"no-store",
     })
       .then(async (response) => {
         if (!response.ok) {
@@ -105,7 +105,7 @@ function useNavbarSession() {
     };
 
     const refreshOnVisibility = () => {
-      if (document.visibilityState === "visible") {
+      if (document.visibilityState ==="visible") {
         refreshSession();
       }
     };
@@ -173,54 +173,54 @@ function AccountMenuContent({
   return (
     <>
       <div className="rounded-2xl border border-soft bg-[var(--surface-alt)] px-4 py-3">
-        <div className="text-sm font-semibold text-[var(--text)]">{name || "Account"}</div>
+        <div className="text-sm font-semibold text-[var(--text)]">{name ||"Account"}</div>
         <div className="mt-1 text-xs text-[var(--muted)]">{email}</div>
       </div>
       <Link
         href="/library"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         My library
       </Link>
       <Link
         href="/account"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Account settings
       </Link>
       <Link
         href="/following"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Following feed
       </Link>
       <Link
         href="/creator"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Creator dashboard
       </Link>
       <Link
         href="/creator/store"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Store settings
       </Link>
       <Link
         href="/creator/resources"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Your resources
       </Link>
       <Link
         href="/creator/analytics"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Analytics
       </Link>
       <Link
         href="/creator/payouts"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Payouts
       </Link>
@@ -249,49 +249,49 @@ function MobileMenuLinks({ authenticated }: { authenticated: boolean }) {
     <>
       <Link
         href="/"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Home
       </Link>
       <Link
         href="/resources"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Browse
       </Link>
       <Link
         href="/stores"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Stores
       </Link>
       <Link
         href="/blog"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Blog
       </Link>
       <Link
         href="/creator"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Sell
       </Link>
       <Link
         href="/about"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         About
       </Link>
       <Link
         href="/contact"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Contact
       </Link>
       <Link
         href="/resources?category=assessment-tools"
-        className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+        className="nav-dropdown-item"
       >
         Categories
       </Link>
@@ -299,25 +299,25 @@ function MobileMenuLinks({ authenticated }: { authenticated: boolean }) {
         <>
           <Link
             href="/messages"
-            className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+            className="nav-dropdown-item"
           >
             Messages
           </Link>
           <Link
             href="/library"
-            className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+            className="nav-dropdown-item"
           >
             My library
           </Link>
           <Link
             href="/account"
-            className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+            className="nav-dropdown-item"
           >
             Account settings
           </Link>
           <Link
             href="/following"
-            className="block rounded-2xl px-4 py-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-strong)]"
+            className="nav-dropdown-item"
           >
             Following
           </Link>
@@ -377,7 +377,7 @@ export function NavbarSessionControls() {
           </MobileOverlayMenu>
 
           <MobileOverlayMenu
-            title={name || "Account"}
+            title={name ||"Account"}
             triggerClassName="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-soft bg-[var(--surface-alt)] shadow-sm transition hover:bg-[var(--surface)]"
             triggerContent={
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-semibold text-white">
@@ -400,7 +400,7 @@ export function NavbarSessionControls() {
               </div>
 
               <div className="hidden text-left sm:block">
-                <div className="text-sm font-medium text-[var(--text)]">{name || "Account"}</div>
+                <div className="text-sm font-medium text-[var(--text)]">{name ||"Account"}</div>
                 <div className="text-xs text-[var(--muted)]">{email}</div>
               </div>
             </button>

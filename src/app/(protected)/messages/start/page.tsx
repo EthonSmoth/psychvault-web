@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { requireVerifiedEmailOrRedirect } from "@/lib/require-email-verification";
-import { getOrCreateConversation } from "@/server/actions/message-actions";
+import { redirect } from"next/navigation";
+import { auth } from"@/lib/auth";
+import { db } from"@/lib/db";
+import { requireVerifiedEmailOrRedirect } from"@/lib/require-email-verification";
+import { getOrCreateConversation } from"@/server/actions/message-actions";
 
 type StartConversationPageProps = {
   searchParams: Promise<{

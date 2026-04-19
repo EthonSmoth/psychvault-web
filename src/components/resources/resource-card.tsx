@@ -1,7 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
-import type { PublicResourceCard } from "@/types/public";
+import Image from"next/image";
+import Link from"next/link";
+import { VerifiedBadge } from"@/components/ui/verified-badge";
+import type { PublicResourceCard } from"@/types/public";
 
 type ResourceCardProps = {
   resource: PublicResourceCard;
@@ -12,11 +12,11 @@ type ResourceCardProps = {
 };
 
 function formatPrice(priceCents: number, isFree?: boolean) {
-  if (isFree || priceCents === 0) return "Free";
+  if (isFree || priceCents === 0) return"Free";
 
   return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
+    style:"currency",
+    currency:"AUD",
   }).format(priceCents / 100);
 }
 
@@ -24,7 +24,7 @@ export default function ResourceCard({
   resource,
   preferThumbnail = false,
   imageQuality,
-  imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px",
+  imageSizes ="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px",
   priority = false,
 }: ResourceCardProps) {
   const previewImage = preferThumbnail
@@ -73,21 +73,21 @@ export default function ResourceCard({
           <span
             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
               resource.downloadReady
-                ? "bg-[var(--primary)] border-[var(--primary)] text-white"
-                : "bg-[var(--surface)] border-[var(--border)] text-[var(--text-muted)]"
+                ?"bg-[var(--primary)] border-[var(--primary)] text-white"
+                :"bg-[var(--surface)] border-[var(--border)] text-[var(--text-muted)]"
             }`}
           >
-            {resource.downloadReady ? "Download ready" : "No download attached"}
+            {resource.downloadReady ?"Download ready" :"No download attached"}
           </span>
 
           <span
             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
               isFree
-                ? "bg-[var(--primary)] border-[var(--primary)] text-white"
-                : "bg-[var(--accent)] border-[var(--accent)] text-white"
+                ?"bg-[var(--primary)] border-[var(--primary)] text-white"
+                :"bg-[var(--accent)] border-[var(--accent)] text-white"
             }`}
           >
-            {isFree ? "Free" : "Paid"}
+            {isFree ?"Free" :"Paid"}
           </span>
         </div>
 
@@ -104,10 +104,10 @@ export default function ResourceCard({
         <div className="mt-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-[var(--muted)]">
-              {resource.store?.name || resource.creator?.name || "Unknown creator"}
+              {resource.store?.name || resource.creator?.name ||"Unknown creator"}
             </p>
             <p className="mt-1 text-xs text-[var(--muted)]">
-              {"\u2605"} {resource.averageRating?.toFixed?.(1) ?? "New"} {"\u00b7"}{" "}
+              {"\u2605"} {resource.averageRating?.toFixed?.(1) ??"New"} {"\u00b7"}{""}
               {resource.reviewCount ?? 0} reviews
             </p>
             {!isFree ? (

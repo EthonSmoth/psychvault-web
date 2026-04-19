@@ -64,7 +64,6 @@ Recommendation:
 
 ## Remaining Gaps
 
-- no password reset flow yet
 - no Apple OAuth yet
 - no CAPTCHA yet
 - JWT sessions are bounded, but this is still not a fully server-revoked session model

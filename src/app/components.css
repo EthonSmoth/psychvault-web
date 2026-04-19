@@ -189,3 +189,70 @@ select:focus {
   font-weight: 600;
   color: var(--text-muted);
 }
+
+/* ── Card panel variants ──────────────────────────── */
+
+.card-panel {
+  border-radius: 1.5rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 2rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.card-section {
+  border-radius: 1.5rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.card-panel-md {
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Typography shortcuts ─────────────────────────── */
+
+.heading-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+
+.heading-section {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Navigation helpers ───────────────────────────── */
+
+.nav-dropdown-item {
+  display: block;
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  transition: background-color 0.2s ease;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--surface-strong);
+}
+
+.footer-link {
+  display: block;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--accent);
+}

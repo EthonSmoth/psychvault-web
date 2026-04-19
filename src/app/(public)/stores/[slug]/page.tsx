@@ -1,27 +1,27 @@
-import Image from "next/image";
-import Link from "next/link";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getAppBaseUrl } from "@/lib/env";
-import { serializeJsonLd } from "@/lib/input-safety";
-import { getMarketplacePolicyLinks } from "@/lib/payments";
+import Image from"next/image";
+import Link from"next/link";
+import type { Metadata } from"next";
+import { notFound } from"next/navigation";
+import { getAppBaseUrl } from"@/lib/env";
+import { serializeJsonLd } from"@/lib/input-safety";
+import { getMarketplacePolicyLinks } from"@/lib/payments";
 import {
   getPublishedStoreMetadata,
   getPublishedStorePageData,
   getPublishedStoreResourcesPageData,
-} from "@/server/queries/public-content";
-import { ResourceGrid } from "@/components/resources/resource-grid";
+} from"@/server/queries/public-content";
+import { ResourceGrid } from"@/components/resources/resource-grid";
 import {
   StorePrimaryActions,
   StoreReportSection,
   StoreViewerProvider,
-} from "@/components/stores/store-viewer";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
+} from"@/components/stores/store-viewer";
+import { Breadcrumb } from"@/components/ui/breadcrumb";
+import { VerifiedBadge } from"@/components/ui/verified-badge";
 
 // force-dynamic because searchParams (pagination) is a request-time API.
 // Data is still cached at query level via unstable_cache (300s), so DB is not hit per-request.
-export const dynamic = "force-dynamic";
+export const dynamic ="force-dynamic";
 
 type StorePageProps = {
   params: Promise<{
@@ -38,8 +38,8 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
 
   if (!store) {
     return {
-      title: "Store not found | PsychVault",
-      description: "The requested creator store could not be found.",
+      title:"Store not found | PsychVault",
+      description:"The requested creator store could not be found.",
       robots: {
         index: false,
         follow: false,
@@ -58,14 +58,14 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
       canonical: url,
     },
     openGraph: {
-      type: "website",
+      type:"website",
       url,
       title: store.name,
       description,
       images: store.logoUrl ? [{ url: store.logoUrl, alt: store.name }] : undefined,
     },
     twitter: {
-      card: "summary_large_image",
+      card:"summary_large_image",
       title: store.name,
       description,
       images: store.logoUrl ? [store.logoUrl] : undefined,
@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
 export default async function StorePage({ params, searchParams }: StorePageProps) {
   const [{ slug }, resolvedSearchParams] = await Promise.all([params, searchParams]);
   const page =
-    typeof resolvedSearchParams.page === "string"
+    typeof resolvedSearchParams.page ==="string"
       ? resolvedSearchParams.page
       : Array.isArray(resolvedSearchParams.page)
       ? resolvedSearchParams.page[0]
@@ -105,8 +105,8 @@ export default async function StorePage({ params, searchParams }: StorePageProps
   const baseUrl = getAppBaseUrl();
   const storeUrl = `${baseUrl}/stores/${store.slug}`;
   const organizationSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
+"@context":"https://schema.org",
+"@type":"Organization",
     name: store.name,
     description: store.bio || `Browse psychology resources from ${store.name} on PsychVault`,
     url: storeUrl,
@@ -117,12 +117,12 @@ export default async function StorePage({ params, searchParams }: StorePageProps
   const cleanSchema = JSON.parse(JSON.stringify(organizationSchema));
 
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+"@context":"https://schema.org",
+"@type":"BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
-      { "@type": "ListItem", position: 2, name: "Stores", item: `${baseUrl}/stores` },
-      { "@type": "ListItem", position: 3, name: store.name, item: storeUrl },
+      {"@type":"ListItem", position: 1, name:"Home", item: baseUrl },
+      {"@type":"ListItem", position: 2, name:"Stores", item: `${baseUrl}/stores` },
+      {"@type":"ListItem", position: 3, name: store.name, item: storeUrl },
     ],
   };
 
@@ -146,8 +146,8 @@ export default async function StorePage({ params, searchParams }: StorePageProps
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <Breadcrumb
           items={[
-            { label: "Home", href: "/" },
-            { label: "Stores", href: "/stores" },
+            { label:"Home", href:"/" },
+            { label:"Stores", href:"/stores" },
             { label: store.name },
           ]}
         />
@@ -205,7 +205,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--text-muted)]">
                     <span>{store.resourceCount} resources</span>
                     <span>{store.followerCount} followers</span>
-                    <span>{store.location || "Location not set"}</span>
+                    <span>{store.location ||"Location not set"}</span>
                   </div>
                 </div>
               </div>
@@ -225,7 +225,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
               </h2>
               <p className="mt-3 text-sm leading-7 text-[var(--text)]">
                 {store.bio ||
-                  "This creator has not added a store bio yet. Check back soon for more details about their resources and clinical focus."}
+"This creator has not added a store bio yet. Check back soon for more details about their resources and clinical focus."}
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
@@ -238,11 +238,11 @@ export default async function StorePage({ params, searchParams }: StorePageProps
                 <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
                   <div className="font-medium text-[var(--text)]">Policies</div>
                   <div className="mt-1">
-                    See our{" "}
+                    See our{""}
                     <Link href={policyLinks.terms} className="font-medium underline">
                       terms
                     </Link>
-                    {" "}and{" "}
+                    {""}and{""}
                     <Link href={policyLinks.refunds} className="font-medium underline">
                       refund policy
                     </Link>
@@ -262,7 +262,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
           <section className="defer-section mt-12">
             <div className="mb-6 flex items-end justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+                <h2 className="heading-2xl">
                   Featured resources
                 </h2>
                 <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -278,7 +278,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
         <section id="all-resources" className="defer-section mt-12 scroll-mt-28">
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight text-[var(--text)]">
+              <h2 className="heading-2xl">
                 All resources
               </h2>
               <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -296,7 +296,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
 
           <div className="mb-5 text-sm text-[var(--text-muted)]">
             Showing {resourcesPage.resources.length} resource
-            {resourcesPage.resources.length === 1 ? "" : "s"} on page{" "}
+            {resourcesPage.resources.length === 1 ?"" :"s"} on page{""}
             {resourcesPage.pageInfo.page} of this store.
           </div>
 
@@ -304,7 +304,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
             <ResourceGrid resources={resourcesPage.resources} />
           ) : store.resourceCount > 0 && resourcesPage.pageInfo.page > 1 ? (
             <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
-              <h3 className="text-lg font-semibold text-[var(--text)]">
+              <h3 className="heading-section">
                 That page does not have any resources
               </h3>
               <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
@@ -359,14 +359,14 @@ export default async function StorePage({ params, searchParams }: StorePageProps
         </section>
 
         <section className="defer-section mt-12">
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-[var(--text)]">Store details</h2>
+          <div className="card-section">
+            <h2 className="heading-section">Store details</h2>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-2xl bg-[var(--surface-alt)] p-4">
                 <div className="text-sm font-medium text-[var(--text-muted)]">Owner</div>
                 <div className="mt-2 text-sm font-semibold text-[var(--text)]">
-                  {store.owner.name || "Creator"}
+                  {store.owner.name ||"Creator"}
                 </div>
               </div>
 

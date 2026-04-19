@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import Image from"next/image";
+import { useState, useEffect, useRef } from"react";
 
 type GalleryImage = {
   id: string;
@@ -16,7 +16,7 @@ type ResourceGalleryProps = {
 };
 
 export function ResourceGallery({ images, title }: ResourceGalleryProps) {
-  const [activeImageId, setActiveImageId] = useState(images[0]?.id ?? "");
+  const [activeImageId, setActiveImageId] = useState(images[0]?.id ??"");
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -49,7 +49,7 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
   // Close zoom on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isZoomed) {
+      if (e.key ==="Escape" && isZoomed) {
         setIsZoomed(false);
         setZoom(1);
       }
@@ -62,12 +62,12 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
   // Prevent body scroll when zoomed
   useEffect(() => {
     if (isZoomed) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow ="hidden";
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow ="unset";
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow ="unset";
     };
   }, [isZoomed]);
 
@@ -100,7 +100,7 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+          if (e.key ==="Enter" || e.key ==="") {
             setIsZoomed(true);
             setZoom(1.2);
           }
@@ -115,8 +115,8 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) calc(100vw - 2rem), 66vw"
           className="object-cover transition-transform duration-200"
           style={{
-            transformOrigin: isZoomed ? `${position.x}% ${position.y}%` : "center",
-            transform: isZoomed ? `scale(${Math.min(zoom, 2.5)})` : "scale(1)",
+            transformOrigin: isZoomed ? `${position.x}% ${position.y}%` :"center",
+            transform: isZoomed ? `scale(${Math.min(zoom, 2.5)})` :"scale(1)",
           }}
         />
 
@@ -153,8 +153,8 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
                   onClick={() => setActiveImageId(image.id)}
                   className={`group shrink-0 rounded-2xl border bg-[var(--card)] p-1.5 text-left transition ${
                     isActive
-                      ? "border-[var(--primary)] shadow-sm"
-                      : "border-[var(--border)] hover:border-[var(--accent)]"
+                      ?"border-[var(--primary)] shadow-sm"
+                      :"border-[var(--border)] hover:border-[var(--accent)]"
                   }`}
                   aria-label={`Show preview ${index + 1}`}
                   aria-pressed={isActive}
