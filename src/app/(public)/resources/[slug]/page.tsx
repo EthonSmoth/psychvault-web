@@ -429,11 +429,11 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                   :"Stripe checkout protects the transaction and grants instant access once payment clears."}
               </p>
               <p className="mt-3 text-xs text-[var(--text-muted)]">
-                By purchasing, you agree to the{""}
+                By purchasing, you agree to the{" "}
                 <Link href={policyLinks.terms} className="font-medium underline">
                   Terms of Service
                 </Link>
-                {""}and{""}
+                {" "}and{" "}
                 <Link href={policyLinks.refunds} className="font-medium underline">
                   Refund Policy
                 </Link>

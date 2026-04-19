@@ -376,7 +376,7 @@ export default async function CreatorDashboardPage() {
                   </span>
                 </div>
                 <div className="mt-2 text-sm text-[var(--text)]">
-                  Publishing:{""}
+                  Publishing:{" "}
                   <span className="font-semibold" style={{ color: trustAppearance.textColor }}>
                     {trustProfile.tier ==="trusted" || trustProfile.tier ==="standard"
                       ?"Usually auto-reviewed"

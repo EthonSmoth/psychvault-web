@@ -320,11 +320,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   <span className="font-semibold text-[var(--text)]">Category:</span> {post.category}
                 </div>
                 <div>
-                  <span className="font-semibold text-[var(--text)]">Published:</span>{""}
+                  <span className="font-semibold text-[var(--text)]">Published:</span>{" "}
                   {formatBlogDate(post.publishedAt)}
                 </div>
                 <div>
-                  <span className="font-semibold text-[var(--text)]">Reading time:</span>{""}
+                  <span className="font-semibold text-[var(--text)]">Reading time:</span>{" "}
                   {post.readingTimeMinutes} min
                 </div>
               </div>

@@ -126,7 +126,7 @@ export default async function CreatorResourcesPage() {
           {publishedPaidResources > 0
             ? `${publishedPaidResources} published paid resource${publishedPaidResources === 1 ?"" :"s"} from your older creator setup now need Stripe payout onboarding before they can stay sale-ready.`
             :"Connect Stripe before publishing paid resources. Free resources can still go live normally."}
-          {""}
+          {" "}
           <Link href="/creator/payouts" className="font-semibold underline">
             Finish payout setup
           </Link>

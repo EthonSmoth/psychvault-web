@@ -61,15 +61,15 @@ export default function ForgotPasswordPage() {
                 your inbox — it expires in 1 hour.
               </div>
               <p className="text-sm text-[var(--text-muted)]">
-                Didn&apos;t receive it?{""}
+                Didn&apos;t receive it?{" "}
                 <button
                   type="button"
                   onClick={() => { setSubmitted(false); setEmail(""); }}
                   className="font-semibold text-[var(--text)] hover:text-[var(--accent)]"
                 >
                   Try again
-                </button>{""}
-                or{""}
+                </button>{" "}
+                or{" "}
                 <Link href="/contact" className="font-semibold text-[var(--text)] hover:text-[var(--accent)]">
                   contact support
                 </Link>
@@ -125,7 +125,7 @@ export default function ForgotPasswordPage() {
           )}
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
-            Remembered it?{""}
+            Remembered it?{" "}
             <Link href="/login" className="font-semibold text-[var(--text)] hover:text-[var(--accent)]">
               Log in
             </Link>

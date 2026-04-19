@@ -238,11 +238,11 @@ export default async function StorePage({ params, searchParams }: StorePageProps
                 <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
                   <div className="font-medium text-[var(--text)]">Policies</div>
                   <div className="mt-1">
-                    See our{""}
+                    See our{" "}
                     <Link href={policyLinks.terms} className="font-medium underline">
                       terms
                     </Link>
-                    {""}and{""}
+                    {" "}and{" "}
                     <Link href={policyLinks.refunds} className="font-medium underline">
                       refund policy
                     </Link>
@@ -296,7 +296,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
 
           <div className="mb-5 text-sm text-[var(--text-muted)]">
             Showing {resourcesPage.resources.length} resource
-            {resourcesPage.resources.length === 1 ?"" :"s"} on page{""}
+            {resourcesPage.resources.length === 1 ?"" :"s"} on page{" "}
             {resourcesPage.pageInfo.page} of this store.
           </div>
 

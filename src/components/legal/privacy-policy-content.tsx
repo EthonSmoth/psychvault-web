@@ -149,11 +149,11 @@ export function PrivacyPolicyContent() {
           <h2 className="text-xl font-semibold text-[var(--text)]">Related policies</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             For more information about digital purchases, licensing, and refund handling,
-            please also review our{""}
+            please also review our{" "}
             <Link href={links.terms} className="font-medium text-[var(--text)] underline">
               Terms of Service
-            </Link>{""}
-            and{""}
+            </Link>{" "}
+            and{" "}
             <Link href={links.refunds} className="font-medium text-[var(--text)] underline">
               Refund Policy
             </Link>

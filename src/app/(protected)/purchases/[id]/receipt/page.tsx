@@ -169,7 +169,7 @@ export default async function ReceiptPage({ params }: Props) {
 
         {/* Footer */}
         <p className="text-center text-xs text-[var(--text-muted)]">
-          Questions? Contact us at{""}
+          Questions? Contact us at{" "}
           <a href="mailto:support@psychvault.com.au" className="underline">
             support@psychvault.com.au
           </a>

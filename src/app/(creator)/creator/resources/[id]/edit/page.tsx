@@ -119,7 +119,7 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           This is a paid resource. Existing paid listings now require Stripe payout
           onboarding before they can stay sale-ready.
-          {""}
+          {" "}
           <a href="/creator/payouts" className="font-semibold underline">
             Finish payout setup
           </a>

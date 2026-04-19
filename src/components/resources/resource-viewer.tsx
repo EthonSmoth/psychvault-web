@@ -287,7 +287,7 @@ export function ResourceReportBox({
           className="font-medium text-[var(--text)] underline"
         >
           Log in
-        </Link>{""}
+        </Link>{" "}
         to report this resource.
       </div>
     );
@@ -309,7 +309,7 @@ export function ResourceReportBox({
           className="font-medium text-[var(--text)] underline"
         >
           Verify your email
-        </Link>{""}
+        </Link>{" "}
         to report this resource.
       </div>
     );
@@ -350,7 +350,7 @@ export function ResourceReviewGate({
           className="font-medium text-[var(--text)] underline"
         >
           Log in
-        </Link>{""}
+        </Link>{" "}
         and get this resource to leave a review.
       </div>
     );

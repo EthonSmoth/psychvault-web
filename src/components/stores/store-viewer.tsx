@@ -191,7 +191,7 @@ export function StoreReportSection({
           className="font-medium text-[var(--text)] underline"
         >
           Log in
-        </Link>{""}
+        </Link>{" "}
         to report this store.
       </div>
     );
@@ -213,7 +213,7 @@ export function StoreReportSection({
           className="font-medium text-[var(--text)] underline"
         >
           Verify your email
-        </Link>{""}
+        </Link>{" "}
         to report this store.
       </div>
     );

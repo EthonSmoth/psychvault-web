@@ -115,7 +115,7 @@ export function TermsOfServiceContent() {
           <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
             <p>
               Because most purchases are digital and may be available immediately, refunds
-              are not automatic. Refund requests are assessed under our{""}
+              are not automatic. Refund requests are assessed under our{" "}
               <Link href={links.refunds} className="font-medium text-[var(--text)] underline">
                 Refund Policy
               </Link>

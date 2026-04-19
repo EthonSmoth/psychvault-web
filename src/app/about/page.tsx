@@ -107,7 +107,7 @@ export default function AboutPage() {
           <h2 className="text-2xl font-semibold text-[var(--text)]">Want to know more?</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             If you have questions about how PsychVault works, creator
-            partnerships, or support, please visit our{""}
+            partnerships, or support, please visit our{" "}
             <Link
               href="/contact"
               className="font-semibold text-[var(--text)] underline hover:text-[var(--accent)]"
@@ -117,7 +117,7 @@ export default function AboutPage() {
             .
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
-            Support email:{""}
+            Support email:{" "}
             <a
               href={`mailto:${supportEmail}`}
               className="font-semibold text-[var(--text)] underline hover:text-[var(--accent)]"

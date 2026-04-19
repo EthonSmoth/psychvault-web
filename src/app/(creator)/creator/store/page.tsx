@@ -114,7 +114,7 @@ export default async function CreatorStorePage() {
 
         {user.store?.moderationReason ? (
           <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text-muted)]">
-            <span className="font-semibold text-[var(--text)]">Publishing note:</span>{""}
+            <span className="font-semibold text-[var(--text)]">Publishing note:</span>{" "}
             {user.store.moderationReason}
           </div>
         ) : null}
@@ -128,7 +128,7 @@ export default async function CreatorStorePage() {
         <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           Paid listings now require Stripe payout setup so creator earnings can be sent to
           the right connected account.
-          {""}
+          {" "}
           <Link href="/creator/payouts" className="font-semibold underline">
             Complete payouts
           </Link>

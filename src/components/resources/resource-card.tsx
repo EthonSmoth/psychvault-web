@@ -107,7 +107,7 @@ export default function ResourceCard({
               {resource.store?.name || resource.creator?.name ||"Unknown creator"}
             </p>
             <p className="mt-1 text-xs text-[var(--muted)]">
-              {"\u2605"} {resource.averageRating?.toFixed?.(1) ??"New"} {"\u00b7"}{""}
+              {"\u2605"} {resource.averageRating?.toFixed?.(1) ??"New"} {"\u00b7"}{" "}
               {resource.reviewCount ?? 0} reviews
             </p>
             {!isFree ? (

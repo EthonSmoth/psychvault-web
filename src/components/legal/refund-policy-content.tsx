@@ -94,14 +94,14 @@ export function RefundPolicyContent() {
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             Nothing in this policy excludes rights or remedies that cannot be excluded
             under Australian Consumer Law or other mandatory laws. You can also review
-            our{""}
+            our{" "}
             <Link href={links.terms} className="font-medium text-[var(--text)] underline">
               Terms of Service
-            </Link>{""}
-            and{""}
+            </Link>{" "}
+            and{" "}
             <Link href={links.privacy} className="font-medium text-[var(--text)] underline">
               Privacy Policy
-            </Link>{""}
+            </Link>{" "}
             for related information.
           </p>
         </section>

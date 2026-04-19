@@ -130,7 +130,7 @@ export default async function CreatorPayoutsPage({
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
           Create your store first. Stripe onboarding is attached to a creator account with
           a store profile.
-          {""}
+          {" "}
           <Link href="/creator/store" className="font-semibold underline">
             Go to store settings
           </Link>

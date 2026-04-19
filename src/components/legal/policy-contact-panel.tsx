@@ -15,7 +15,7 @@ export function PolicyContactPanel() {
       <h2 className="text-xl font-semibold text-[var(--text)]">Contact and support</h2>
       <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
         If you need help with billing, downloads, refunds, privacy, or a policy question,
-        contact the PsychVault team directly or use our{""}
+        contact the PsychVault team directly or use our{" "}
         <Link href="/contact" className="font-medium text-[var(--text)] underline">
           contact page
         </Link>

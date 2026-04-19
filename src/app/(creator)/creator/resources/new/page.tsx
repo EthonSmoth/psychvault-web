@@ -76,7 +76,7 @@ export default async function NewCreatorResourcePage() {
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
           Existing creators can keep creating free resources right away, but paid resources
           now require Stripe payout onboarding.
-          {""}
+          {" "}
           <a href="/creator/payouts" className="font-semibold underline">
             Complete payout setup
           </a>

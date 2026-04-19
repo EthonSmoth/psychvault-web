@@ -63,7 +63,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           <SignupForm googleEnabled={googleEnabled} />
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
-            Already have an account?{""}
+            Already have an account?{" "}
             <Link href={loginHref} className="font-semibold text-[var(--text)] hover:text-[var(--accent)]">
               Log in
             </Link>

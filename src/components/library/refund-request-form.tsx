@@ -92,7 +92,7 @@ export function RefundRequestForm({
 
         <div>
           <label htmlFor={`message-${purchaseId}`} className="block text-xs font-medium text-[var(--text)]">
-            Additional details{""}
+            Additional details{" "}
             <span className="font-normal text-[var(--text-light)]">(optional)</span>
           </label>
           <textarea

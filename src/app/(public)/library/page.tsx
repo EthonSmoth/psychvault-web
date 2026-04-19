@@ -164,7 +164,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
           <div className="flex items-center gap-3">
             <div className="rounded-2xl bg-[var(--surface-alt)] px-4 py-3 text-sm text-[var(--text)]">
-              <span className="font-semibold text-[var(--text)]">{totalPurchases}</span>{""}
+              <span className="font-semibold text-[var(--text)]">{totalPurchases}</span>{" "}
               {totalPurchases === 1 ?"resource" :"resources"}
             </div>
             <Link
@@ -297,7 +297,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
                       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--text-muted)]">
                         <span>
-                          By{""}
+                          By{" "}
                           <Link
                             href={`/stores/${resource.store.slug}`}
                             className="font-medium text-[var(--text)] hover:text-[var(--accent)]"
@@ -319,7 +319,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
                       {mainDownload ? (
                         <p className="mt-3 text-xs text-[var(--text-muted)]">
-                          Download file:{""}
+                          Download file:{" "}
                           <span className="font-medium text-[var(--text)]">
                             {mainDownload.fileName}
                           </span>

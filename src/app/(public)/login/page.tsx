@@ -69,7 +69,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <LoginForm googleEnabled={googleEnabled} />
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
-            Don’t have an account?{""}
+            Don’t have an account?{" "}
             <Link
               href={redirectTo !=="/library" ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}` :"/signup"}
               className="font-semibold text-[var(--text)] hover:text-[var(--accent)]"

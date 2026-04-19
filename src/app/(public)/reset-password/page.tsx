@@ -178,7 +178,7 @@ export default function ResetPasswordPage() {
           </Suspense>
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
-            Need a new link?{""}
+            Need a new link?{" "}
             <Link href="/forgot-password" className="font-semibold text-[var(--text)] hover:text-[var(--accent)]">
               Request one
             </Link>
