@@ -94,8 +94,8 @@ model User {
   isSuperAdmin  Boolean   @default(false)
   // Revenue split: platform fee percentage for this creator (0.0 = 0%, 0.20 = 20%, 0.15 = 15%)
   // Only applies to creators (CREATOR role). Defaults to 0.20 (20% platform fee)
-  feePercentage Float     @default(0.20)
-  isFounder     Boolean   @default(false)
+  feePercentage Float?    @default(0.20)
+  isFounder     Boolean?  @default(false)
   avatarUrl              String?
   emailNotifications     Boolean   @default(true)
   createdAt              DateTime  @default(now())
@@ -412,6 +412,7 @@ model Purchase {
   @@unique([buyerId, resourceId])
   @@index([buyerId])
   @@index([resourceId])
+  @@index([feePercentageAtPurchase], map: "idx_purchase_feepercentage")
 }
 
 model RefundRequest {
@@ -429,6 +430,7 @@ model RefundRequest {
   buyer    User     @relation(fields: [buyerId], references: [id])
 
   @@index([buyerId])
+  @@index([status])
   @@index([status, createdAt])
 }
 
@@ -504,7 +506,7 @@ model PayoutAccount {
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   email     String
   token     String   @unique
   expires   DateTime
@@ -523,7 +525,7 @@ model BlogComment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([slug, createdAt])
   @@index([authorId])

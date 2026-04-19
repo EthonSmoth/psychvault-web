@@ -914,7 +914,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <MetaPill>{creator.email}</MetaPill>
-                          <MetaPill>{`${Math.round(creator.feePercentage * 100)}% platform fee`}</MetaPill>
+                          <MetaPill>{`${Math.round((creator.feePercentage ?? 0.2) * 100)}% platform fee`}</MetaPill>
                           <MetaPill>{formatCount(creator.resources.length)} published resource{creator.resources.length === 1 ?"" :"s"}</MetaPill>
                           <MetaPill>Joined {formatDateTime(creator.createdAt)}</MetaPill>
                           {creator.store ? <MetaPill>/{creator.store.slug}</MetaPill> : null}

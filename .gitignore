@@ -28,6 +28,9 @@ Thumbs.db
 
 # Obsidian local workspace state
 vault/.obsidian/
+
+# Drift checker output
+drift.sql
 .vault/.obsidian/
 
 # Prisma (keep schema, ignore generated stuff)

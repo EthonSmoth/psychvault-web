@@ -116,7 +116,7 @@ export async function GET(request: Request) {
         id: creator.id,
         name: creator.name,
         email: creator.email,
-        feePercentage: (creator.feePercentage * 100).toFixed(1) + "%",
+        feePercentage: ((creator.feePercentage ?? 0.2) * 100).toFixed(1) + "%",
         isFounder: creator.isFounder,
         isSuperAdmin: creator.isSuperAdmin,
       })),
@@ -176,7 +176,7 @@ export async function POST(request: Request) {
     });
 
     // Log the change
-    console.log(`Updated creator fee: ${updated.name} (${updated.email}) → ${(updated.feePercentage * 100).toFixed(1)}%`);
+    console.log(`Updated creator fee: ${updated.name} (${updated.email}) → ${((updated.feePercentage ?? 0.2) * 100).toFixed(1)}%`);
 
     return NextResponse.json({
       success: true,
@@ -184,7 +184,7 @@ export async function POST(request: Request) {
         id: updated.id,
         name: updated.name,
         email: updated.email,
-        feePercentage: (updated.feePercentage * 100).toFixed(1) + "%",
+        feePercentage: ((updated.feePercentage ?? 0.2) * 100).toFixed(1) + "%",
         isFounder: updated.isFounder,
       },
     });
