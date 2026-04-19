@@ -13,9 +13,10 @@ type GalleryImage = {
 type ResourceGalleryProps = {
   images: GalleryImage[];
   title: string;
+  priority?: boolean;
 };
 
-export function ResourceGallery({ images, title }: ResourceGalleryProps) {
+export function ResourceGallery({ images, title, priority = false }: ResourceGalleryProps) {
   const [activeImageId, setActiveImageId] = useState(images[0]?.id ??"");
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -114,6 +115,9 @@ export function ResourceGallery({ images, title }: ResourceGalleryProps) {
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) calc(100vw - 2rem), 66vw"
           className="object-cover transition-transform duration-200"
+          priority={priority && activeImage.id === images[0]?.id}
+          fetchPriority={priority && activeImage.id === images[0]?.id ? "high" : undefined}
+          loading={priority && activeImage.id === images[0]?.id ? "eager" : "lazy"}
           style={{
             transformOrigin: isZoomed ? `${position.x}% ${position.y}%` :"center",
             transform: isZoomed ? `scale(${Math.min(zoom, 2.5)})` :"scale(1)",

@@ -173,7 +173,10 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth">
       <head>
         {supabaseUrl && (
-          <link rel="preconnect" href={supabaseUrl} />
+          <>
+            <link rel="preconnect" href={supabaseUrl} />
+            <link rel="preconnect" href={supabaseUrl} crossOrigin="anonymous" />
+          </>
         )}
         <link rel="preconnect" href="https://checkout.stripe.com" />
       </head>

@@ -587,7 +587,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
 
           <div className="mt-8 overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
             {galleryImages.length > 0 ? (
-              <ResourceGallery images={galleryImages} title={resourceData.title} />
+              <ResourceGallery images={galleryImages} title={resourceData.title} priority />
             ) : (
               <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-[var(--surface)] to-[var(--surface-strong)] text-sm font-medium text-[var(--text-light)]">
                 Preview coming soon
