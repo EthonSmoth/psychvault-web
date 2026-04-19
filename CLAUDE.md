@@ -9,10 +9,11 @@ npm run dev          # Start local dev server (uses Turbopack)
 npm run build        # Generate Prisma client + build
 npm run lint         # ESLint
 npm run db:generate  # Regenerate Prisma client after schema changes
-npm run db:push      # Push schema to database (no migration file)
-npm run db:migrate   # Run migrations (dev only)
 npm run db:seed      # Seed demo data via tsx prisma/seed.ts
+.\check-drift.ps1   # Detect drift between prisma/schema.prisma and live Supabase DB
 ```
+
+Do not use `npm run db:push` or `npm run db:migrate`. They fail on PgBouncer transaction mode (port 6543) and the direct DB host is unreachable. All schema changes go through the Supabase SQL Editor.
 
 No test runner is configured. There is no `npm test` command.
 
@@ -61,7 +62,11 @@ Stripe Checkout for paid resources. Webhook at `/api/webhook/stripe` is the serv
 
 ### Database
 
-Prisma 6 ORM on Postgres (Supabase). Schema is at `prisma/schema.prisma`. Key relationships:
+Prisma 6 ORM on Postgres (Supabase). **Supabase SQL Editor is the source of truth** for the database schema. `prisma/schema.prisma` is kept in sync with the live database, not the other way around.
+
+Schema change workflow: write SQL in Supabase SQL Editor -> update `prisma/schema.prisma` to match -> `npm run db:generate` -> `.\check-drift.ps1` to confirm zero drift.
+
+Schema is at `prisma/schema.prisma`. Key relationships:
 - `User` → `Store` (one creator, one store)
 - `Store` → `Resource[]`
 - `Resource` → `Purchase[]`, `Review[]`, `ResourceFile[]`, `ResourceReport[]`
