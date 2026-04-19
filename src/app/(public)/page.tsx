@@ -8,7 +8,6 @@ import { getFeaturedBlogPosts } from"@/lib/blog";
 import {
   getHomepageCategoryData,
   getHomepageResourceShowcaseData,
-  getHomepageStatsData,
 } from"@/server/queries/public-content";
 import { BlogPostCard } from"@/components/blog/blog-post-card";
 import ResourceCard from"@/components/resources/resource-card";
@@ -162,9 +161,14 @@ function HomeHero() {
             </Link>
           </div>
 
-          <Suspense fallback={<HomeStatsFallback />}>
-            <HomeStats />
-          </Suspense>
+          <div className="mt-10 border-t border-[var(--border)] pt-8">
+            <p className="text-base font-semibold text-[var(--text)]">
+              Clinician-designed resources for real-world practice
+            </p>
+            <p className="mt-1.5 text-sm text-[var(--text-muted)]">
+              Built by a psychology professional. New resources added regularly.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center">
@@ -177,39 +181,7 @@ function HomeHero() {
   );
 }
 
-async function HomeStats() {
-  const { totalResources, totalCreators, totalStores } = await getHomepageStatsData();
 
-  return (
-    <div className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--border)] pt-8">
-      <Link href="/resources" className="rounded-2xl bg-[var(--surface-alt)] p-4 transition hover:bg-[var(--surface)]">
-        <div className="text-2xl font-bold text-[var(--text)]">{totalResources}</div>
-        <div className="mt-1 text-sm text-[var(--text-muted)]">Resources</div>
-      </Link>
-      <Link href="/stores" className="rounded-2xl bg-[var(--surface-alt)] p-4 transition hover:bg-[var(--surface)]">
-        <div className="text-2xl font-bold text-[var(--text)]">{totalCreators}</div>
-        <div className="mt-1 text-sm text-[var(--text-muted)]">Creators</div>
-      </Link>
-      <Link href="/stores" className="rounded-2xl bg-[var(--surface-alt)] p-4 transition hover:bg-[var(--surface)]">
-        <div className="text-2xl font-bold text-[var(--text)]">{totalStores}</div>
-        <div className="mt-1 text-sm text-[var(--text-muted)]">Stores</div>
-      </Link>
-    </div>
-  );
-}
-
-function HomeStatsFallback() {
-  return (
-    <div className="mt-10 grid grid-cols-3 gap-4 border-t border-[var(--border)] pt-8">
-      {[0, 1, 2].map((item) => (
-        <div key={item} className="rounded-2xl bg-[var(--surface-alt)] p-4">
-          <div className="h-8 w-12 animate-pulse rounded bg-[var(--surface)]" />
-          <div className="mt-2 h-4 w-20 animate-pulse rounded bg-[var(--surface)]" />
-        </div>
-      ))}
-    </div>
-  );
-}
 
 async function HomeHeroShowcase() {
   const { featuredResources } = await getHomepageResourceShowcaseData();
