@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./components.css";
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from "@/lib/env";
@@ -166,8 +167,16 @@ export default function RootLayout({
     },
   };
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        {supabaseUrl && (
+          <link rel="preconnect" href={supabaseUrl} />
+        )}
+        <link rel="preconnect" href="https://checkout.stripe.com" />
+      </head>
       <body className="min-h-screen bg-[var(--background)] text-[var(--text)] antialiased">
         <Suspense fallback={null}>
           <GoogleAnalytics />

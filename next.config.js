@@ -23,6 +23,7 @@ const nextConfig = {
     cpus: 1,
     workerThreads: true,
     webpackBuildWorker: false,
+    optimizeCss: true,
   },
   images: {
     remotePatterns,
