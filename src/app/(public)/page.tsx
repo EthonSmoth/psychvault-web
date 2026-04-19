@@ -339,7 +339,7 @@ function MarketplaceTrustSection() {
       title:"Public marketplace",
       description: (
         <>
-          Explore <Link href="/stores" className="font-medium text-[var(--text)] underline">creator stores</Link>, browse{""}
+          Explore <Link href="/stores" className="font-medium text-[var(--text)] underline">creator stores</Link>, browse{" "}
           <Link href="/resources" className="font-medium text-[var(--text)] underline">published resources</Link>, and
           move between live listings on a real public domain.
         </>
@@ -353,14 +353,14 @@ function MarketplaceTrustSection() {
       description: (
         <>
           Buyers can review previews, message creators, and report listings while you
-          discover stronger resources through{""}
+          discover stronger resources through{" "}
           <Link
             href="/resources?sort=rating"
             className="font-medium text-[var(--text)] underline"
           >
             top-rated tools
-          </Link>{""}
-          and the{""}
+          </Link>{" "}
+          and the{" "}
           <Link href="/blog" className="font-medium text-[var(--text)] underline">
             clinician blog
           </Link>
@@ -375,14 +375,14 @@ function MarketplaceTrustSection() {
       title:"Checkout status",
       description: paymentsAvailability.enabled ? (
         <>
-          Paid and free digital resources can be claimed through the platform, including{""}
+          Paid and free digital resources can be claimed through the platform, including{" "}
           <Link
             href="/resources?sort=popular"
             className="font-medium text-[var(--text)] underline"
           >
             best sellers
-          </Link>{""}
-          and{""}
+          </Link>{" "}
+          and{" "}
           <Link
             href="/resources?price=free"
             className="font-medium text-[var(--text)] underline"
@@ -394,14 +394,14 @@ function MarketplaceTrustSection() {
       ) : (
         <>
           Free resources are available now while paid checkout activation is being finalised.
-          You can still browse{""}
+          You can still browse{" "}
           <Link
             href="/resources?price=free"
             className="font-medium text-[var(--text)] underline"
           >
             free resources
-          </Link>{""}
-          or{""}
+          </Link>{" "}
+          or{" "}
           <Link href="/creator" className="font-medium text-[var(--text)] underline">
             start selling
           </Link>
