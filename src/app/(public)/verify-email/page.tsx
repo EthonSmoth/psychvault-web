@@ -1,8 +1,14 @@
+import type { Metadata } from"next";
 import Link from"next/link";
 import { auth } from"@/lib/auth";
 import { verifyEmailAddress } from"@/lib/email-verification";
 import { getSafeRedirectTarget } from"@/lib/redirects";
 import { resendVerificationEmailFormAction } from"@/server/actions/email-verification-actions";
+
+export const metadata: Metadata = {
+  title: "Verify Email",
+  robots: { index: false, follow: false },
+};
 
 type VerifyEmailPageProps = {
   searchParams?: Promise<{

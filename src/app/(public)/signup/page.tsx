@@ -1,9 +1,15 @@
+import type { Metadata } from"next";
 import Link from"next/link";
 import { redirect } from"next/navigation";
 import { auth } from"@/lib/auth";
 import { isGoogleOAuthEnabled } from"@/lib/env";
 import { getSafeRedirectTarget } from"@/lib/redirects";
 import { SignupForm } from"@/components/auth/signup-form";
+
+export const metadata: Metadata = {
+  title: "Sign Up",
+  robots: { index: false, follow: false },
+};
 
 type SignupPageProps = {
   searchParams?: Promise<{

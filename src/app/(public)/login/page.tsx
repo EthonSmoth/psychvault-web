@@ -1,3 +1,4 @@
+import type { Metadata } from"next";
 import Link from"next/link";
 import { redirect } from"next/navigation";
 import { auth } from"@/lib/auth";
@@ -5,6 +6,11 @@ import { db } from"@/lib/db";
 import { isGoogleOAuthEnabled } from"@/lib/env";
 import { getSafeRedirectTarget } from"@/lib/redirects";
 import { LoginForm } from"@/components/auth/login-form";
+
+export const metadata: Metadata = {
+  title: "Log In",
+  robots: { index: false, follow: false },
+};
 
 type LoginPageProps = {
   searchParams?: Promise<{

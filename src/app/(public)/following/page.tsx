@@ -1,3 +1,4 @@
+import type { Metadata } from"next";
 import Link from"next/link";
 import { redirect } from"next/navigation";
 import { auth } from"@/lib/auth";
@@ -8,6 +9,11 @@ import { VerifiedBadge } from"@/components/ui/verified-badge";
 import type { PublicResourceCard } from"@/types/public";
 
 export const dynamic ="force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Following Feed",
+  robots: { index: false, follow: false },
+};
 
 export default async function FollowingFeedPage() {
   const session = await auth();

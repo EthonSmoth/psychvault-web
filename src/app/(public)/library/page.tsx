@@ -1,3 +1,4 @@
+import type { Metadata } from"next";
 import Image from"next/image";
 import Link from"next/link";
 import { redirect } from"next/navigation";
@@ -5,6 +6,11 @@ import { auth } from"@/lib/auth";
 import { db } from"@/lib/db";
 import { generateCSRFToken } from"@/lib/csrf";
 import { RefundRequestForm } from"@/components/library/refund-request-form";
+
+export const metadata: Metadata = {
+  title: "My Library",
+  robots: { index: false, follow: false },
+};
 
 function formatPrice(cents: number | null | undefined) {
   const safe = typeof cents ==="number" ? cents : 0;
