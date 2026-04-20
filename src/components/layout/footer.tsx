@@ -3,6 +3,36 @@ import { getSupportEmail, getSupportPhone } from"@/lib/env";
 
 const currentYear = new Date().getFullYear();
 
+function FacebookIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="currentColor"
+    >
+      <path d="M13.5 9H16V6h-2.5C10.7 6 9 7.7 9 10.5V13H7v3h2v6h3v-6h2.5l.5-3H12v-2.5c0-.9.6-1.5 1.5-1.5Z" />
+    </svg>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+    >
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function Footer() {
   const supportEmail = getSupportEmail();
   const supportPhone = getSupportPhone();
@@ -45,8 +75,9 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="PsychVault on Facebook"
-                className="footer-link"
+                className="footer-link inline-flex items-center gap-1.5"
               >
+                <FacebookIcon />
                 Facebook
               </a>
               <a
@@ -54,8 +85,9 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="PsychVault on Instagram"
-                className="footer-link"
+                className="footer-link inline-flex items-center gap-1.5"
               >
+                <InstagramIcon />
                 Instagram
               </a>
             </div>
