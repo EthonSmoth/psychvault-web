@@ -264,7 +264,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   Next step
                 </div>
                 <h2 className="heading-2xl mt-3">
-                  Browse real clinician-made resources
+                  Browse real clinician-designed resources
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
                   Move from strategy into implementation with templates, handouts, and

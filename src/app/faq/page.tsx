@@ -40,7 +40,7 @@ const faqSections = [
       {
         question:"Who can sell resources on PsychVault?",
         answer:
-"PsychVault is designed for clinician-made and practice-adjacent resources. Sellers should upload material they have the right to publish and that meets marketplace quality and safety expectations.",
+"PsychVault is designed for clinician-designed and practice-adjacent resources. Sellers should upload material they have the right to publish and that meets marketplace quality and safety expectations.",
       },
       {
         question:"What do I need before publishing a listing?",

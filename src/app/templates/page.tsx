@@ -29,7 +29,7 @@ export default function TemplatesIndexPage() {
           Explore high-intent template topics across therapy, reports, documentation, and intake
         </h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--text-muted)]">
-          These landing pages group together clinician-made resources around focused workflows and
+          These landing pages group together clinician-designed resources around focused workflows and
           search intents, from CBT thought records to NDIS reports and treatment planning.
         </p>
       </section>

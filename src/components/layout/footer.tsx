@@ -41,9 +41,9 @@ export function Footer() {
 
   return (
     <footer className="border-t border-soft bg-[var(--frame)]">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 text-center lg:grid-cols-[1.3fr_1fr_1fr_1fr] lg:text-left">
-          <div className="flex flex-col items-center lg:items-start">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+        <div className="grid gap-8 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-10">
+          <div className="flex flex-col items-center sm:items-start">
             <Link
               href="/"
               className="text-xl font-semibold tracking-tight text-[var(--text)] transition-colors hover:text-[var(--accent)]"
@@ -69,26 +69,26 @@ export function Footer() {
               ) : null}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--text-muted)]">
+            <div className="mt-5 flex items-center justify-center gap-4 sm:justify-start">
               <a
                 href={facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="PsychVault on Facebook"
-                className="footer-link footer-social-link"
+                className="footer-social-link"
               >
                 <FacebookIcon />
-                Facebook
+                <span className="text-xs">Facebook</span>
               </a>
               <a
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="PsychVault on Instagram"
-                className="footer-link footer-social-link"
+                className="footer-social-link"
               >
                 <InstagramIcon />
-                Instagram
+                <span className="text-xs">Instagram</span>
               </a>
             </div>
 
@@ -162,10 +162,22 @@ export function Footer() {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--text)]">
-              Legal
+              Support
             </h3>
 
             <div className="mt-4 space-y-2 text-sm text-[var(--text-muted)]">
+              <Link href="/contact" className="footer-link">
+                Contact
+              </Link>
+              <Link href="/faq" className="footer-link">
+                FAQ
+              </Link>
+              <Link href="/feedback" className="footer-link">
+                Feedback
+              </Link>
+              <Link href="/careers" className="footer-link">
+                Careers
+              </Link>
               <Link
                 href="/privacy-policy"
                 className="footer-link"
@@ -184,40 +196,16 @@ export function Footer() {
               >
                 Refund policy
               </Link>
-              <Link href="/contact" className="footer-link">
-                Contact
-              </Link>
-              <Link href="/faq" className="footer-link">
-                FAQ
-              </Link>
-              <Link href="/feedback" className="footer-link">
-                Feedback
-              </Link>
-              <Link href="/careers" className="footer-link">
-                Careers
-              </Link>
-              <a
-                href="/feed.xml"
-                className="footer-link"
-              >
-                RSS feed
-              </a>
-              <a
-                href="/sitemap.xml"
-                className="footer-link"
-              >
-                Sitemap
-              </a>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 border-t border-soft pt-8 text-center">
-          <div className="mb-6 flex flex-col gap-2">
-            <p className="text-xs text-[var(--text-muted)]">(c) {currentYear} PsychVault</p>
+        <div className="mt-10 border-t border-soft pt-6 sm:mt-12 sm:pt-8">
+          <div className="mb-5 flex flex-col items-center gap-1 text-center sm:mb-6">
             <p className="text-sm font-medium text-[var(--text)]">
-              Handcrafted resources by practicing clinicians for your practice.
+              Handcrafted resources by practising clinicians for your practice.
             </p>
+            <p className="text-xs text-[var(--text-muted)]">&copy; {currentYear} PsychVault &middot; <a href="/feed.xml" className="underline hover:text-[var(--accent)]">RSS</a> &middot; <a href="/sitemap.xml" className="underline hover:text-[var(--accent)]">Sitemap</a></p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-2">

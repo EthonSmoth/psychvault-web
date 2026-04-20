@@ -26,7 +26,7 @@ function resolveBlogImageUrl(src?: string | null) {
 export const metadata: Metadata = {
   title:"PsychVault Blog",
   description:
-"Read practical articles on psychology resources, NDIS workflows, report writing, psychoeducation, and selling clinician-made tools online.",
+"Read practical articles on psychology resources, NDIS workflows, report writing, psychoeducation, and selling clinician-designed tools online.",
   keywords: [
 "psychology blog",
 "NDIS report writing",

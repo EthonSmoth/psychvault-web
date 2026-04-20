@@ -107,7 +107,7 @@ export default function OpenGraphImage() {
                 fontWeight: 700,
               }}
             >
-              Clinician-made resources for real practice
+              Resources designed by clinicians, for real practice
             </div>
             <div
               style={{

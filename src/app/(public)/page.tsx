@@ -17,7 +17,7 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title:"PsychVault - Psychology Resources Marketplace",
   description:
-"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover psychology resources, worksheets, psychoeducation, report templates, and tools designed by practising clinicians for real clinical work.",
   alternates: {
     canonical: getAppBaseUrl(),
   },
@@ -125,19 +125,19 @@ function ResourceSectionPlaceholder({
 function HomeHero() {
   return (
     <section className="border-b border-[var(--border)] bg-[var(--surface)]/55">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:gap-12 sm:px-6 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
         <div className="flex flex-col justify-center">
-          <span className="mb-4 inline-flex w-fit rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--text)]">
+          <span className="mb-3 inline-flex w-fit rounded-full bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)] sm:mb-4 sm:text-xs">
             Built for psychologists and allied health professionals
           </span>
 
-          <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-[var(--text)] sm:text-5xl">
+          <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-[var(--text)] sm:text-4xl lg:text-5xl">
             Discover and sell psychology resources that save real clinical time
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[var(--text-muted)]">
-            Templates, handouts, psychoeducation, report tools, and clinician-made
-            resources designed for real practice.
+          <p className="mt-4 max-w-xl text-base leading-7 text-[var(--text-muted)] sm:mt-6 sm:text-lg sm:leading-8">
+            Templates, handouts, psychoeducation, report tools, and resources
+            designed for real practice.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -161,12 +161,12 @@ function HomeHero() {
             </Link>
           </div>
 
-          <div className="mt-10 border-t border-[var(--border)] pt-8">
-            <p className="text-base font-semibold text-[var(--text)]">
+          <div className="mt-8 border-t border-[var(--border)] pt-6 sm:mt-10 sm:pt-8">
+            <p className="text-sm font-semibold text-[var(--text)] sm:text-base">
               Clinician-designed resources for real-world practice
             </p>
             <p className="mt-1.5 text-sm text-[var(--text-muted)]">
-              Built by a neurodivergent provisonal psychologist. New resources added regularly.
+              Built by a neurodivergent provisional psychologist. New resources added regularly.
             </p>
           </div>
         </div>
@@ -262,7 +262,7 @@ async function HomeHeroShowcase() {
               {resource.title}
             </div>
             <div className="mt-2 line-clamp-2 text-sm text-[var(--text-muted)]">
-              {resource.shortDescription ||"Explore this clinician-made resource."}
+              {resource.shortDescription ||"Explore this clinician-designed resource."}
             </div>
             <div className="mt-4 flex items-center justify-between gap-3">
               <span className="truncate text-xs text-[var(--text-light)]">
@@ -420,10 +420,10 @@ async function HomeCategoriesSection() {
   const categories = await getHomepageCategoryData();
 
   return (
-    <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-end justify-between gap-6">
+    <section className="defer-section mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+      <div className="mb-6 flex items-end justify-between gap-6 sm:mb-8 sm:mb-8">
         <div>
-          <h2 className="heading-2xl">
+          <h2 className="heading-2xl section-accent">
             Browse by category
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -523,10 +523,10 @@ async function HomeFeaturedResourcesSection() {
   const visibleResources = getHomeSectionResources(featuredResources, 3);
 
   return (
-    <section className="defer-section mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <section className="defer-section mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <div className="mb-8 flex items-end justify-between gap-6">
         <div>
-          <h2 className="heading-2xl">
+          <h2 className="heading-2xl section-accent">
             Featured resources
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -555,7 +555,7 @@ async function HomeFeaturedResourcesSection() {
           <ResourceSectionPlaceholder
             key={`featured-placeholder-${index}`}
             title="More featured resources coming soon"
-            description="As more clinician-made resources go live, this section will fill out automatically."
+            description="As more resources go live, this section will fill out automatically."
             href="/creator/resources/new"
             linkLabel="Add a resource"
           />
@@ -570,10 +570,10 @@ async function HomeRecentResourcesSection() {
   const visibleResources = getHomeSectionResources(recentResources, 3);
 
   return (
-    <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-end justify-between gap-6">
+    <section className="defer-section mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+      <div className="mb-6 flex items-end justify-between gap-6 sm:mb-8 sm:mb-8">
         <div>
-          <h2 className="heading-2xl">
+          <h2 className="heading-2xl section-accent">
             Recently added
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -697,10 +697,10 @@ async function HomeBlogSection() {
   }
 
   return (
-    <section className="defer-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-end justify-between gap-6">
+    <section className="defer-section mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+      <div className="mb-6 flex items-end justify-between gap-6 sm:mb-8 sm:mb-8">
         <div>
-          <h2 className="heading-2xl">
+          <h2 className="heading-2xl section-accent">
             From the blog
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -757,7 +757,7 @@ function HomeValueSection() {
   ];
 
   return (
-    <section className="defer-section mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+    <section className="defer-section mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
       <div className="card-panel lg:p-12">
         <div className="grid gap-10 lg:grid-cols-2">
           <div className="flex flex-col justify-center">

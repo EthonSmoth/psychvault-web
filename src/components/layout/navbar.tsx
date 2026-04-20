@@ -31,28 +31,28 @@ export function Navbar() {
 
           <Link
             href="/resources"
-            className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
+            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-semibold text-[var(--primary)] transition hover:bg-[var(--primary)]/20 hover:text-[var(--primary-dark)]"
           >
             Browse
           </Link>
 
           <Link
             href="/stores"
-            className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
+            className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)]"
           >
             Stores
           </Link>
 
           <Link
             href="/blog"
-            className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
+            className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)]"
           >
             Blog
           </Link>
 
           <Link
             href="/creator"
-            className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)]"
+            className="text-sm font-semibold text-[var(--accent)] hover:text-[var(--primary-dark)]"
           >
             Sell
           </Link>

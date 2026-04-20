@@ -571,7 +571,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                 {resourceData.store.isVerified ? <VerifiedBadge size="sm" /> : null}
               </span>
             ) : (
-              <span>Clinician-made resource</span>
+              <span>Clinician-designed resource</span>
             )}
 
             {resourceData.reviewCount > 0 ? (

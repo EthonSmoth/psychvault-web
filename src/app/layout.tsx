@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template:"%s | PsychVault",
   },
   description:
-"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover psychology resources, worksheets, psychoeducation, report templates, and tools designed by practising clinicians for real clinical work.",
   applicationName:"PsychVault",
   keywords: [
 "psychology resources",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     siteName:"PsychVault",
     title:"PsychVault - Psychology Resources Marketplace",
     description:
-"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover psychology resources, worksheets, psychoeducation, report templates, and tools designed by practising clinicians for real clinical work.",
     images: [
       {
         url:"/opengraph-image",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     card:"summary_large_image",
     title:"PsychVault - Psychology Resources Marketplace",
     description:
-"Discover clinician-made psychology resources for real clinical work.",
+"Discover psychology resources designed by practising clinicians for real clinical work.",
     images: ["/opengraph-image"],
   },
   robots: {
@@ -101,7 +101,7 @@ export default function RootLayout({
 "@type":"Organization",
     name:"PsychVault",
     description:
-"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover psychology resources, worksheets, psychoeducation, report templates, and tools designed by practising clinicians for real clinical work.",
     url: baseUrl,
     logo: `${baseUrl}/logo-PNG.png`,
     sameAs: socialProfiles,
@@ -120,7 +120,7 @@ export default function RootLayout({
     name:"PsychVault",
     url: baseUrl,
     description:
-"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover psychology resources, worksheets, psychoeducation, report templates, and tools designed by practising clinicians for real clinical work.",
     publisher: {
 "@type":"Organization",
       name:"PsychVault",
@@ -138,7 +138,7 @@ export default function RootLayout({
 "@type":"WebApplication",
     name:"PsychVault",
     description:
-"Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
+"Discover psychology resources, worksheets, psychoeducation, report templates, and tools designed by practising clinicians for real clinical work.",
     url: baseUrl,
     applicationCategory:"E-commerce",
     provider: {

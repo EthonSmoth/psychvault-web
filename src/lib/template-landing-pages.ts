@@ -20,7 +20,7 @@ export const TEMPLATE_LANDING_PAGES: TemplateLandingConfig[] = [
     title: "CBT Thought Record Templates",
     metaTitle: "CBT Thought Record Templates for Therapists",
     metaDescription:
-      "Explore CBT thought record templates, worksheets, and clinician-made tools for cognitive restructuring and session work.",
+      "Explore CBT thought record templates, worksheets, and clinician-designed tools for cognitive restructuring and session work.",
     eyebrow: "CBT templates",
     intro:
       "Find practical CBT thought record templates that help clients notice patterns, challenge unhelpful thoughts, and build more balanced responses.",
@@ -125,7 +125,7 @@ export const TEMPLATE_LANDING_PAGES: TemplateLandingConfig[] = [
     intro:
       "Browse therapy worksheets designed to support sessions, homework, psychoeducation, and structured clinical conversations.",
     supportingCopy:
-      "This page collects clinician-made tools for everyday therapeutic work across adult, child, and family contexts.",
+      "This page collects clinician-designed tools for everyday therapeutic work across adult, child, and family contexts.",
     categorySlugs: ["therapy-worksheets"],
     tagSlugs: ["worksheet"],
     sort: "popular",

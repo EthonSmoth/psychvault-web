@@ -14,7 +14,7 @@ const baseUrl = getAppBaseUrl();
 export const metadata: Metadata = {
   title:"Browse Psychology Resources",
   description:
-"Browse clinician-made psychology resources including worksheets, handouts, templates, and psychoeducation tools.",
+"Browse psychology resources including worksheets, handouts, templates, and psychoeducation tools designed by practising clinicians.",
   alternates: {
     canonical: `${baseUrl}/resources`,
   },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title:"Browse Psychology Resources",
     description:
-"Browse clinician-made psychology resources including worksheets, handouts, templates, and psychoeducation tools.",
+"Browse psychology resources including worksheets, handouts, templates, and psychoeducation tools designed by practising clinicians.",
     url: `${baseUrl}/resources`,
     type:"website",
   },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card:"summary_large_image",
     title:"Browse Psychology Resources",
     description:
-"Browse clinician-made psychology resources including worksheets, handouts, templates, and psychoeducation tools.",
+"Browse psychology resources including worksheets, handouts, templates, and psychoeducation tools designed by practising clinicians.",
   },
 };
 

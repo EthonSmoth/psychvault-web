@@ -55,7 +55,7 @@ export default function CareersPage() {
           Careers
         </p>
         <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-[var(--text)]">
-          Join the team building a more useful marketplace for clinician-made resources
+          Join the team building a more useful marketplace for clinician-designed resources
         </h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--text-muted)]">
           PsychVault sits at the intersection of product, trust, clinician workflow, and creator
