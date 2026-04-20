@@ -128,7 +128,7 @@ function HomeHero() {
       <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
         <div className="flex flex-col justify-center">
           <span className="mb-4 inline-flex w-fit rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--text)]">
-            Built for psychologists
+            Built for psychologists and allied health professionals
           </span>
 
           <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-[var(--text)] sm:text-5xl">
@@ -166,7 +166,7 @@ function HomeHero() {
               Clinician-designed resources for real-world practice
             </p>
             <p className="mt-1.5 text-sm text-[var(--text-muted)]">
-              Built by a psychology professional. New resources added regularly.
+              Built by a neurodivergent provisonal psychologist. New resources added regularly.
             </p>
           </div>
         </div>
@@ -762,10 +762,10 @@ function HomeValueSection() {
         <div className="grid gap-10 lg:grid-cols-2">
           <div className="flex flex-col justify-center">
             <h2 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
-              Built for clinicians who want to save time and share what works
+              Built for psychologists, providers, and allied health professionals
             </h2>
             <p className="mt-4 max-w-xl text-base leading-7 text-[var(--text-muted)]">
-              PsychVault helps psychologists discover useful tools faster and gives
+              PsychVault helps psychologists and allied health professionals discover useful tools faster and gives
               creators a clean way to package and sell resources they already use in practice.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
