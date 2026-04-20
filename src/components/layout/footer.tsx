@@ -6,6 +6,8 @@ const currentYear = new Date().getFullYear();
 export function Footer() {
   const supportEmail = getSupportEmail();
   const supportPhone = getSupportPhone();
+  const facebookUrl = "https://www.facebook.com/PsychVaultHQ";
+  const instagramUrl = "https://www.instagram.com/psychvaulthq";
 
   return (
     <footer className="border-t border-soft bg-[var(--frame)]">
@@ -35,6 +37,27 @@ export function Footer() {
                   {supportPhone}
                 </a>
               ) : null}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--text-muted)]">
+              <a
+                href={facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="PsychVault on Facebook"
+                className="footer-link"
+              >
+                Facebook
+              </a>
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="PsychVault on Instagram"
+                className="footer-link"
+              >
+                Instagram
+              </a>
             </div>
 
           </div>

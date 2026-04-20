@@ -12,6 +12,10 @@ const baseUrl = getAppBaseUrl();
 const supportEmail = getSupportEmail();
 const supportPhone = getSupportPhone();
 const businessAddress = getBusinessAddress();
+const socialProfiles = [
+  "https://www.facebook.com/PsychVaultHQ",
+  "https://www.instagram.com/psychvaulthq",
+];
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -100,6 +104,7 @@ export default function RootLayout({
 "Discover clinician-made psychology resources, worksheets, psychoeducation, report templates, and tools for real clinical practice.",
     url: baseUrl,
     logo: `${baseUrl}/logo-PNG.png`,
+    sameAs: socialProfiles,
     contactPoint: {
 "@type":"ContactPoint",
       contactType:"customer support",
@@ -140,6 +145,7 @@ export default function RootLayout({
 "@type":"Organization",
       name:"PsychVault",
       url: baseUrl,
+      sameAs: socialProfiles,
       contactPoint: {
 "@type":"ContactPoint",
         contactType:"customer support",
