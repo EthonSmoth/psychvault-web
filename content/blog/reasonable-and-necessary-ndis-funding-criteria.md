@@ -11,8 +11,6 @@ coverImage: "/blog/ndis_hero_banner.svg"
 coverImageAlt: "Reasonable and Necessary Under the NDIS — a visual guide for clinicians"
 ---
 
-![Reasonable and Necessary Under the NDIS — a visual guide for clinicians](/blog/ndis_hero_banner.svg "Reasonable and Necessary Under the NDIS")
-
 ## Why "reasonable and necessary" is the concept every clinician working with the NDIS needs to understand
 
 The National Disability Insurance Scheme funds supports for eligible Australians with permanent and significant disability. But not every support a clinician recommends will be funded. The NDIS uses a specific legal and policy framework to decide what gets approved — and the phrase at the centre of that framework is "reasonable and necessary."
