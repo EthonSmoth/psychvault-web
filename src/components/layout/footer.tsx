@@ -75,7 +75,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="PsychVault on Facebook"
-                className="footer-link inline-flex items-center gap-1.5"
+                className="footer-link footer-social-link"
               >
                 <FacebookIcon />
                 Facebook
@@ -85,7 +85,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="PsychVault on Instagram"
-                className="footer-link inline-flex items-center gap-1.5"
+                className="footer-link footer-social-link"
               >
                 <InstagramIcon />
                 Instagram
