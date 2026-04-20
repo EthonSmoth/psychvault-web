@@ -7,7 +7,11 @@ author: "PsychVault Editorial Team"
 category: "NDIS Resources"
 tags: ["reasonable and necessary ndis", "ndis funding criteria", "ndis report justification", "how to justify supports ndis", "ndis functional impact wording", "ndis report writing"]
 featured: true
+coverImage: "/blog/ndis_hero_banner.svg"
+coverImageAlt: "Reasonable and Necessary Under the NDIS — a visual guide for clinicians"
 ---
+
+![Reasonable and Necessary Under the NDIS — a visual guide for clinicians](/blog/ndis_hero_banner.svg "Reasonable and Necessary Under the NDIS")
 
 ## Why "reasonable and necessary" is the concept every clinician working with the NDIS needs to understand
 
@@ -75,6 +79,8 @@ This criterion asks whether the NDIS is the right system to fund this support, o
 
 Common justifications include: the participant requires a level of frequency or intensity that Medicare plans do not support, the goals of intervention are disability-specific rather than mental-health-specific, or the participant has already accessed Medicare supports and requires additional capacity.
 
+![The five reasonable and necessary criteria at a glance](/blog/ndis_criteria_checklist.svg "NDIS Reasonable and Necessary Criteria Checklist")
+
 ---
 
 ## Translating policy into clinical practice
@@ -129,6 +135,8 @@ The following examples show how the reasonable and necessary criteria can be ref
 
 **Neglecting to state expected outcomes.** NDIS planning is outcomes-focused. Reports that describe problems without articulating what funded support is expected to achieve are harder to approve.
 
+![Common pitfalls when writing NDIS reports](/blog/ndis_pitfalls.svg "Common NDIS Report Pitfalls")
+
 ---
 
 ## Practical tips for writing NDIS reports that hold up
@@ -144,6 +152,8 @@ The following examples show how the reasonable and necessary criteria can be ref
 **Acknowledge capacity-building intent.** The NDIS prefers supports that build independence over time. Where possible, describe how the support is designed to reduce reliance on funded services — not increase it.
 
 **Reference relevant evidence.** You do not need to cite academic literature in every report. But noting that the approach has an evidence base, and that it is appropriate for the participant's profile, strengthens the "likely to be effective" criterion.
+
+![NDIS report self-check flow — review your report against the reasonable and necessary criteria](/blog/ndis_report_self_check_flow.svg "NDIS Report Self-Check Flow")
 
 ---
 
