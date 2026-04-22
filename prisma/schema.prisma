@@ -215,7 +215,7 @@ model Store {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  owner       User          @relation(fields: [ownerId], references: [id])
+  owner       User          @relation(fields: [ownerId], references: [id], onDelete: NoAction)
   resources   Resource[]
   followers   Follow[]      @relation("StoreFollowers")
   reports     StoreReport[]
@@ -256,7 +256,7 @@ model Resource {
   updatedAt        DateTime         @updatedAt
 
   store       Store              @relation(fields: [storeId], references: [id])
-  creator     User               @relation("CreatorResources", fields: [creatorId], references: [id])
+  creator     User               @relation("CreatorResources", fields: [creatorId], references: [id], onDelete: NoAction)
   files       ResourceFile[]
   purchases   Purchase[]
   reviews     Review[]
@@ -405,7 +405,7 @@ model Purchase {
   feePercentageAtPurchase Float    @default(0.20)
   createdAt               DateTime @default(now())
 
-  buyer         User           @relation("BuyerPurchases", fields: [buyerId], references: [id])
+  buyer         User           @relation("BuyerPurchases", fields: [buyerId], references: [id], onDelete: NoAction)
   resource      Resource       @relation(fields: [resourceId], references: [id])
   refundRequest RefundRequest?
 
@@ -427,7 +427,7 @@ model RefundRequest {
   updatedAt  DateTime            @updatedAt
 
   purchase Purchase @relation(fields: [purchaseId], references: [id])
-  buyer    User     @relation(fields: [buyerId], references: [id])
+  buyer    User     @relation(fields: [buyerId], references: [id], onDelete: NoAction)
 
   @@index([buyerId])
   @@index([status])
@@ -443,7 +443,7 @@ model Review {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  buyer    User     @relation(fields: [buyerId], references: [id])
+  buyer    User     @relation(fields: [buyerId], references: [id], onDelete: NoAction)
   resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
   reports  ReviewReport[]
 
@@ -460,7 +460,7 @@ model ReviewReport {
   createdAt  DateTime @default(now())
 
   review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  reporter User   @relation("ReviewReports", fields: [reporterId], references: [id])
+  reporter User   @relation("ReviewReports", fields: [reporterId], references: [id], onDelete: NoAction)
 
   @@unique([reviewId, reporterId])
   @@index([reviewId])
@@ -485,7 +485,7 @@ model Follow {
   storeId    String
   createdAt  DateTime @default(now())
 
-  follower User  @relation("UserFollows", fields: [followerId], references: [id])
+  follower User  @relation("UserFollows", fields: [followerId], references: [id], onDelete: NoAction)
   store    Store @relation("StoreFollowers", fields: [storeId], references: [id], onDelete: Cascade)
 
   @@id([followerId, storeId])
@@ -502,7 +502,7 @@ model PayoutAccount {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: NoAction)
 }
 
 model PasswordResetToken {
