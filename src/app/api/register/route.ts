@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { db } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 import { trySendVerificationEmail } from "@/lib/email";
 import { jsonError } from "@/lib/http";
 import { sanitizeUserText } from "@/lib/input-safety";
@@ -123,19 +124,49 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await db.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-        emailVerified: null,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
+    // Create the user in Supabase Auth first to obtain a stable UUID.
+    // Supabase's own verification email is suppressed — the app sends its own
+    // via Resend below.
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: false,
     });
+
+    if (authError || !authData.user) {
+      if (authError?.message?.toLowerCase().includes("already registered")) {
+        return NextResponse.json(
+          { error: "We couldn't create that account. Try logging in instead." },
+          { status: 409 }
+        );
+      }
+      return jsonError("Something went wrong while creating your account.", 500, authError);
+    }
+
+    const supabaseUserId = authData.user.id;
+
+    let user: { id: string; email: string; name: string };
+
+    try {
+      user = await db.user.create({
+        data: {
+          id: supabaseUserId, // pin Prisma User.id to the Supabase auth UUID
+          name,
+          email,
+          passwordHash,
+          emailVerified: null,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      });
+    } catch (err) {
+      // Roll back: remove the orphaned Supabase auth user if Prisma write fails.
+      await supabase.auth.admin.deleteUser(supabaseUserId);
+      return jsonError("Something went wrong while creating your account.", 500, err);
+    }
 
     const verificationToken = randomToken();
     const verificationExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);

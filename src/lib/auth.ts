@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 import { getRequiredServerEnv, isGoogleOAuthEnabled } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getSafeAuthRedirectUrl } from "@/lib/redirects";
@@ -90,6 +91,72 @@ async function getAuthUserState(input: { id?: string | null; email?: string | nu
   });
 }
 
+// ---------------------------------------------------------------------------
+// Linked Prisma adapter
+//
+// When a new OAuth user signs in for the first time, the PrismaAdapter calls
+// createUser() to insert a row. We override that method to first look up (or
+// create) the matching Supabase auth.users entry by email so that the Prisma
+// User.id is pinned to the Supabase auth UUID — the same guarantee we enforce
+// in the credentials sign-up routes.
+//
+// allowDangerousEmailAccountLinking on the Google provider already prevents a
+// second User row being created when an existing credentials account shares
+// the same email: NextAuth finds the Prisma user via getUserByEmail and links
+// the OAuth account to it instead of calling createUser.
+// ---------------------------------------------------------------------------
+
+async function getOrCreateSupabaseAuthId(
+  email: string,
+  emailVerified: boolean
+): Promise<string> {
+  // Query auth.users directly via Prisma raw — reliable regardless of SDK version.
+  const existing = await db.$queryRaw<Array<{ id: string }>>` 
+    SELECT id FROM auth.users WHERE lower(email) = lower(${email}) LIMIT 1
+  `;
+
+  if (existing.length > 0) {
+    return existing[0].id;
+  }
+
+  // Create a new Supabase auth entry. The user will continue to authenticate
+  // through NextAuth credentials (bcrypt), so no Supabase password is needed.
+  const { data, error } = await supabase.auth.admin.createUser({
+    email,
+    email_confirm: emailVerified,
+  });
+
+  if (error || !data?.user) {
+    throw new Error(`[auth] Failed to create Supabase auth user for ${email}: ${error?.message}`);
+  }
+
+  return data.user.id;
+}
+
+function createLinkedPrismaAdapter() {
+  const base = PrismaAdapter(db);
+  return {
+    ...base,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createUser: async (user: any) => {
+      const supabaseUserId = await getOrCreateSupabaseAuthId(
+        user.email as string,
+        !!user.emailVerified
+      );
+
+      return db.user.create({
+        data: {
+          id: supabaseUserId,
+          name: (user.name as string | null) ?? (user.email as string).split("@")[0],
+          email: user.email as string,
+          emailVerified: user.emailVerified as Date | null,
+          image: user.image as string | null,
+        },
+      });
+    },
+  };
+}
+
 const providers = [
   ...(isGoogleOAuthEnabled()
     ? [
@@ -167,7 +234,7 @@ const providers = [
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   secret: getRequiredServerEnv("NEXTAUTH_SECRET"),
-  adapter: PrismaAdapter(db),
+  adapter: createLinkedPrismaAdapter(),
   session: {
     strategy: "jwt",
     maxAge: 60 * 60 * 24 * 7,

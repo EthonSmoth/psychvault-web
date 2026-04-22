@@ -84,7 +84,7 @@ enum ResourceFileKind {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name          String
   email         String    @unique
   emailVerified DateTime?
@@ -137,7 +137,7 @@ model Conversation {
 model ConversationParticipant {
   id             String    @id @default(cuid())
   conversationId String
-  userId         String
+  userId         String    @db.Uuid
   lastReadAt     DateTime?
   createdAt      DateTime  @default(now())
 
@@ -151,7 +151,7 @@ model ConversationParticipant {
 model Message {
   id             String   @id @default(cuid())
   conversationId String
-  senderId       String
+  senderId       String   @db.Uuid
   body           String
   createdAt      DateTime @default(now())
 
@@ -164,7 +164,7 @@ model Message {
 }
 
 model Account {
-  userId            String
+  userId            String   @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -183,7 +183,7 @@ model Account {
 
 model Session {
   sessionToken String   @id
-  userId       String
+  userId       String   @db.Uuid
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -199,7 +199,7 @@ model VerificationToken {
 
 model Store {
   id               String           @id @default(cuid())
-  ownerId          String           @unique
+  ownerId          String           @unique @db.Uuid
   name             String
   slug             String           @unique
   bio              String?
@@ -211,7 +211,7 @@ model Store {
   moderationStatus ModerationStatus @default(APPROVED)
   moderationReason String?
   moderatedAt      DateTime?
-  moderatedById    String?
+  moderatedById    String?          @db.Uuid
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -230,7 +230,7 @@ model Store {
 model Resource {
   id               String           @id @default(cuid())
   storeId          String
-  creatorId        String
+  creatorId        String           @db.Uuid
   title            String
   slug             String           @unique
   description      String
@@ -242,7 +242,7 @@ model Resource {
   moderationStatus ModerationStatus @default(APPROVED)
   moderationReason String?
   moderatedAt      DateTime?
-  moderatedById    String?
+  moderatedById    String?          @db.Uuid
   thumbnailUrl     String?
   imageUrl         String?
   previewImageUrl  String?
@@ -283,8 +283,8 @@ model Resource {
 model ResourceReport {
   id           String               @id @default(cuid())
   resourceId   String
-  reporterId   String
-  reviewedById String?
+  reporterId   String               @db.Uuid
+  reviewedById String?              @db.Uuid
   reason       ResourceReportReason
   details      String?
   status       ResourceReportStatus @default(OPEN)
@@ -305,8 +305,8 @@ model ResourceReport {
 model StoreReport {
   id           String               @id @default(cuid())
   storeId      String
-  reporterId   String
-  reviewedById String?
+  reporterId   String               @db.Uuid
+  reviewedById String?              @db.Uuid
   reason       ResourceReportReason
   details      String?
   status       ResourceReportStatus @default(OPEN)
@@ -330,7 +330,7 @@ model ModerationEvent {
   targetId    String
   action      ModerationActionType
   message     String?
-  actorUserId String?
+  actorUserId String?              @db.Uuid
   createdAt   DateTime             @default(now())
 
   actorUser User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
@@ -394,7 +394,7 @@ model ResourceTag {
 
 model Purchase {
   id                      String   @id @default(cuid())
-  buyerId                 String
+  buyerId                 String   @db.Uuid
   resourceId              String
   amountCents             Int
   platformFeeCents        Int
@@ -418,7 +418,7 @@ model Purchase {
 model RefundRequest {
   id         String              @id @default(cuid())
   purchaseId String              @unique
-  buyerId    String
+  buyerId    String              @db.Uuid
   reason     String
   message    String?
   status     RefundRequestStatus @default(PENDING)
@@ -436,7 +436,7 @@ model RefundRequest {
 
 model Review {
   id         String   @id @default(cuid())
-  buyerId    String
+  buyerId    String   @db.Uuid
   resourceId String
   rating     Int
   body       String?
@@ -455,7 +455,7 @@ model Review {
 model ReviewReport {
   id         String   @id @default(cuid())
   reviewId   String
-  reporterId String
+  reporterId String   @db.Uuid
   reason     String
   createdAt  DateTime @default(now())
 
@@ -468,7 +468,7 @@ model ReviewReport {
 
 model CreatorApplication {
   id        String                    @id @default(cuid())
-  userId    String                    @unique
+  userId    String                    @unique @db.Uuid
   message   String?
   status    CreatorApplicationStatus  @default(PENDING)
   adminNotes String?
@@ -481,7 +481,7 @@ model CreatorApplication {
 }
 
 model Follow {
-  followerId String
+  followerId String   @db.Uuid
   storeId    String
   createdAt  DateTime @default(now())
 
@@ -494,7 +494,7 @@ model Follow {
 
 model PayoutAccount {
   id               String   @id @default(cuid())
-  userId           String   @unique
+  userId           String   @unique @db.Uuid
   stripeAccountId  String   @unique
   chargesEnabled   Boolean  @default(false)
   payoutsEnabled   Boolean  @default(false)
@@ -519,7 +519,7 @@ model PasswordResetToken {
 model BlogComment {
   id        String   @id @default(cuid())
   slug      String   // blog post slug (e.g., "how-to-make-psychoeducation-handouts")
-  authorId  String
+  authorId  String   @db.Uuid
   body      String
   isApproved Boolean @default(false) // moderation flag
   createdAt DateTime @default(now())
