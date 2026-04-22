@@ -137,7 +137,7 @@ Note: `/privacy` and `/terms` also exist as alternate routes pointing to the sam
 | Framework | Next.js 16 App Router |
 | Language | TypeScript |
 | Runtime | React 19 |
-| Auth | Auth.js / NextAuth v5 beta |
+| Auth | Auth.js / NextAuth v5 beta (custom Supabase-linked adapter) |
 | Database | PostgreSQL on Supabase |
 | ORM | Prisma 6 |
 | Storage | Supabase Storage |
@@ -171,6 +171,7 @@ Drift checking:
 
 - `check-drift.ps1` compares `prisma/schema.prisma` against the live Supabase database
 - it uses `prisma migrate diff` over a session-mode pooler connection (port 5432) that supports prepared statements
+- output is plain-English instructions: which FK/field is drifting, what the DB actually has, and the exact `onDelete`/`onUpdate` values to set in `schema.prisma`
 - if it reports changes, update the Prisma schema to match the database — not the other way around
 - the script loads `DATABASE_URL` from `.env` and switches port 6543 to 5432 automatically
 
@@ -313,8 +314,9 @@ Current app behavior:
 
 Implemented:
 
-- credentials auth with bcrypt password hashes
-- optional Google OAuth
+- credentials auth with bcrypt password hashes, Supabase `auth.users` created first on signup
+- optional Google OAuth with `allowDangerousEmailAccountLinking` — OAuth sign-in links into an existing credentials account instead of creating a duplicate
+- `User.id` is a UUID pinned to `auth.users.id`, keeping Prisma and Supabase auth in sync
 - JWT-backed sessions
 - throttled auth-user refreshes to reduce unnecessary Prisma reads
 - secure cookies in production

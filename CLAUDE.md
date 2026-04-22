@@ -15,6 +15,8 @@ npm run db:seed      # Seed demo data via tsx prisma/seed.ts
 
 Do not use `npm run db:push` or `npm run db:migrate`. They fail on PgBouncer transaction mode (port 6543) and the direct DB host is unreachable. All schema changes go through the Supabase SQL Editor.
 
+`check-drift.ps1` now parses the raw diff and outputs plain-English instructions per item (which field, what the DB has, exact `onDelete`/`onUpdate` values to set). It never suggests running SQL against the database.
+
 No test runner is configured. There is no `npm test` command.
 
 On Windows: if `npm run build` fails because the Prisma query engine DLL is locked, stop any running dev process and retry.
@@ -31,7 +33,11 @@ When a creator publishes or admin moderation runs, server actions call `revalida
 
 ### Auth (`src/lib/auth.ts`)
 
-NextAuth v5 beta with the Prisma adapter. Supports credentials (bcrypt) and optional Google OAuth. Sessions are JWT-backed. The session JWT caches user state (role, email verified, isSuperAdmin) and only refreshes from the database every 30 seconds (`AUTH_USER_STATE_REFRESH_MS`) to reduce Prisma reads.
+NextAuth v5 beta with a custom `createLinkedPrismaAdapter()` that wraps the standard Prisma adapter. On every OAuth sign-in, the adapter looks up the user's Supabase `auth.users` UUID and sets `User.id` to that UUID, keeping Prisma and Supabase auth in sync. `allowDangerousEmailAccountLinking: true` on the Google provider ensures OAuth sign-ins link into an existing credentials account rather than creating a duplicate.
+
+For credentials sign-up, a Supabase auth user is created first (via `supabase.auth.admin.createUser`), and the returned UUID is used as `User.id` in Prisma. On Prisma failure, the Supabase auth user is rolled back.
+
+Supports credentials (bcrypt) and optional Google OAuth. Sessions are JWT-backed. The session JWT caches user state (role, email verified, isSuperAdmin) and only refreshes from the database every 30 seconds (`AUTH_USER_STATE_REFRESH_MS`) to reduce Prisma reads.
 
 Role hierarchy: `BUYER` → `CREATOR` → `ADMIN`. `isSuperAdmin` is a separate boolean on `User`.
 
@@ -66,7 +72,9 @@ Prisma 6 ORM on Postgres (Supabase). **Supabase SQL Editor is the source of trut
 
 Schema change workflow: write SQL in Supabase SQL Editor -> update `prisma/schema.prisma` to match -> `npm run db:generate` -> `.\check-drift.ps1` to confirm zero drift.
 
-Schema is at `prisma/schema.prisma`. Key relationships:
+Schema is at `prisma/schema.prisma`. `User.id` is a UUID (`@db.Uuid`) defaulting to `gen_random_uuid()`, matching Supabase `auth.users.id`. All foreign key columns that reference `User.id` are annotated `@db.Uuid`.
+
+Key relationships:
 - `User` → `Store` (one creator, one store)
 - `Store` → `Resource[]`
 - `Resource` → `Purchase[]`, `Review[]`, `ResourceFile[]`, `ResourceReport[]`
@@ -104,7 +112,8 @@ Reusable component classes live in `src/app/components.css` (e.g. `.card-panel`,
 ## Environment
 
 Copy `.env.example` to `.env`. Required variables:
-- `DATABASE_URL`, `DIRECT_URL` (Prisma)
+- `DATABASE_URL` (Prisma — pooled connection via PgBouncer, port 6543)
+- `DIRECT_URL` (Prisma — optional direct connection; the direct host is unreachable in this environment so this can be set to the same value as `DATABASE_URL`)
 - `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_TRUST_HOST`, `CSRF_SECRET`
 - `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
