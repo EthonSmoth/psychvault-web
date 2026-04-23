@@ -55,7 +55,12 @@ const faqSections = [
       {
         question:"How much do I earn from each sale?",
         answer:
-"PsychVault takes a 20% platform fee on each sale, meaning you keep 80% of the purchase price. Examples: Price $50 AUD → You earn $40. Price $100 AUD → You earn $80. Price $25 AUD → You earn $20. Free resources earn $0 but build your following. Prices are in AUD and payouts go directly to your connected bank account.",
+"PsychVault takes a platform fee on each sale and you keep the rest. The standard fee is 20%, meaning you keep 80%. Founding creators who join during early access lock in a reduced 15% fee — keeping 85% — for the lifetime of their account. Examples at the standard 20% rate: $50 AUD → You earn $40. $100 AUD → You earn $80. $25 AUD → You earn $20. At the founding 15% rate: $50 AUD → You earn $42.50. $100 AUD → You earn $85. Free resources earn $0 but build your following and credibility. Prices are in AUD and payouts go directly to your connected bank account.",
+      },
+      {
+        question:"What is founding creator status, and how do I get it?",
+        answer:
+"Founding creator status is a permanent preferential fee tier available to creators who join PsychVault during the early access period. Founding creators pay a 15% platform fee instead of the standard 20% — an extra $2.50 on every $50 sale, kept for life. To claim it, simply create an account and apply to become a creator while the founding period is open. Once you're marked as a founding creator, the reduced rate is locked to your account permanently and applies to every sale you make going forward.",
       },
       {
         question:"When do I get paid?",
