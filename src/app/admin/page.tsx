@@ -363,27 +363,32 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   let pendingCreatorApplications: Awaited<ReturnType<typeof fetchPendingCreatorApplications>> = [];
   let creatorRevenueTiers: Awaited<ReturnType<typeof fetchCreatorRevenueTiers>> = [];
 
-  if (activeView ==="overview" || activeView ==="queue" || activeView ==="resource-reports") {
+  if (activeView ==="queue" || activeView ==="resource-reports") {
     [queuedResources, openReports] = await db.$transaction([fetchQueuedResources(), fetchOpenReports()]);
   }
 
-  if (activeView ==="overview" || activeView ==="store-reports") {
+  if (activeView ==="store-reports") {
     openStoreReports = await fetchOpenStoreReports();
   }
 
-  if (activeView ==="overview" || activeView ==="stores") {
+  if (activeView ==="stores") {
     [recentResources, recentStores] = await db.$transaction([fetchRecentResources(), fetchRecentStores()]);
   }
 
-  if (activeView ==="overview" || activeView ==="refunds") {
+  if (activeView ==="refunds") {
     pendingRefundRequests = await fetchPendingRefundRequests();
   }
 
-  if (activeView ==="overview" || activeView ==="creator-applications") {
+  if (activeView ==="creator-applications") {
     pendingCreatorApplications = await fetchPendingCreatorApplications();
   }
 
-  if (activeView ==="overview" || activeView ==="audit") {
+  if (activeView ==="audit") {
+    recentModerationEvents = await fetchRecentModerationEvents();
+  }
+
+  // Overview: fetch a lightweight audit preview
+  if (activeView ==="overview") {
     recentModerationEvents = await fetchRecentModerationEvents();
   }
 
@@ -397,16 +402,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const queuedTrustProfiles = await getCreatorTrustProfiles(queuedResources.map((resource) => resource.creator?.id ??""));
   const viewTabs = [
     { href:"/admin", label:"Overview", key:"overview" },
-    { href:"/admin?view=queue", label: `Queue (${formatCount(pendingReviewCount)})`, key:"queue" },
-    { href:"/admin?view=resource-reports", label: `Resource reports (${formatCount(openReportCount)})`, key:"resource-reports" },
-    { href:"/admin?view=store-reports", label: `Store reports (${formatCount(openStoreReportCount)})`, key:"store-reports" },
-    { href:"/admin?view=refunds", label: `Refunds (${formatCount(pendingRefundCount)})`, key:"refunds" },
-    { href:"/admin?view=creator-applications", label: `Applications (${formatCount(pendingCreatorApplicationCount)})`, key:"creator-applications" },
-    { href:"/admin?view=stores", label:"Stores", key:"stores" },
+    { href:"/admin/queue", label: `Queue (${formatCount(pendingReviewCount)})`, key:"queue" },
+    { href:"/admin/reports", label: `Reports (${formatCount(openReportCount + openStoreReportCount)})`, key:"resource-reports" },
+    { href:"/admin/refunds", label: `Refunds (${formatCount(pendingRefundCount)})`, key:"refunds" },
+    { href:"/admin/applications", label: `Applications (${formatCount(pendingCreatorApplicationCount)})`, key:"creator-applications" },
+    { href:"/admin/stores", label:"Stores", key:"stores" },
     ...(canManageFounderStatus
-      ? [{ href:"/admin?view=creator-revenue", label:"Creator revenue tiers", key:"creator-revenue" }]
+      ? [{ href:"/admin/revenue", label:"Revenue tiers", key:"creator-revenue" }]
       : []),
-    { href:"/admin?view=audit", label:"Audit log", key:"audit" },
+    { href:"/admin/audit", label:"Audit log", key:"audit" },
   ];
   const healthState =
     itemsNeedingAttention === 0
@@ -416,35 +420,28 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       : { label:"High attention", note:"Pending reviews and open reports are stacking up and should be cleared soon.", tone:"danger" as const };
   const focusCards = [
     {
-      href:"/admin?view=queue",
+      href:"/admin/queue",
       label:"Pending review",
       value: formatCount(pendingReviewCount),
       note: pendingReviewCount > 0 ?"Resources waiting for a publish or reject decision." :"No queued resources right now.",
       tone: pendingReviewCount > 0 ? ("warning" as const) : ("success" as const),
     },
     {
-      href:"/admin?view=resource-reports",
-      label:"Resource reports",
-      value: formatCount(openReportCount),
-      note: openReportCount > 0 ?"Flagged listings that need a moderation pass." :"No unresolved resource reports.",
-      tone: openReportCount > 0 ? ("danger" as const) : ("success" as const),
+      href:"/admin/reports",
+      label:"Open reports",
+      value: formatCount(openReportCount + openStoreReportCount),
+      note: openReportCount + openStoreReportCount > 0 ?"Flagged listings and stores needing a moderation pass." :"No unresolved reports.",
+      tone: openReportCount + openStoreReportCount > 0 ? ("danger" as const) : ("success" as const),
     },
     {
-      href:"/admin?view=store-reports",
-      label:"Store reports",
-      value: formatCount(openStoreReportCount),
-      note: openStoreReportCount > 0 ?"Store-level concerns waiting for follow-up." :"No unresolved store reports.",
-      tone: openStoreReportCount > 0 ? ("danger" as const) : ("success" as const),
-    },
-    {
-      href:"/admin?view=refunds",
+      href:"/admin/refunds",
       label:"Refund requests",
       value: formatCount(pendingRefundCount),
       note: pendingRefundCount > 0 ?"Buyer refund requests waiting for a decision." :"No pending refund requests.",
       tone: pendingRefundCount > 0 ? ("warning" as const) : ("success" as const),
     },
     {
-      href:"/admin?view=audit",
+      href:"/admin/audit",
       label:"Gross revenue",
       value: formatMoney(grossRevenue),
       note:"Useful marketplace signal alongside moderation load.",
@@ -525,7 +522,70 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         ))}
       </section>
 
-      {(activeView ==="overview" || activeView ==="queue" || activeView ==="resource-reports") ? (
+      {activeView ==="overview" ? (
+        <section className="mt-8">
+          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+            <h2 className="heading-section mb-5">Inbox</h2>
+            <div className="divide-y divide-[var(--border)]">
+              {[
+                { href:"/admin/queue", label:"Moderation queue", count: pendingReviewCount, note:"Resources pending publish or reject", urgent: pendingReviewCount > 0 },
+                { href:"/admin/reports", label:"Open reports", count: openReportCount + openStoreReportCount, note:"Flagged resources and stores", urgent: openReportCount + openStoreReportCount > 0 },
+                { href:"/admin/refunds", label:"Refund requests", count: pendingRefundCount, note:"Buyer refunds awaiting decision", urgent: pendingRefundCount > 0 },
+                { href:"/admin/applications", label:"Creator applications", count: pendingCreatorApplicationCount, note:"Applications waiting for review", urgent: pendingCreatorApplicationCount > 0 },
+              ].map(({ href, label, count, note, urgent }) => (
+                <Link key={href} href={href} className="flex items-center justify-between gap-4 py-4 hover:bg-[var(--surface-alt)] -mx-2 px-2 rounded-xl transition">
+                  <div>
+                    <div className={`text-sm font-semibold ${urgent ?"text-[var(--text)]" :"text-[var(--text-muted)]"}` }>{label}</div>
+                    <div className="mt-0.5 text-xs text-[var(--text-muted)]">{note}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {urgent ? (
+                      <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700 border border-amber-200">{count}</span>
+                    ) : (
+                      <span className="text-sm text-[var(--text-light)]">Clear</span>
+                    )}
+                    <span className="text-[var(--text-light)]">→</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {activeView ==="overview" && recentModerationEvents.length > 0 ? (
+        <section className="mt-8">
+          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <h2 className="heading-section">Recent activity</h2>
+              <Link href="/admin/audit" className="text-sm text-[var(--primary)] hover:underline">View full log →</Link>
+            </div>
+            <div className="space-y-3">
+              {recentModerationEvents.slice(0, 5).map((event) => {
+                const tone = getEventTone(event.action);
+                return (
+                  <div key={event.id} className="flex items-start justify-between gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge label={formatModerationStatus(event.action)} tone={tone} />
+                      {event.message ? (
+                        <span className="text-sm text-[var(--text-muted)]">{event.message}</span>
+                      ) : (
+                        <span className="text-sm text-[var(--text-light)]">{event.targetType} / {event.targetId}</span>
+                      )}
+                    </div>
+                    <div className="shrink-0 text-right text-xs text-[var(--text-muted)]">
+                      <div>{formatDateTime(event.createdAt)}</div>
+                      <div className="mt-0.5">{event.actorUser?.name || event.actorUser?.email ||"System"}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {(activeView ==="queue" || activeView ==="resource-reports") ? (
         <section className="mt-10 grid gap-8 xl:grid-cols-2">
           <SectionCard
             title="Queued resources"
@@ -695,7 +755,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView ==="overview" || activeView ==="store-reports") ? (
+      {(activeView ==="store-reports") ? (
         <section className="mt-10">
           <SectionCard
             title="Open store reports"
@@ -757,7 +817,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView ==="overview" || activeView ==="stores") ? (
+      {(activeView ==="stores") ? (
         <section className="mt-10 grid gap-8 lg:grid-cols-2">
           <SectionCard
             title="Recent resources"
@@ -954,7 +1014,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView ==="overview" || activeView ==="refunds") ? (
+      {(activeView ==="refunds") ? (
         <section className="mt-10">
           <SectionCard
             title="Refund requests"
@@ -1023,7 +1083,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView ==="overview" || activeView ==="creator-applications") ? (
+      {(activeView ==="creator-applications") ? (
         <section className="mt-10">
           <SectionCard
             title="Creator applications"
@@ -1086,7 +1146,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
       ) : null}
 
-      {(activeView ==="overview" || activeView ==="audit") ? (
+      {(activeView ==="audit") ? (
         <section className="mt-10">
           <SectionCard
             title="Moderation audit log"
