@@ -2,7 +2,7 @@
 
 import Link from"next/link";
 import { usePathname } from"next/navigation";
-import { useEffect, useState } from"react";
+import { useEffect, useState, useTransition } from"react";
 import { resendVerificationEmailFormAction } from"@/server/actions/email-verification-actions";
 import { logoutAction } from"@/server/actions/auth-actions";
 import { MobileOverlayMenu } from"@/components/layout/mobile-overlay-menu";
@@ -161,6 +161,28 @@ export function NavbarSessionControlsSkeleton() {
   );
 }
 
+function LogoutButton() {
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <div className="pt-2">
+      <button
+        type="button"
+        disabled={isPending}
+        onClick={() => {
+          startTransition(async () => {
+            await logoutAction();
+            window.location.href = "/";
+          });
+        }}
+        className="block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isPending ? "Logging out…" : "Log out"}
+      </button>
+    </div>
+  );
+}
+
 function AccountMenuContent({
   adminAccess,
   name,
@@ -232,14 +254,7 @@ function AccountMenuContent({
           Admin dashboard
         </Link>
       ) : null}
-      <form action={logoutAction} className="pt-2">
-        <button
-          type="submit"
-          className="block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
-        >
-          Log out
-        </button>
-      </form>
+      <LogoutButton />
     </>
   );
 }
