@@ -724,6 +724,56 @@ async function HomeBlogSection() {
   );
 }
 
+function HomeFounderBannerSection() {
+  return (
+    <section className="defer-section border-y border-[var(--border)] bg-[var(--surface)]">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+        <div className="rounded-3xl border border-[var(--border-strong)] bg-[var(--card)] px-8 py-12 shadow-sm sm:px-12 lg:flex lg:items-center lg:justify-between lg:gap-12 lg:py-14">
+          <div className="lg:max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--primary)]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--primary)] sm:text-xs">
+              <span aria-hidden="true">✦</span> Founding creator
+            </span>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-3xl lg:text-4xl">
+              Join now and keep&nbsp;more of every sale
+            </h2>
+            <p className="mt-4 max-w-xl text-base leading-7 text-[var(--text-muted)]">
+              Founding creators who join during early access lock in a{" "}
+              <strong className="font-semibold text-[var(--text)]">15% platform fee</strong> — compared to the standard 20%. That&apos;s an extra{" "}
+              <strong className="font-semibold text-[var(--text)]">$2.50 on every $50 sale</strong>, yours to keep, forever.
+            </p>
+            <ul className="mt-6 space-y-2 text-sm text-[var(--text-muted)]">
+              {[
+                "15% fee locked in for life — standard rate is 20%",
+                "Public storefront, resource listings, and analytics included",
+                "Founder badge on your store profile",
+              ].map((point) => (
+                <li key={point} className="flex items-start gap-2">
+                  <span className="mt-0.5 shrink-0 text-[var(--primary)]" aria-hidden="true">✓</span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mt-10 flex flex-col items-start gap-3 lg:mt-0 lg:shrink-0">
+            <Link
+              href="/signup"
+              className="inline-flex rounded-xl bg-[var(--primary)] px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--primary-dark)] hover:text-white"
+            >
+              Claim founder status
+            </Link>
+            <Link
+              href="/creator"
+              className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)]"
+            >
+              Learn about selling →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HomeValueSection() {
   const valueCards = [
     {
@@ -834,6 +884,8 @@ export default function HomePage() {
       <Suspense fallback={<HomeBlogFallback />}>
         <HomeBlogSection />
       </Suspense>
+
+      <HomeFounderBannerSection />
 
       <HomeValueSection />
     </div>
