@@ -129,10 +129,17 @@ export async function syncCreatorPayoutStatus(userId: string) {
       nextStatus.payoutsEnabled !== payoutAccount.payoutsEnabled ||
       nextStatus.detailsSubmitted !== payoutAccount.detailsSubmitted
     ) {
-      await db.payoutAccount.update({
-        where: { userId },
-        data: nextStatus,
-      });
+      const isListable = nextStatus.payoutsEnabled && nextStatus.detailsSubmitted;
+      await db.$transaction([
+        db.payoutAccount.update({
+          where: { userId },
+          data: nextStatus,
+        }),
+        db.store.updateMany({
+          where: { ownerId: userId },
+          data: { isListable },
+        }),
+      ]);
     }
 
     return toCreatorPayoutStatus({

@@ -19,18 +19,7 @@ export function getPubliclyVisiblePublishedResourceWhere(
           { isFree: true },
           { priceCents: 0 },
           ...(superAdminResourceWhere ? [superAdminResourceWhere] : []),
-          {
-            store: {
-              owner: {
-                payoutAccount: {
-                  is: {
-                    payoutsEnabled: true,
-                    detailsSubmitted: true,
-                  },
-                },
-              },
-            },
-          },
+          { store: { isListable: true } },
         ],
       },
       extra,

@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { Prisma, UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { logTimedOperation, startTimer } from "@/lib/performance";
-import { isPaidResourcePayoutReady, isPayoutAccountReady } from "@/lib/stripe-connect";
+
 import {
   DEFAULT_RESOURCE_CATEGORIES,
   DEFAULT_RESOURCE_TAGS,
@@ -315,17 +315,7 @@ export function getPublishedResourcePageData(slug: string) {
                 ownerId: true,
                 isVerified: true,
                 logoUrl: true,
-                owner: {
-                  select: {
-                    isSuperAdmin: true,
-                    payoutAccount: {
-                      select: {
-                        payoutsEnabled: true,
-                        detailsSubmitted: true,
-                      },
-                    },
-                  },
-                },
+                isListable: true,
               },
             },
             creator: {
@@ -372,12 +362,7 @@ export function getPublishedResourcePageData(slug: string) {
           },
         });
 
-        const creatorCanSellPaidResources = isPaidResourcePayoutReady({
-          user: {
-            isSuperAdmin: resource?.store?.owner?.isSuperAdmin,
-          },
-          payoutReady: isPayoutAccountReady(resource?.store?.owner?.payoutAccount),
-        });
+        const creatorCanSellPaidResources = resource?.store?.isListable === true;
 
         if (
           !resource ||

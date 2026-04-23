@@ -208,6 +208,7 @@ model Store {
   location         String?
   isPublished      Boolean          @default(false)
   isVerified       Boolean          @default(false)
+  isListable       Boolean          @default(false)
   moderationStatus ModerationStatus @default(APPROVED)
   moderationReason String?
   moderatedAt      DateTime?
@@ -225,6 +226,7 @@ model Store {
   @@index([isPublished, updatedAt])
   @@index([isPublished, name])
   @@index([isPublished, isVerified])
+  @@index([isListable])
 }
 
 model Resource {
