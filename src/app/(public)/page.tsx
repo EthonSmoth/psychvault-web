@@ -373,8 +373,8 @@ function MarketplaceTrustSection() {
             className="font-medium text-[var(--text)] underline"
           >
             best sellers
-          </Link>{""}{
-          and{""}{
+          </Link>{" "}
+          and{" "}
           <Link
             href="/resources"
             className="font-medium text-[var(--text)] underline"
