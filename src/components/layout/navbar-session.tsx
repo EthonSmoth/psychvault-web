@@ -305,7 +305,7 @@ function MobileMenuLinks({ authenticated }: { authenticated: boolean }) {
         Contact
       </Link>
       <Link
-        href="/resources?category=assessment-tools"
+        href="/resources/assessment-tools"
         className="nav-dropdown-item"
       >
         Categories

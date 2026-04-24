@@ -203,6 +203,9 @@ export function Footer() {
         <div className="mt-10 border-t border-soft pt-6 sm:mt-12 sm:pt-8">
           <div className="mb-5 flex flex-col items-center gap-1 text-center sm:mb-6">
             <p className="text-sm font-medium text-[var(--text)]">
+              Made in Australia for Australian psychologists and allied health professionals.
+            </p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
               Handcrafted resources by practising clinicians for your practice.
             </p>
             <p className="text-xs text-[var(--text-muted)]">&copy; {currentYear} PsychVault &middot; <a href="/feed.xml" className="underline hover:text-[var(--accent)]">RSS</a> &middot; <a href="/sitemap.xml" className="underline hover:text-[var(--accent)]">Sitemap</a></p>

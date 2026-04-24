@@ -1,13 +1,13 @@
 ---
-title: "NDIS report template checklist for psychologists who want faster approvals"
-description: "A practical checklist for writing clearer NDIS psychology reports with stronger functional wording, cleaner recommendations, and less admin drag."
+title: "NDIS Report Template Checklist for Psychologists | PsychVault Australia"
+description: "A practical checklist for writing clearer NDIS psychology reports — stronger functional wording, cleaner recommendations, and less admin for Australian clinicians."
 coverImage: "/blog/NDIS-report-template-checklist-for-psychologists-who-want-faster-approval.jpg"
 coverImageAlt: "NDIS psychology report template pages laid out with notes and clinical prompts"
 publishedAt: "2026-03-14"
 updatedAt: "2026-04-14"
 author: "PsychVault Editorial Team"
 category: "NDIS Resources"
-tags: ["NDIS report template", "psychology reports", "clinical documentation", "report writing", "functional impact"]
+tags: ["NDIS report template", "psychology reports Australia", "clinical documentation", "report writing", "functional impact", "NDIS psychology report"]
 featured: true
 ---
 
@@ -169,7 +169,7 @@ Even small updates — tightening a functional wording prompt, reordering two se
 
 If you work in a practice with other clinicians, aligning on a shared template is usually worth the effort. It improves consistency across the team and makes peer review easier when reports need a second read before going out.
 
-You can browse NDIS report templates and related psychology documentation resources in the [PsychVault resource library](/resources).
+You can browse [NDIS report templates for Australian psychologists](/resources/ndis-resources) and related [psychology report templates](/resources/report-templates) in the PsychVault resource library.
 
 ## Final takeaway
 

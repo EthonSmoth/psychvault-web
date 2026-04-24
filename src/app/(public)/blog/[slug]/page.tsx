@@ -59,7 +59,7 @@ export async function generateMetadata({
   const imageUrl = resolveBlogImageUrl(baseUrl, post.coverImage);
 
   return {
-    title: post.title,
+    title: post.title.includes(" | ") ? { absolute: post.title } : post.title,
     description: post.description,
     keywords: post.tags,
     authors: [{ name: post.author }],

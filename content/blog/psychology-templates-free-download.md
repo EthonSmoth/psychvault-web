@@ -40,7 +40,7 @@ The common thread is structure. A strong template makes it easier to think clear
 
 ## Free psychology templates you can use right now
 
-If you want to browse immediately, start with [all free resources](/resources?price=free), [free psychoeducation resources](/resources?category=psychoeducation&price=free), or [free therapy worksheets](/resources?category=therapy-worksheets&price=free).
+If you want to browse immediately, start with [all free resources](/resources?price=free), [free psychoeducation resources](/resources/psychoeducation?price=free), or [free therapy worksheets](/resources/therapy-worksheets?price=free).
 
 One useful resource already on the site is the [Autism-Friendly Psychoeducation Handout](/resources/autism-friendly-psychoeducation-handout) — a free, neurodiversity-affirming handout worth reviewing if you work with autistic clients or their families.
 
@@ -134,7 +134,7 @@ An escalation profile maps what a person's behaviour looks like at different lev
 
 A well-built escalation profile reduces inconsistency across support staff. When everyone responds in a similar way to the same signals, de-escalation tends to be faster and less distressing for the person involved.
 
-For related resources, browse [NDIS resources](/resources?category=ndis-resources) and [positive behaviour support resources](/resources?category=positive-behaviour-support).
+For related resources, browse [NDIS resources](/resources/ndis-resources) and [positive behaviour support resources](/resources/positive-behaviour-support).
 
 ---
 
@@ -153,7 +153,7 @@ Goal-setting worksheets help clients move from vague intentions to specific comm
 
 The SMART framework works best when it is treated as a translation tool rather than a constraint. Start with what the client actually wants, then refine the language together.
 
-You can also find [goal setting and intervention plans](/resources?category=goal-setting-and-intervention-plans) and [feedback and formulation resources](/resources?category=feedback-and-formulation) in the resource library.
+You can also find [goal setting and intervention plans](/resources/goal-setting-and-intervention-plans) and [feedback and formulation resources](/resources/feedback-and-formulation) in the resource library.
 
 ---
 
@@ -192,8 +192,8 @@ If a template feels confusing to complete, it rarely improves with more use. The
 If you want to keep browsing, start with:
 
 - [All free resources](/resources?price=free)
-- [Free psychoeducation handouts](/resources?category=psychoeducation&price=free)
-- [Free therapy worksheets](/resources?category=therapy-worksheets&price=free)
-- [NDIS report templates and resources](/resources?category=ndis-resources)
-- [Report and documentation templates](/resources?category=report-templates)
+- [Free psychoeducation handouts](/resources/psychoeducation?price=free)
+- [Free therapy worksheets](/resources/therapy-worksheets?price=free)
+- [NDIS report templates and resources](/resources/ndis-resources)
+- [Report and documentation templates](/resources/report-templates)
 - [Browse everything on PsychVault](/resources)

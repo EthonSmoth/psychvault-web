@@ -19,6 +19,8 @@ type BrowseClientProps = {
   tags: PublicCategorySummary[];
   initialResources: PublicResourceCard[];
   initialPageInfo: PublicBrowsePageInfo;
+  /** Pre-select and lock a category for clean-URL category pages like /resources/therapy-worksheets */
+  defaultCategory?: string;
 };
 
 type ResourceBrowseFilters = {
@@ -36,36 +38,52 @@ function normalisePage(value: string | null) {
   return Number.isFinite(page) && page > 1 ? Math.floor(page) : 1;
 }
 
-function getFiltersFromSearchParams(searchParams: URLSearchParams): ResourceBrowseFilters {
+function getFiltersFromSearchParams(
+  searchParams: URLSearchParams,
+  defaultCategory = ""
+): ResourceBrowseFilters {
   return {
-    q: searchParams.get("q")?.trim() ||"",
-    category: searchParams.get("category")?.trim() ||"",
-    tag: searchParams.get("tag")?.trim() ||"",
-    price: searchParams.get("price")?.trim() ||"",
-    store: searchParams.get("store")?.trim() ||"",
-    sort: searchParams.get("sort")?.trim() ||"newest",
+    q: searchParams.get("q")?.trim() || "",
+    category: searchParams.get("category")?.trim() || defaultCategory,
+    tag: searchParams.get("tag")?.trim() || "",
+    price: searchParams.get("price")?.trim() || "",
+    store: searchParams.get("store")?.trim() || "",
+    sort: searchParams.get("sort")?.trim() || "newest",
     page: normalisePage(searchParams.get("page")),
   };
 }
 
-function getResourceBrowsePath(filters: ResourceBrowseFilters) {
-  return filters.q ?"/search" :"/resources";
-}
-
 function buildSearchUrl(filters: ResourceBrowseFilters) {
-  const params = new URLSearchParams();
+  if (filters.q) {
+    // Search surface — keep all filters as query params
+    const params = new URLSearchParams();
+    params.set("q", filters.q);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.tag) params.set("tag", filters.tag);
+    if (filters.price) params.set("price", filters.price);
+    if (filters.store) params.set("store", filters.store);
+    if (filters.sort && filters.sort !== "newest") params.set("sort", filters.sort);
+    if (filters.page > 1) params.set("page", String(filters.page));
+    return `/search?${params.toString()}`;
+  }
 
-  if (filters.q) params.set("q", filters.q);
-  if (filters.category) params.set("category", filters.category);
+  // Browse surface — category navigates to clean path, other filters are query params
+  const params = new URLSearchParams();
   if (filters.tag) params.set("tag", filters.tag);
   if (filters.price) params.set("price", filters.price);
   if (filters.store) params.set("store", filters.store);
-  if (filters.sort && filters.sort !=="newest") params.set("sort", filters.sort);
+  if (filters.sort && filters.sort !== "newest") params.set("sort", filters.sort);
   if (filters.page > 1) params.set("page", String(filters.page));
 
-  const pathname = getResourceBrowsePath(filters);
   const queryString = params.toString();
-  return queryString ? `${pathname}?${queryString}` : pathname;
+
+  if (filters.category) {
+    return queryString
+      ? `/resources/${filters.category}?${queryString}`
+      : `/resources/${filters.category}`;
+  }
+
+  return queryString ? `/resources?${queryString}` : "/resources";
 }
 
 function hasActiveFilters(filters: ResourceBrowseFilters) {
@@ -99,11 +117,15 @@ export function ResourcesBrowseClient({
   tags,
   initialResources,
   initialPageInfo,
+  defaultCategory,
 }: BrowseClientProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const filters = useMemo(() => getFiltersFromSearchParams(searchParams), [searchParams]);
+  const filters = useMemo(
+    () => getFiltersFromSearchParams(searchParams, defaultCategory ?? ""),
+    [searchParams, defaultCategory]
+  );
   const isSearchSurface = pathname ==="/search";
   const formKey = useMemo(() => buildSearchUrl(filters), [filters]);
   const categoryLabels = useMemo(
@@ -220,9 +242,20 @@ export function ResourcesBrowseClient({
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
-            {isSearchSurface ?"Search Resources" :"Browse Resources"}
-          </h1>
+          {isSearchSurface ? (
+            <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
+              Search Resources
+            </h1>
+          ) : (
+            <p className="text-xl font-semibold text-[var(--text)]">
+              {filters.category
+                ? (filters.category
+                    .split("-")
+                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(" "))
+                : "All resources"}
+            </p>
+          )}
           <p className="mt-2 text-sm text-[var(--text-muted)]">
             {isSearchSurface
               ?"Search psychology resources by keyword, topic, creator, store, or tag."

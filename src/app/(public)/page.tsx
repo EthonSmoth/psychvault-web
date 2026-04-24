@@ -15,11 +15,27 @@ import ResourceCard from"@/components/resources/resource-card";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title:"PsychVault - Psychology Resources Marketplace",
+  title: "Psychology Resources Australia | PsychVault — Clinical Templates & Tools",
   description:
-"Discover psychology resources, worksheets, psychoeducation, report templates, and tools designed by practising clinicians for real clinical work.",
+    "Browse and download psychology resources made for Australian clinicians. Templates, worksheets, psychoeducation handouts, and NDIS tools built for real practice.",
   alternates: {
     canonical: getAppBaseUrl(),
+  },
+  openGraph: {
+    title: "Psychology Resources Australia | PsychVault",
+    description:
+      "Download clinical templates, therapy worksheets, and psychoeducation tools designed for Australian psychologists and allied health professionals.",
+    url: getAppBaseUrl(),
+    type: "website",
+    locale: "en_AU",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "PsychVault — Psychology Resources Australia",
+      },
+    ],
   },
 };
 
@@ -132,12 +148,16 @@ function HomeHero() {
           </span>
 
           <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-[var(--text)] sm:text-4xl lg:text-5xl">
-            Discover and sell psychology resources that save real clinical time
+            Psychology resources for Australian clinicians — built for real practice
           </h1>
 
           <p className="mt-4 max-w-xl text-base leading-7 text-[var(--text-muted)] sm:mt-6 sm:text-lg sm:leading-8">
             Templates, handouts, psychoeducation, report tools, and resources
             designed for real practice.
+          </p>
+
+          <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--text-muted)]">
+            Designed for psychologists and allied health professionals practising in Australia. All resources are aligned with AHPRA standards, APS guidelines, and the realities of Australian clinical work — including NDIS documentation, Medicare-funded therapy, and school-based support. Browse <Link href="/resources" className="underline hover:text-[var(--accent)]">psychology resources for Australian clinicians</Link> below.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -446,7 +466,7 @@ async function HomeCategoriesSection() {
           return (
             <Link
               key={category.id}
-              href={`/resources?category=${category.slug}`}
+              href={`/resources/${category.slug}`}
               className="card-section group transition hover:-translate-y-1 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-4">

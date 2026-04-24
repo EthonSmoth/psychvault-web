@@ -1,13 +1,13 @@
 ---
-title: "How to make psychoeducation handouts clinicians actually want to use"
-description: "A practical guide to creating psychoeducation handouts that feel credible in session, read clearly for clients, and perform better as digital products."
+title: "How to Make Psychoeducation Handouts Clinicians Actually Want to Use"
+description: "A practical guide to creating psychoeducation handouts for Australian practice — clear, credible, and designed for real clinical sessions."
 coverImage: "/blog/How-to-make-psychoeducation-handouts-clinicians-actually-want-to-use.jpg"
 coverImageAlt: "Psychoeducation handouts laid out as polished clinician-ready resources"
 publishedAt: "2026-02-21"
 updatedAt: "2026-04-14"
 author: "PsychVault Editorial Team"
 category: "Psychoeducation"
-tags: ["psychoeducation handouts", "therapy resources", "clinical design", "mental health education", "client handouts"]
+tags: ["psychoeducation handouts", "therapy resources Australia", "clinical design", "mental health education", "client handouts", "psychoeducation resources Australia"]
 featured: true
 ---
 
@@ -158,3 +158,7 @@ If the answer is yes, the handout is probably close to market-ready.
 Great psychoeducation handouts are not just attractive PDFs. They are clinical tools that support therapeutic understanding while making the clinician's work easier.
 
 The closer the handout stays to a real session moment, the more valuable it becomes for clients, clinicians, and buyers alike.
+
+---
+
+*Looking for ready-to-use psychoeducation resources? Browse [psychoeducation handouts for Australian practice](/resources/psychoeducation) and [therapy worksheets for Australian clinicians](/resources/therapy-worksheets) in the PsychVault library.*

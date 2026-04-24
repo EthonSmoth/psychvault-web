@@ -157,5 +157,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
+
+    // Canonical category pages at clean paths
+    ...([
+      "therapy-worksheets",
+      "ndis-resources",
+      "psychoeducation",
+      "report-templates",
+      "emotional-regulation-tools",
+      "parent-handouts",
+      "assessment-tools",
+    ].map((slug) => ({
+      url: `${baseUrl}/resources/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    }))),
   ];
 }

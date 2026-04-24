@@ -1,11 +1,11 @@
 ---
 title: "Reasonable and Necessary Under the NDIS: What Clinicians Need to Know"
-description: "Understand the NDIS reasonable and necessary criteria and learn how to write reports that justify supports clearly, specifically, and effectively."
+description: "Understand the NDIS reasonable and necessary criteria and learn how to write psychology reports that justify supports clearly for Australian clinicians."
 publishedAt: "2026-04-19"
 updatedAt: "2026-04-19"
 author: "PsychVault Editorial Team"
 category: "NDIS Resources"
-tags: ["reasonable and necessary ndis", "ndis funding criteria", "ndis report justification", "how to justify supports ndis", "ndis functional impact wording", "ndis report writing"]
+tags: ["reasonable and necessary NDIS", "NDIS funding criteria", "psychology NDIS report", "Australian allied health NDIS", "ndis report justification", "how to justify supports ndis", "ndis functional impact wording", "ndis report writing"]
 featured: true
 coverImage: "/blog/ndis_hero_banner.svg"
 coverImageAlt: "Reasonable and Necessary Under the NDIS — a visual guide for clinicians"
@@ -161,4 +161,4 @@ Understanding the reasonable and necessary ndis framework is not just about comp
 
 The criteria are not designed to exclude people from the scheme. They are designed to ensure funding goes to supports that are appropriate, effective, and specific. When clinicians understand the framework and write to it, reports become clearer, decisions become faster, and participants get better outcomes.
 
-If you are looking for tools to help structure your NDIS documentation, the [NDIS report templates and wording resources in the PsychVault library](/resources?category=ndis-resources) are designed by clinicians for exactly this kind of work. They include functional impact wording prompts, justification frameworks, and structured report templates built around the reasonable and necessary criteria.
+If you are looking for tools to help structure your NDIS documentation, the [NDIS report templates and wording resources in the PsychVault library](/resources/ndis-resources) are designed by clinicians for exactly this kind of work. They include functional impact wording prompts, justification frameworks, and structured report templates built around the reasonable and necessary criteria.

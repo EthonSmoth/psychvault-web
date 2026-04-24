@@ -107,7 +107,7 @@ export function Navbar() {
                   Templates
                 </Link>
                 <Link
-                  href="/resources?category=assessment-tools"
+                  href="/resources/assessment-tools"
                   className="rounded-2xl px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-strong)]"
                 >
                   Categories
