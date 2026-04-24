@@ -6,12 +6,16 @@ import { notFound } from"next/navigation";
 import { getAppBaseUrl } from"@/lib/env";
 import { serializeJsonLd } from"@/lib/input-safety";
 import { getMarketplacePolicyLinks, getPaymentsAvailability } from"@/lib/payments";
+import { CATEGORY_SEO } from"@/lib/category-seo";
+import { ResourcesBrowseClient } from"@/components/resources/resources-browse-client";
 
 import {
   getPublishedResourceReviews,
   getPublishedResourceMetadata,
   getPublishedResourcePageData,
   getRelatedPublishedResources,
+  getPublishedResourcesBrowseData,
+  getResourceBrowseFacets,
 } from"@/server/queries/public-content";
 import { FlagReviewButton } from"@/components/resources/flag-review-button";
 import { ResourceGallery } from"@/components/resources/resource-gallery";
@@ -29,12 +33,37 @@ import { VerifiedBadge } from"@/components/ui/verified-badge";
 export const revalidate = 300;
 
 export function generateStaticParams() {
-  return [];
+  return Object.keys(CATEGORY_SEO).map((category) => ({ slug: category }));
 }
 
 // Builds SEO metadata for published resource pages and suppresses indexing for missing listings.
 export async function generateMetadata({ params }: ResourcePageProps): Promise<Metadata> {
   const { slug } = await params;
+
+  // Category page — return category-specific metadata
+  const categorySeo = CATEGORY_SEO[slug];
+  if (categorySeo) {
+    const baseUrl = getAppBaseUrl();
+    return {
+      title: { absolute: categorySeo.title },
+      description: categorySeo.description,
+      alternates: { canonical: `${baseUrl}/resources/${slug}` },
+      robots: { index: true, follow: true },
+      openGraph: {
+        title: categorySeo.title,
+        description: categorySeo.description,
+        url: `${baseUrl}/resources/${slug}`,
+        type: "website",
+        locale: "en_AU",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: categorySeo.title,
+        description: categorySeo.description,
+      },
+    };
+  }
+
   const resource = await getPublishedResourceMetadata(slug);
 
   if (!resource || resource.status !=="PUBLISHED") {
@@ -243,6 +272,40 @@ function DeferredCardFallback({
 // Renders the public resource detail page, including gallery, commerce, reviews, and reporting.
 export default async function ResourceDetailPage({ params }: ResourcePageProps) {
   const { slug } = await params;
+
+  // Category page — render the browse/filter UI for this category
+  const categorySeo = CATEGORY_SEO[slug];
+  if (categorySeo) {
+    const formatted = slug
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    const h1 = categorySeo.h1 ?? formatted;
+    const intro =
+      categorySeo.intro ??
+      `Browse ${formatted.toLowerCase()} resources designed for Australian psychologists and allied health professionals.`;
+    const [{ categories, tags }, browseData] = await Promise.all([
+      getResourceBrowseFacets(),
+      getPublishedResourcesBrowseData({ category: slug, sort: "newest" }),
+    ]);
+    return (
+      <>
+        <div className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">{h1}</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">{intro}</p>
+        </div>
+        <Suspense fallback={null}>
+          <ResourcesBrowseClient
+            categories={categories}
+            tags={tags}
+            initialResources={browseData.resources}
+            initialPageInfo={browseData.pageInfo}
+            defaultCategory={slug}
+          />
+        </Suspense>
+      </>
+    );
+  }
 
   const publicData = await getPublishedResourcePageData(slug);
 
