@@ -29,6 +29,8 @@ The public site is designed to stay lean and crawlable:
 - logged-in actions use neutral loading states instead of flashing incorrect logged-out CTAs
 - blog posts are authored in markdown and rendered as public content
 - template landing pages group resources by clinical intent for SEO content clustering
+- category browse pages are at `/resources/[slug]` — statically generated with dedicated metadata, not query params
+- all internal links in crawlable page content use clean static paths (no `?sort=`, `?price=`, or `?category=` in `href` values)
 
 ## Blog And Content Workflow
 
@@ -38,6 +40,18 @@ The blog is built into the app and is intended to support both SEO and topical a
 - frontmatter supports `title`, `description`, `publishedAt`, `updatedAt`, `author`, `category`, `tags`, `featured`, `coverImage`, and `coverImageAlt`
 - cover images and inline images should live in `public/blog`
 - blog index, blog post pages, JSON-LD, RSS, robots, and sitemap entries are already wired up
+
+Published posts (as of April 2026):
+
+| Slug | Topic |
+|---|---|
+| `how-to-make-psychoeducation-handouts-clinician-friendly` | Psychoeducation handout design |
+| `how-to-write-psychology-progress-notes` | Progress note writing |
+| `ndis-report-template-checklist` | NDIS report templates |
+| `psychology-templates-free-download` | Free psychology templates |
+| `reasonable-and-necessary-ndis-funding-criteria` | NDIS funding criteria |
+| `sell-psychology-resources-without-looking-spammy` | Creator marketing |
+| `lbpp-76-weekly-system-blog-post` | LBPP-76 logbook weekly system for 5+1 provisional psychologists |
 
 Example frontmatter:
 

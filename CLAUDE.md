@@ -99,6 +99,23 @@ Resources and stores have a `ModerationStatus` enum (APPROVED / PENDING_REVIEW /
 
 Blog posts are markdown files in `content/blog/*.md`. The blog system reads these at build/request time — no CMS. Cover and inline images go in `public/blog/`. Template SEO landing pages are defined statically in `src/lib/template-landing-pages.ts`.
 
+Existing blog posts (as of April 2026):
+- `how-to-make-psychoeducation-handouts-clinician-friendly.md`
+- `how-to-write-psychology-progress-notes.md`
+- `ndis-report-template-checklist.md`
+- `psychology-templates-free-download.md`
+- `reasonable-and-necessary-ndis-funding-criteria.md`
+- `sell-psychology-resources-without-looking-spammy.md`
+- `lbpp-76-weekly-system-blog-post.md` — LBPP-76 logbook weekly system guide for 5+1 provisional psychologists
+
+### Category routing and SEO conventions
+
+Category browse pages live at `/resources/[slug]` (e.g. `/resources/therapy-worksheets`), not at `/resources?category=slug`. These are statically generated pages with dedicated H1, meta title, and description defined in `src/lib/category-seo.ts`.
+
+Currently defined categories in `CATEGORY_SEO`: `therapy-worksheets`, `ndis-resources`, `psychoeducation`, `report-templates`, `emotional-regulation-tools`, `parent-handouts`, `assessment-tools`. All six are included in `sitemap.ts`.
+
+SEO linking rule: internal links in homepage body copy and navigation must use clean static paths. Never link to `/resources?sort=rating`, `/resources?price=free`, or similar query-param variants from crawlable page content — those filters are client-side UI only and should not appear as `href` values in JSX.
+
 ### Email (`src/lib/email.ts`)
 
 Transactional email via Resend. HTML content is escaped with `escape-goat` before sending. Triggered from server actions and the Stripe webhook handler.
