@@ -104,11 +104,6 @@ export default async function ResourcesPage() {
   );
 }
 
-  title: string;
-  description: string;
-  h1: string;
-  intro: string;
-};
 
 const CATEGORY_SEO: Record<string, CategorySeoData> = {
   "therapy-worksheets": {
