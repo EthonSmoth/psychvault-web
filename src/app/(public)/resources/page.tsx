@@ -104,12 +104,6 @@ export default async function ResourcesPage() {
   );
 }
 
-
-export const revalidate = 300;
-
-const baseUrl = getAppBaseUrl();
-
-type CategorySeoData = {
   title: string;
   description: string;
   h1: string;
