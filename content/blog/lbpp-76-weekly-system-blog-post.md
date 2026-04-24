@@ -19,6 +19,41 @@ Most provisional psychologists spend two to three hours a week on their logbook.
 
 This post is about building that system. Not the AHPRA-compliant minimum. The actual working version, built from real internship experience.
 
+**Jump to a section:**
+
+- [What the 5+1 internship actually requires](#what-the-5-1-internship-actually-requires)
+- [Why most provisional psychologists fall behind](#why-most-provisional-psychologists-fall-behind)
+- [The core insight most people miss](#the-core-insight-most-people-miss)
+- [The master spreadsheet: what it is and why it matters](#the-master-spreadsheet-what-it-is-and-why-it-matters)
+- [Client anonymisation: a practical approach](#client-anonymisation-a-practical-approach)
+- [The weekly system: how it actually runs](#the-weekly-system-how-it-actually-runs)
+- [What to write in your reflections](#what-to-write-in-your-reflections)
+- [The arrangement with your supervisor](#the-arrangement-with-your-supervisor)
+- [What the Board actually needs to see](#what-the-board-actually-needs-to-see)
+- [If you have fallen behind](#if-you-have-fallen-behind)
+- [The logbook guide that makes this easier](#the-logbook-guide-that-makes-this-easier)
+- [The honest summary](#the-honest-summary)
+
+---
+
+## What the 5+1 internship actually requires
+
+Before the system, you need to understand what you are building toward. The 5+1 internship has three components and the hours can feel abstract until you map them out.
+
+| Requirement | Minimum |
+|---|---|
+| Total internship hours | 1,500 hours |
+| Supervised psychological practice | 1,360 hours |
+| Direct client contact | 500 hours (up to 60 can be simulated) |
+| Total supervision hours | 80 hours |
+| Individual supervision with principal supervisor | 50 hours |
+| Professional development / education & training | 60 hours |
+| Supervisor direct observations | 8 sessions total (minimum 2 assessment + 2 intervention per 6 months) |
+
+The supervision ratio changed under the December 2025 guidelines. Previously the requirement was 1 hour of supervision for every 17 hours of practice. Under the updated guidelines, the mandatory ratio has been removed — the Board now suggests approximately 1 hour of supervision per 18 hours of practice as a guide, with the expectation that supervision occurs weekly while you are practising. The ultimate frequency is agreed between you and your principal supervisor.
+
+One other significant change from December 2025: case studies and progress reports no longer need to be submitted to AHPRA. Your supervisor still completes a final assessment of competence at the end of the internship, and the logbook still needs to be maintained and reviewed regularly — but the administrative burden has been reduced considerably.
+
 ---
 
 ## Why most provisional psychologists fall behind
@@ -153,6 +188,8 @@ What the Board is looking for is evidence that you are engaged in genuine superv
 
 A logbook that is up to date, clearly structured, with genuine reflections and a documented supervisor review process will satisfy that test. A logbook that is three weeks behind, with thin reflections and no clear supervisor sign-off trail, will not — even if all your hours are technically correct.
 
+One detail worth noting: the December 2025 AHPRA guidelines updated the supervision frequency guidance. The previous rule was 1 hour of supervision for every 17 hours of internship practice. Under the updated guidelines, the mandatory ratio has been removed — the Board now suggests approximately 1 hour of supervision per 18 hours of practice as a recommendation, not a hard requirement. Supervision is expected to occur weekly while you are practising, with the exact frequency agreed between you and your principal supervisor.
+
 The weekly system is not about perfectionism. It is about maintaining a record that accurately reflects real clinical work, in a format that is defensible if it is ever scrutinised.
 
 ---
@@ -180,6 +217,14 @@ The LBPP-76 is not complicated once you understand it. The weekly system that wo
 - New clients treated as a real investment: take the time to set them up properly in week one
 
 The hardest part is the beginning, when you are building the caseload and the system at the same time. Push through that period with extra time blocked, and the rest of the internship becomes genuinely manageable.
+
+---
+
+## The logbook guide that makes this easier
+
+If you want a complete breakdown of every section of the LBPP-76 — including worked examples for Section A entries, how to write reflections that satisfy your supervisor, how to document supervision in Section C, and a PD tracking system for Section B — the PsychVault LBPP-76 Logbook Guide covers all of it.
+
+It is the resource we wish had existed at the start of the internship. Written by a provisional psychologist who has completed the logbook, for provisional psychologists who are about to. [Download the LBPP-76 Logbook Guide →](/resources/lbpp-76-logbook-guide-5-1-internship-ahpra-guided-practical-system)
 
 ---
 

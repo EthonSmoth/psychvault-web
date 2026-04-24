@@ -179,7 +179,8 @@ function isBlockBoundary(line: string) {
     /^>\s?/.test(trimmed) ||
     /^[-*]\s+/.test(trimmed) ||
     /^\d+\.\s+/.test(trimmed) ||
-    /^---+$/.test(trimmed)
+    /^---+$/.test(trimmed) ||
+    /^\|/.test(trimmed)
   );
 }
 
@@ -361,6 +362,65 @@ function renderMarkdownBlocks(content: string, headings: BlogHeading[] = []) {
             </li>
           ))}
         </ol>
+      );
+
+      key += 1;
+      continue;
+    }
+
+    if (/^\|/.test(trimmed)) {
+      const tableLines: string[] = [];
+
+      while (index < lines.length && /^\|/.test(lines[index].trim())) {
+        tableLines.push(lines[index].trim());
+        index += 1;
+      }
+
+      const [headerLine, , ...dataLines] = tableLines;
+      const headers = headerLine.split("|").slice(1, -1).map((h) => h.trim());
+      const rows = dataLines.map((line) =>
+        line.split("|").slice(1, -1).map((cell) => cell.trim())
+      );
+
+      blocks.push(
+        <div
+          key={`block-${key}`}
+          className="overflow-x-auto rounded-3xl border border-[var(--border)] shadow-sm"
+        >
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[var(--border)] bg-[var(--surface-alt)]">
+                {headers.map((header, i) => (
+                  <th
+                    key={i}
+                    className="px-5 py-3 text-left font-semibold text-[var(--text)]"
+                  >
+                    {renderInlineMarkdown(header, `th-${key}-${i}`)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  className={`border-b border-[var(--border)] last:border-0 ${
+                    rowIndex % 2 === 0 ? "bg-[var(--card)]" : "bg-[var(--surface-alt)]"
+                  }`}
+                >
+                  {row.map((cell, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className="px-5 py-3 text-[var(--text-muted)]"
+                    >
+                      {renderInlineMarkdown(cell, `td-${key}-${rowIndex}-${cellIndex}`)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
 
       key += 1;
