@@ -347,7 +347,7 @@ function MarketplaceTrustSection() {
           Buyers can review previews, message creators, and report listings while you
           discover stronger resources through{" "}
           <Link
-            href="/resources?sort=rating"
+            href="/resources"
             className="font-medium text-[var(--text)] underline"
           >
             top-rated tools
@@ -359,7 +359,7 @@ function MarketplaceTrustSection() {
           .
         </>
       ),
-      href:"/resources?sort=rating",
+      href:"/resources",
       linkLabel:"See trusted resources",
     },
     {
@@ -369,14 +369,14 @@ function MarketplaceTrustSection() {
         <>
           Paid and free digital resources can be claimed through the platform, including{" "}
           <Link
-            href="/resources?sort=popular"
+            href="/resources"
             className="font-medium text-[var(--text)] underline"
           >
             best sellers
-          </Link>{" "}
-          and{" "}
+          </Link>{""}{
+          and{""}{
           <Link
-            href="/resources?price=free"
+            href="/resources"
             className="font-medium text-[var(--text)] underline"
           >
             free downloads
@@ -388,7 +388,7 @@ function MarketplaceTrustSection() {
           Free resources are available now while paid checkout activation is being finalised.
           You can still browse{" "}
           <Link
-            href="/resources?price=free"
+            href="/resources"
             className="font-medium text-[var(--text)] underline"
           >
             free resources
@@ -400,7 +400,7 @@ function MarketplaceTrustSection() {
           .
         </>
       ),
-      href: paymentsAvailability.enabled ?"/resources?sort=popular" :"/resources?price=free",
+      href: "/resources",
       linkLabel: paymentsAvailability.enabled ?"Browse popular resources" :"Browse free resources",
     },
   ];
@@ -800,14 +800,14 @@ function HomeValueSection() {
       emoji:"⏱️",
       title:"Save time",
       body:"Access templates, handouts, and structured resources that cut admin time.",
-      href:"/resources?sort=popular",
+      href:"/resources",
       label:"Explore popular tools",
     },
     {
       emoji:"✅",
       title:"Built on trust",
       body:"Resources made by clinicians, with previews, ratings, and clear descriptions.",
-      href:"/resources?sort=rating",
+      href:"/resources",
       label:"Browse top rated",
     },
     {
