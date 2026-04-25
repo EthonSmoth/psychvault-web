@@ -74,7 +74,7 @@ export function StatusBadge({ label, tone }: { label: string; tone: Tone }) {
   const s = getToneStyles(tone);
   return (
     <span
-      className="inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]"
+      className="inline-flex shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide"
       style={{ color: s.textColor, borderColor: s.borderColor, backgroundColor: s.backgroundColor }}
     >
       {label}
@@ -84,7 +84,7 @@ export function StatusBadge({ label, tone }: { label: string; tone: Tone }) {
 
 export function MetaPill({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1 text-[11px] font-medium text-[var(--text-muted)]">
+    <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)]">
       {children}
     </span>
   );
@@ -129,14 +129,9 @@ export function MetricCard({
   const s = getToneStyles(tone);
   return (
     <div className="rounded-[1.75rem] border bg-[var(--card)] p-5 shadow-sm" style={{ borderColor: s.borderColor }}>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-sm font-medium text-[var(--text-muted)]">{label}</div>
-          <div className="mt-3 text-3xl font-semibold tracking-tight" style={{ color: s.textColor }}>
-            {value}
-          </div>
-        </div>
-        <StatusBadge label={getMetricBadgeLabel(tone)} tone={tone} />
+      <div className="text-sm font-medium text-[var(--text-muted)]">{label}</div>
+      <div className="mt-3 text-3xl font-semibold tracking-tight" style={{ color: s.textColor }}>
+        {value}
       </div>
       <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">{note}</p>
     </div>
