@@ -231,7 +231,19 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <>
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 text-base" aria-hidden="true">&#9888;&#xfe0f;</span>
+              <div>
+                <p className="font-semibold">Do not distribute — personal use only</p>
+                <p className="mt-1 leading-5 text-amber-800">
+                  Resources in your library are licensed for your individual use only. Sharing, reselling, copying, or redistributing any downloaded file is strictly prohibited. Each purchase grants a single-buyer digital licence.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-4">
           {purchases.map((purchase) => {
             const resource = purchase.resource;
             const mainDownload = resource.files[0] ?? null;
@@ -362,6 +374,10 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
                       </Link>
                     </div>
 
+                    <p className="mt-2 text-[11px] font-medium text-amber-700">
+                      &#9888; Not for distribution — single-buyer licence only
+                    </p>
+
                     {isPaid && (
                       refundStatus ==="APPROVED" ? (
                         <span className="inline-flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
@@ -388,7 +404,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
               </div>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

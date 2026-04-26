@@ -452,6 +452,22 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
                 Single-buyer digital use
               </span>
             </div>
+            <div className="mt-3 flex items-start justify-between gap-4">
+              <span className="min-w-0 font-medium text-[var(--text)]">Distribution</span>
+              <span className="min-w-0 text-right font-semibold text-amber-700">
+                Not for redistribution
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-900">
+            <span className="font-semibold">&#9888; Do not distribute</span> — This resource is
+            licensed for single-buyer use only. Sharing, reselling, or redistributing the
+            file is prohibited under our{" "}
+            <Link href={policyLinks.terms} className="underline font-medium">
+              Terms of Service
+            </Link>
+            .
           </div>
 
           <div className="mt-4 inline-flex rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)]">
