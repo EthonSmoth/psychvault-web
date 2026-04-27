@@ -1,10 +1,9 @@
 /** @type {import('next').NextConfig} */
 const remotePatterns = [];
-let supabaseHost = "";
 
 if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
   try {
-    supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname;
+    const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname;
 
     remotePatterns.push({
       protocol: "https",
@@ -16,46 +15,10 @@ if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
   }
 }
 
-// Build a CSP that covers all runtime sources used by the app.
-// 'unsafe-inline' on script-src is required because Next.js App Router injects
-// inline hydration scripts. 'unsafe-inline' on style-src is required for Tailwind.
-// Neither can be removed without nonce-based middleware, which is a future improvement.
-function buildCsp() {
-  const supabaseOrigin = supabaseHost ? `https://${supabaseHost}` : "";
-
-  const directives = [
-    "base-uri 'self'",
-    "frame-ancestors 'none'",
-    "object-src 'none'",
-    "form-action 'self' https://checkout.stripe.com https://appleid.apple.com",
-    // Scripts: self + inline (Next.js requirement) + Stripe + optional GA
-    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com",
-    // Styles: self + inline (Tailwind requirement)
-    "style-src 'self' 'unsafe-inline'",
-    // Images: self, data URIs, blob (Next Image optimisation), Supabase, and any https for user-uploaded thumbnails
-    `img-src 'self' data: blob: https:`,
-    // Fonts: self and data URIs
-    "font-src 'self' data:",
-    // XHR/fetch: self + Supabase API + Stripe API + GA
-    [
-      "connect-src 'self'",
-      supabaseOrigin ? `${supabaseOrigin} wss://${supabaseHost}` : "",
-      "https://api.stripe.com",
-      "https://www.google-analytics.com",
-      "https://www.googletagmanager.com",
-    ]
-      .filter(Boolean)
-      .join(" "),
-    // Stripe JS renders iframes for card input
-    "frame-src https://js.stripe.com https://hooks.stripe.com",
-    // Service workers and blob workers used by Next.js
-    "worker-src 'self' blob:",
-    // Manifests
-    "manifest-src 'self'",
-  ];
-
-  return directives.join("; ");
-}
+// CSP is intentionally NOT set here. It is generated per-request in
+// src/middleware.ts with a cryptographic nonce so 'unsafe-inline' is not needed
+// for script-src. Static security headers below still apply to all routes
+// including static assets where middleware does not run.
 
 const nextConfig = {
   poweredByHeader: false,
@@ -91,10 +54,9 @@ const nextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), geolocation=(), microphone=()",
           },
-          {
-            key: "Content-Security-Policy",
-            value: buildCsp(),
-          },
+          // Content-Security-Policy is set per-request by src/middleware.ts (nonce-based).
+          // It is intentionally absent here so the static config header does not
+          // conflict with or override the dynamic middleware-generated header.
         ],
       },
     ];

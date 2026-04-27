@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
 
 // Uses Web Crypto API (Edge Runtime compatible — no Node.js Buffer needed).
 function generateNonce(): string {
@@ -23,6 +22,11 @@ function getSupabaseHost(): string {
   }
 }
 
+// Builds a full CSP header using the per-request nonce so 'unsafe-inline' is
+// no longer needed for script-src.
+//
+// 'unsafe-inline' is retained for style-src only — Tailwind CSS v4 generates
+// inline styles that cannot practically be nonce-stamped at this time.
 function buildCsp(nonce: string): string {
   const supabaseHost = getSupabaseHost();
   const supabaseOrigin = supabaseHost ? `https://${supabaseHost}` : "";
@@ -43,6 +47,9 @@ function buildCsp(nonce: string): string {
     "frame-ancestors 'none'",
     "object-src 'none'",
     "form-action 'self' https://checkout.stripe.com https://appleid.apple.com",
+    // Inline scripts require the nonce. External scripts require the allowlist.
+    // GA/GTM dynamically inject further scripts from their own domains — those
+    // domain entries in the allowlist cover those injected scripts.
     `script-src 'self' 'nonce-${nonce}' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
@@ -56,26 +63,13 @@ function buildCsp(nonce: string): string {
   return directives.join("; ");
 }
 
-// Wraps NextAuth's auth so we can:
-//  1. Inject a per-request nonce into request headers (for layout.tsx script tags)
-//  2. Set a nonce-based CSP response header on every page/api route
-//  3. Redirect unauthenticated requests to /creator/* to /login
-export const proxy = auth((request: NextRequest & { auth: unknown }) => {
+export function middleware(request: NextRequest) {
   const nonce = generateNonce();
 
+  // Forward the nonce to the page so the root layout can embed it in script tags.
+  // middleware.set() overwrites any client-supplied x-nonce header, preventing spoofing.
   const requestHeaders = new Headers(request.headers);
-  // Overwrite any client-supplied x-nonce to prevent spoofing.
   requestHeaders.set("x-nonce", nonce);
-
-  // Redirect unauthenticated users away from creator routes.
-  if (!request.auth && request.nextUrl.pathname.startsWith("/creator")) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set(
-      "redirectTo",
-      request.nextUrl.pathname + request.nextUrl.search
-    );
-    return NextResponse.redirect(loginUrl);
-  }
 
   const response = NextResponse.next({
     request: { headers: requestHeaders },
@@ -84,11 +78,12 @@ export const proxy = auth((request: NextRequest & { auth: unknown }) => {
   response.headers.set("Content-Security-Policy", buildCsp(nonce));
 
   return response;
-});
+}
 
 export const config = {
   matcher: [
     // Apply to all routes except pre-built static assets and image files.
+    // Static JS/CSS bundles and images don't need a CSP header.
     "/((?!_next/static|_next/image|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)",
   ],
 };

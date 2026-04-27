@@ -2,6 +2,7 @@ import"./globals.css";
 import"./components.css";
 import type { Metadata, Viewport } from"next";
 import { Suspense } from"react";
+import { headers } from"next/headers";
 import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from"@/lib/env";
 import { serializeJsonLd } from"@/lib/input-safety";
 import { GoogleAnalytics } from"@/components/analytics/google-analytics";
@@ -91,11 +92,12 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? "";
   const organizationSchema = {
 "@context":"https://schema.org",
 "@type":"Organization",
@@ -188,18 +190,21 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-[var(--background)] text-[var(--text)] antialiased">
         <Suspense fallback={null}>
-          <GoogleAnalytics />
+          <GoogleAnalytics nonce={nonce} />
         </Suspense>
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationSchema) }}
         />
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteSchema) }}
         />
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(webApplicationSchema) }}
         />
         <div className="flex min-h-screen flex-col">

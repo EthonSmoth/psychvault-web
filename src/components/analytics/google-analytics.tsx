@@ -13,7 +13,7 @@ type IdleWindow = Window & {
   cancelIdleCallback?: (handle: number) => void;
 };
 
-export function GoogleAnalytics() {
+export function GoogleAnalytics({ nonce }: { nonce?: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [shouldLoadScripts, setShouldLoadScripts] = useState(false);
@@ -77,10 +77,11 @@ export function GoogleAnalytics() {
   return (
     <>
       <Script
+        nonce={nonce}
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
         strategy="lazyOnload"
       />
-      <Script id="google-analytics" strategy="lazyOnload">
+      <Script id="google-analytics" nonce={nonce} strategy="lazyOnload">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
