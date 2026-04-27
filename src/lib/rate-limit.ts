@@ -171,9 +171,12 @@ export function getClientIP(request: Request): string {
 }
 
 export function getClientIPFromHeaders(headers: Pick<globalThis.Headers, "get">) {
-  const forwarded = headers.get("x-forwarded-for");
-  const realIP = headers.get("x-real-ip");
+  // cf-connecting-ip is set by Cloudflare and reflects the true client IP.
+  // It takes priority because x-forwarded-for can be spoofed by clients before
+  // the request reaches Cloudflare (Cloudflare appends, not replaces, the header).
   const cfIP = headers.get("cf-connecting-ip");
+  const realIP = headers.get("x-real-ip");
+  const forwarded = headers.get("x-forwarded-for");
 
-  return forwarded?.split(",")[0]?.trim() || realIP || cfIP || "unknown";
+  return cfIP || realIP || forwarded?.split(",")[0]?.trim() || "unknown";
 }
