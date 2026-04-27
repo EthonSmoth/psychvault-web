@@ -236,7 +236,11 @@ export async function POST(request: Request) {
       resource.store?.owner?.id || ""
     );
     
-    const stripeAccountId = resource.store?.owner?.payoutAccount?.stripeAccountId;
+    // Superadmin sales always settle to the main Stripe account — never transfer to a Connect sub-account,
+    // even if a PayoutAccount record exists in the database.
+    const stripeAccountId = resource.store?.owner?.isSuperAdmin
+      ? null
+      : resource.store?.owner?.payoutAccount?.stripeAccountId;
     const bypassesPayoutRequirement = canBypassPaidResourcePayoutRequirement(
       resource.store?.owner
     );
