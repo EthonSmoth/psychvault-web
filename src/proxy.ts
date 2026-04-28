@@ -2,17 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 
-// Uses Web Crypto API (Edge Runtime compatible — no Node.js Buffer needed).
-function generateNonce(): string {
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  let binary = "";
-  for (let i = 0; i < array.length; i++) {
-    binary += String.fromCharCode(array[i]);
-  }
-  return btoa(binary);
-}
-
 function getSupabaseHost(): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) return "";
@@ -23,7 +12,7 @@ function getSupabaseHost(): string {
   }
 }
 
-function buildCsp(nonce: string): string {
+function buildCsp(): string {
   const supabaseHost = getSupabaseHost();
   const supabaseOrigin = supabaseHost ? `https://${supabaseHost}` : "";
 
@@ -43,7 +32,7 @@ function buildCsp(nonce: string): string {
     "frame-ancestors 'none'",
     "object-src 'none'",
     "form-action 'self' https://checkout.stripe.com https://appleid.apple.com",
-    `script-src 'self' 'nonce-${nonce}' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com`,
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
@@ -57,16 +46,9 @@ function buildCsp(nonce: string): string {
 }
 
 // Wraps NextAuth's auth so we can:
-//  1. Inject a per-request nonce into request headers (for layout.tsx script tags)
-//  2. Set a nonce-based CSP response header on every page/api route
-//  3. Redirect unauthenticated requests to /creator/* to /login
+//  1. Set a CSP response header on every page/api route
+//  2. Redirect unauthenticated requests to /creator/* to /login
 export const proxy = auth((request: NextRequest & { auth: unknown }) => {
-  const nonce = generateNonce();
-
-  const requestHeaders = new Headers(request.headers);
-  // Overwrite any client-supplied x-nonce to prevent spoofing.
-  requestHeaders.set("x-nonce", nonce);
-
   // Redirect unauthenticated users away from creator routes.
   if (!request.auth && request.nextUrl.pathname.startsWith("/creator")) {
     const loginUrl = new URL("/login", request.url);
@@ -77,11 +59,9 @@ export const proxy = auth((request: NextRequest & { auth: unknown }) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
+  const response = NextResponse.next();
 
-  response.headers.set("Content-Security-Policy", buildCsp(nonce));
+  response.headers.set("Content-Security-Policy", buildCsp());
 
   return response;
 });

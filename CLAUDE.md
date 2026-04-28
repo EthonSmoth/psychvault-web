@@ -87,13 +87,23 @@ Key relationships:
 
 Resources and stores have a `ModerationStatus` enum (APPROVED / PENDING_REVIEW / REJECTED) and an `isPublished` flag. `ModerationEvent` logs every admin action. Creator trust score is computed in `src/lib/creator-trust.ts`. Admin routes live at `/admin`.
 
+### Middleware (`src/middleware.ts` → `src/proxy.ts`)
+
+Next.js middleware lives at `src/middleware.ts`, which re-exports `proxy` and `config` from `src/proxy.ts`. The proxy wraps NextAuth's `auth()` and does two things:
+1. Redirects unauthenticated requests to `/creator/*` to `/login`.
+2. Sets a per-request CSP response header on every non-static route.
+
+The CSP uses `'unsafe-inline'` for `script-src`. Nonce-based CSP **cannot** be used here because public pages use ISR — cached HTML would carry a stale nonce that doesn't match the middleware-generated nonce on the next request, breaking hydration. Static security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS in production) are set in `next.config.js`.
+
+**Do not** call `headers()` from `next/headers` in `src/app/layout.tsx` or any layout/page that should be statically rendered or ISR-cached. Calling `headers()` opts the entire subtree into dynamic rendering, which breaks ISR and causes `DYNAMIC_SERVER_USAGE` errors in production.
+
 ### Security patterns
 
 - CSRF: stateless HMAC token generated per-session (`src/lib/csrf.ts`). Generated at session load, verified in server actions.
 - Rate limiting: Postgres `RateLimitState` table is primary store; in-memory Map is fallback. Keys are SHA-256-hashed before storage.
 - Email verification gate: sensitive actions (purchases, reviews, follows, messaging, reporting) call `requireVerifiedEmailOrRedirect()`.
 - Input sanitization: `src/lib/input-safety.ts` handles user text before storage or email rendering.
-- Security headers configured in `next.config.js` (CSP, X-Frame-Options, HSTS in production).
+- CSP set per-request in `src/proxy.ts` (middleware). Static headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS in production) in `next.config.js`.
 
 ### Blog and content
 
@@ -103,6 +113,7 @@ Existing blog posts (as of April 2026):
 - `how-to-make-psychoeducation-handouts-clinician-friendly.md`
 - `how-to-write-psychology-progress-notes.md`
 - `ndis-report-template-checklist.md`
+- `psychology-resources-australia.md`
 - `psychology-templates-free-download.md`
 - `reasonable-and-necessary-ndis-funding-criteria.md`
 - `sell-psychology-resources-without-looking-spammy.md`

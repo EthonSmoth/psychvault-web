@@ -31,6 +31,7 @@ The public site is designed to stay lean and crawlable:
 - template landing pages group resources by clinical intent for SEO content clustering
 - category browse pages are at `/resources/[slug]` — statically generated with dedicated metadata, not query params
 - all internal links in crawlable page content use clean static paths (no `?sort=`, `?price=`, or `?category=` in `href` values)
+- **ISR constraint**: never call `headers()`, `cookies()`, or other dynamic Next.js APIs in `src/app/layout.tsx` or any layout that wraps ISR pages — doing so opts the entire route tree into dynamic rendering and causes `DYNAMIC_SERVER_USAGE` errors in production
 
 ## Blog And Content Workflow
 
@@ -200,6 +201,8 @@ Important:
 
 ```text
 src/
+  middleware.ts               Next.js middleware entry point — re-exports proxy and config from proxy.ts
+  proxy.ts                    Middleware implementation: auth redirect for /creator routes + CSP header
   app/
     (creator)/creator/      Creator dashboard routes (store, resources, analytics, sales, payouts)
     (protected)/messages/   Auth-required messaging routes
@@ -342,7 +345,7 @@ Implemented:
 - HTML-escaped contact and verification emails via `escape-goat`
 - server-side authorization checks for ownership and role-protected actions
 - Stripe webhook signature verification
-- security headers via Next.js config (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, CSP, HSTS in production)
+- security headers: static headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS in production) via `next.config.js`; CSP set per-request in `src/proxy.ts` (middleware) using `'unsafe-inline'` for `script-src` — nonce-based CSP is incompatible with ISR because cached HTML cannot carry a per-request nonce
 - **review compliance analysis** with AHPRA-aware phrase detection, context-sensitive soft signals, and proportionate moderation
 
 Not implemented yet:

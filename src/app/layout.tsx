@@ -96,7 +96,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const nonce = "";
   const organizationSchema = {
 "@context":"https://schema.org",
 "@type":"Organization",
@@ -189,21 +188,18 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-[var(--background)] text-[var(--text)] antialiased">
         <Suspense fallback={null}>
-          <GoogleAnalytics nonce={nonce} />
+          <GoogleAnalytics />
         </Suspense>
         <script
           type="application/ld+json"
-          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationSchema) }}
         />
         <script
           type="application/ld+json"
-          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteSchema) }}
         />
         <script
           type="application/ld+json"
-          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(webApplicationSchema) }}
         />
         <div className="flex min-h-screen flex-col">
