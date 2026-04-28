@@ -37,7 +37,7 @@ function buildCsp(): string {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     connectSrc,
-    "frame-src https://js.stripe.com https://hooks.stripe.com",
+    "frame-src https://js.stripe.com https://hooks.stripe.com https://vercel.live",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
   ];
