@@ -201,34 +201,160 @@ Important:
 
 ```text
 src/
-  proxy.ts                    Next.js middleware entry point: auth redirect for /creator routes + per-request CSP header
+  proxy.ts                    Next.js middleware: auth redirect for /creator + per-request CSP header
   app/
-    (creator)/creator/      Creator dashboard routes (store, resources, analytics, sales, payouts)
-    (protected)/messages/   Auth-required messaging routes
-    (public)/               Public routes (homepage, resources, stores, blog, library, login, signup...)
-    admin/                  Admin moderation panel
-    api/                    API routes (auth, checkout, downloads, messages, resources, stores, stripe, upload, webhook)
-    templates/              SEO template landing pages
-    about/ contact/ faq/    Informational pages
-    privacy-policy/ terms-of-service/ refund-policy/  Legal pages
+    layout.tsx                Root layout (non-async — must not call headers()/cookies())
+    globals.css / components.css
+    (creator)/creator/        Auth-required creator dashboard
+      store/                  Store settings
+      resources/              Resource list, new, edit, archived
+      analytics/
+      sales/
+      payouts/
+    (protected)/              Auth-required non-creator routes
+      account/                Account settings
+      apply-creator/          Creator application form
+      messages/               Conversations + threads
+      purchases/[id]/receipt/ Purchase receipt
+    (public)/                 Publicly accessible routes
+      page.tsx                Homepage
+      blog/                   Blog index + [slug] post pages
+      resources/              Browse + [slug] category pages
+      stores/                 Browse + [slug] store pages
+      search/
+      library/
+      following/
+      login/ signup/
+      forgot-password/ reset-password/
+      verify-email/
+      unsubscribe/
+      checkout/success/
+    admin/                    Admin panel
+      page.tsx                Dashboard
+      queue/                  Moderation queue
+      reports/                Marketplace reports
+      applications/           Creator applications
+      audit/                  Audit log
+      refunds/                Refund requests
+      revenue/                Revenue splits
+      stores/                 Store management
+    api/
+      auth/[...nextauth]/     NextAuth handler
+      auth/forgot-password/   Password reset request
+      auth/reset-password/    Password reset confirm
+      register/               Credentials signup
+      verify-email/           Email verification
+      session/nav/            Client-side session check (used by navbar + blog comments)
+      checkout/               Stripe Checkout session creation
+      downloads/[resourceId]/ Signed URL download
+      messages/               Message send + read receipts
+      resources/              Resource CRUD + viewer state
+      stores/                 Store CRUD + viewer state
+      stripe/connect/         Connect onboarding, return, dashboard
+      stripe/webhook/         Stripe webhook (purchase fulfillment source of truth)
+      webhook/                Legacy webhook route (alias)
+      upload/                 Image upload + WebP optimization
+      contact/                Contact form
+      admin/                  Admin API routes
+    templates/                SEO template landing pages [slug]
+    about/ contact/ faq/ help/ feedback/ careers/ join-the-team/
+    privacy/ privacy-policy/ terms/ terms-of-service/ refund-policy/
+    feed.xml/ robots.ts sitemap.ts opengraph-image.tsx
   components/
-    analytics/              Google Analytics integration
-    auth/                   Login, signup, Google auth button
-    blog/                   Blog post card, markdown renderer
-    forms/                  Contact, login, resource, signup, store forms
-    layout/                 Navbar, footer, mobile menu
-    legal/                  Privacy, terms, refund policy content components
-    messages/               Conversation list, message thread, composer
-    resources/              Resource card, grid, gallery, viewer, browse client, review and report forms
-    stores/                 Store header, viewer, browse client, report form
-    ui/                     Shared UI primitives (verified badge, form submit button)
-  lib/                      Utility modules (auth, CSRF, rate limiting, storage, email, payments, validators, etc.)
+    analytics/                google-analytics.tsx
+    auth/                     login-form, signup-form, google-auth-button, submit-button
+    blog/                     blog-post-card, markdown-renderer, blog-comments-section,
+                              blog-comment-form, blog-comment-list
+    forms/                    account-form, contact-form, login-form, resource-form,
+                              signup-form, store-form
+    layout/                   navbar, navbar-session, footer, mobile-overlay-menu
+    legal/                    privacy-policy-content, terms-of-service-content,
+                              refund-policy-content, policy-contact-panel
+    library/                  refund-request-form
+    messages/                 conversation-list, message-thread, message-composer
+    resources/                resource-card, resource-grid, resource-gallery, resource-viewer,
+                              resources-browse-client, review-form, report-resource-form,
+                              flag-review-button, checkout-success-pending
+    stores/                   store-header, store-viewer, stores-browse-client, report-store-form
+    ui/                       verified-badge, form-submit-button, breadcrumb
+  lib/
+    auth.ts                   NextAuth config + custom Supabase-linked adapter
+    auth-guards.ts            Route-level auth guard helpers
+    analytics.ts              GA helper
+    blog.ts                   Markdown blog post parsing
+    category-seo.ts           Category page SEO metadata
+    creator-trust.ts          Trust score computation
+    csrf.ts                   HMAC CSRF token generation/verification
+    db.ts                     Prisma client singleton
+    email.ts                  Resend transactional email
+    email-verification.ts     Email verification token helpers
+    env.ts                    Environment variable accessors
+    http.ts                   Fetch helpers
+    input-safety.ts           User text sanitization
+    legal.ts                  Legal content helpers
+    logger.ts                 Structured logger
+    moderation-events.ts      Moderation event logging
+    navbar-session-sync.ts    Client-side session state for navbar
+    password-reset.ts         Password reset token helpers
+    payments.ts               Stripe Checkout session creation
+    payout-readiness.ts       Creator payout eligibility checks
+    performance.ts            Slow-query logging helpers
+    public-resource-visibility.ts  Visibility rules for public resource state
+    rate-limit.ts             Postgres-backed rate limiting with in-memory fallback
+    redirects.ts              Safe redirect URL validation
+    request-security.ts       Origin validation for API routes
+    require-admin.ts          Admin role guard
+    require-email-verification.ts  Email verification gate
+    resource-file-state.ts    Resource hasMainFile state helpers
+    resource-moderation.ts    Resource moderation helpers
+    resource-taxonomy.ts      Taxonomy constants and helpers
+    revenue-split.ts          Platform fee / revenue split logic
+    review-compliance.ts      AHPRA-aware review compliance analysis
+    review-compliance.test.ts 27 test cases for compliance engine
+    storage.ts                Supabase Storage upload/download helpers
+    stripe.ts                 Stripe client singleton
+    stripe-connect.ts         Stripe Connect helpers
+    supabase.ts               Supabase client helpers
+    super-admin.ts            Super-admin checks
+    template-landing-pages.ts SEO template page definitions
+    unsubscribe.ts            Email unsubscribe token helpers
+    utils.ts                  cn() clsx+tailwind-merge helper
+    validators.ts             Shared input validators
   server/
-    actions/                Server actions by domain (admin, auth, creator resources, follow, messages, reports, reviews, stores)
-    cache/                  Public content cache helpers
-    queries/                Database query functions (resources, stores, public content, viewer state)
-    services/               Service layer (reviews, resource taxonomy)
-  types/                    TypeScript type definitions
+    actions/
+      account-actions.ts
+      admin-actions.ts
+      auth-actions.ts
+      blog-comment-actions.ts
+      creator-application-actions.ts
+      creator-resource-actions.ts
+      email-verification-actions.ts
+      follow-actions.ts
+      message-actions.ts
+      refund-actions.ts
+      report-actions.ts
+      resource-actions.ts
+      review-actions.ts
+      store-actions.ts
+      store-danger-action.ts
+    cache/
+      public-cache.ts         ISR tag revalidation helpers
+    queries/
+      public-content.ts
+      resources.ts
+      resource-viewer.ts
+      stores.ts
+      store-viewer.ts
+    services/
+      purchase-fulfillment.ts
+      resource-taxonomy.ts
+      review-moderation.ts
+      reviews.ts
+  types/
+    next-auth.d.ts
+    public.ts
+    resource-viewer.ts
+    store-viewer.ts
 ```
 
 ## Design System

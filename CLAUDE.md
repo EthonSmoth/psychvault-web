@@ -45,10 +45,12 @@ Role hierarchy: `BUYER` → `CREATOR` → `ADMIN`. `isSuperAdmin` is a separate 
 
 All mutations live in `src/server/actions/`. Actions call:
 1. `auth()` to get session
-2. `requireVerifiedEmailOrRedirect()` or `isEmailVerified()` for sensitive actions
-3. `verifyCSRFToken(token, sessionId)` for state-changing form submissions
-4. A rate limit check via `checkRateLimit()` (Postgres-backed, in-memory fallback)
+2. `requireVerifiedEmailOrRedirect()` (`src/lib/require-email-verification.ts`) or `isEmailVerified()` for sensitive actions
+3. `verifyCSRFToken(token, sessionId)` (`src/lib/csrf.ts`) for state-changing form submissions
+4. A rate limit check via `checkRateLimit()` (`src/lib/rate-limit.ts`) (Postgres-backed, in-memory fallback)
 5. The actual Prisma mutation
+
+Action files: `account-actions`, `admin-actions`, `auth-actions`, `blog-comment-actions`, `creator-application-actions`, `creator-resource-actions`, `email-verification-actions`, `follow-actions`, `message-actions`, `refund-actions`, `report-actions`, `resource-actions`, `review-actions`, `store-actions`, `store-danger-action`.
 
 ### Storage (`src/lib/storage.ts`)
 
@@ -60,9 +62,9 @@ Private files are stored as opaque `supabase://bucket/path` references in the da
 
 Non-main image uploads are resized and converted to WebP via the upload API route.
 
-### Payments (`src/lib/stripe.ts`, `src/lib/payments.ts`)
+### Payments (`src/lib/stripe.ts`, `src/lib/stripe-connect.ts`, `src/lib/payments.ts`)
 
-Stripe Checkout for paid resources. Webhook at `/api/webhook/stripe` is the server-side source of truth for purchase fulfilment — it creates the `Purchase` record and triggers email. Platform fee is configurable via `PLATFORM_FEE_BPS` (default 2000 = 20%). Stripe Connect is used for creator payouts.
+Stripe Checkout for paid resources. Webhook at `/api/stripe/webhook` is the server-side source of truth for purchase fulfilment — it creates the `Purchase` record (via `src/server/services/purchase-fulfillment.ts`) and triggers email. `/api/webhook` is a legacy alias pointing to the same handler. Platform fee is configurable via `PLATFORM_FEE_BPS` (default 2000 = 20%). Revenue split logic is in `src/lib/revenue-split.ts`. Stripe Connect is used for creator payouts (`src/lib/stripe-connect.ts`, payout readiness checks in `src/lib/payout-readiness.ts`).
 
 `PAYMENTS_AVAILABLE=false` env var disables paid checkout without code changes.
 
@@ -130,6 +132,47 @@ SEO linking rule: internal links in homepage body copy and navigation must use c
 ### Email (`src/lib/email.ts`)
 
 Transactional email via Resend. HTML content is escaped with `escape-goat` before sending. Triggered from server actions and the Stripe webhook handler.
+
+## Source layout
+
+> For detailed descriptions of every file see `README.md#source-layout`. This section lists what exists so you don't create duplicates.
+
+**Routes (`src/app/`)**
+- `(creator)/creator/` — dashboard: store, resources (new/edit/archived), analytics, sales, payouts
+- `(protected)/` — account/, apply-creator/, messages/, purchases/[id]/receipt/
+- `(public)/` — homepage, blog/[slug], resources/[slug], stores/[slug], search, library, following, login, signup, forgot-password, reset-password, verify-email, unsubscribe, checkout/success
+- `admin/` — dashboard, queue, reports, applications, audit, refunds, revenue, stores
+- `api/auth/[...nextauth]/`, `api/auth/forgot-password/`, `api/auth/reset-password/`, `api/register/`, `api/verify-email/`
+- `api/session/nav/` — lightweight endpoint used by navbar and blog comment section to fetch auth state client-side
+- `api/checkout/`, `api/downloads/[resourceId]/`, `api/upload/`, `api/contact/`
+- `api/resources/`, `api/stores/`, `api/messages/`
+- `api/stripe/webhook/` — Stripe webhook (source of truth for purchase). `api/webhook/` is a legacy alias.
+- `api/stripe/connect/` — onboarding, return, dashboard
+- `templates/[slug]/`, `feed.xml/`, `robots.ts`, `sitemap.ts`
+
+**Components (`src/components/`)**
+- `analytics/` — google-analytics.tsx
+- `auth/` — login-form, signup-form, google-auth-button, submit-button
+- `blog/` — blog-post-card, markdown-renderer, blog-comments-section, blog-comment-form, blog-comment-list
+- `forms/` — account-form, contact-form, login-form, resource-form, signup-form, store-form
+- `layout/` — navbar, navbar-session, footer, mobile-overlay-menu
+- `legal/` — privacy-policy-content, terms-of-service-content, refund-policy-content, policy-contact-panel
+- `library/` — refund-request-form
+- `messages/` — conversation-list, message-thread, message-composer
+- `resources/` — resource-card, resource-grid, resource-gallery, resource-viewer, resources-browse-client, review-form, report-resource-form, flag-review-button, checkout-success-pending
+- `stores/` — store-header, store-viewer, stores-browse-client, report-store-form
+- `ui/` — verified-badge, form-submit-button, breadcrumb
+
+**Lib (`src/lib/`)** — all files that already exist; do not recreate:
+`analytics`, `auth`, `auth-guards`, `blog`, `category-seo`, `creator-trust`, `csrf`, `db`, `email`, `email-verification`, `env`, `http`, `input-safety`, `legal`, `logger`, `moderation-events`, `navbar-session-sync`, `password-reset`, `payments`, `payout-readiness`, `performance`, `public-resource-visibility`, `rate-limit`, `redirects`, `request-security`, `require-admin`, `require-email-verification`, `resource-file-state`, `resource-moderation`, `resource-taxonomy`, `revenue-split`, `review-compliance`, `storage`, `stripe`, `stripe-connect`, `supabase`, `super-admin`, `template-landing-pages`, `unsubscribe`, `utils`, `validators`
+
+**Server (`src/server/`)**
+- `actions/` — account-actions, admin-actions, auth-actions, blog-comment-actions, creator-application-actions, creator-resource-actions, email-verification-actions, follow-actions, message-actions, refund-actions, report-actions, resource-actions, review-actions, store-actions, store-danger-action
+- `cache/` — public-cache.ts
+- `queries/` — public-content, resources, resource-viewer, stores, store-viewer
+- `services/` — purchase-fulfillment, resource-taxonomy, review-moderation, reviews
+
+**Types (`src/types/`)** — next-auth.d.ts, public.ts, resource-viewer.ts, store-viewer.ts
 
 ## Design system
 
