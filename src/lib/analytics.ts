@@ -33,3 +33,45 @@ export function trackEvent(eventName: string, params: AnalyticsEventParams = {})
 
   window.gtag("event", eventName, params);
 }
+
+export type PurchaseEventData = {
+  /** Unique purchase ID from the database — used as GA transaction_id */
+  transactionId: string;
+  /** Resource ID — used as GA item_id */
+  resourceId: string;
+  /** Resource title — used as GA item_name */
+  resourceTitle: string;
+  /** Creator / store name — used as GA item_category */
+  storeName: string;
+  /** Purchase amount in AUD cents (0 for free resources) */
+  amountCents: number;
+};
+
+/**
+ * Fires a GA4 purchase ecommerce event.
+ * Call this on the client after a confirmed purchase — for both free ($0) and paid resources.
+ * Uses GA4 ecommerce schema so it works with Google Ads conversion tracking.
+ */
+export function trackPurchase(data: PurchaseEventData) {
+  if (!isAnalyticsEnabled() || typeof window === "undefined" || typeof window.gtag !== "function") {
+    return;
+  }
+
+  const value = data.amountCents / 100;
+
+  window.gtag("event", "purchase", {
+    transaction_id: data.transactionId,
+    value,
+    currency: "AUD",
+    items: [
+      {
+        item_id: data.resourceId,
+        item_name: data.resourceTitle,
+        item_category: data.storeName,
+        price: value,
+        quantity: 1,
+      },
+    ],
+  });
+}
+

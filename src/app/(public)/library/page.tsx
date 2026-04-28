@@ -6,6 +6,7 @@ import { auth } from"@/lib/auth";
 import { db } from"@/lib/db";
 import { generateCSRFToken } from"@/lib/csrf";
 import { RefundRequestForm } from"@/components/library/refund-request-form";
+import { PurchaseTracker } from"@/components/analytics/purchase-tracker";
 
 export const metadata: Metadata = {
   title: "My Library",
@@ -148,6 +149,24 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
   const totalPurchases = purchases.length;
 
+  // Find the purchase to track as a conversion (slug-matched, or most recent).
+  // Only present when the user just arrived from a purchase flow.
+  const trackedPurchase = showPurchaseSuccess
+    ? (() => {
+        const match = purchaseResourceSlug
+          ? purchases.find((p) => p.resource.slug === purchaseResourceSlug)
+          : purchases[0];
+        if (!match) return null;
+        return {
+          transactionId: match.id,
+          resourceId: match.resource.id,
+          resourceTitle: match.resource.title,
+          storeName: match.resource.store?.name ?? "PsychVault",
+          amountCents: match.amountCents,
+        };
+      })()
+    : null;
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="card-section mb-8">
@@ -178,7 +197,9 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
       </div>
 
       {showPurchaseSuccess ? (
-        <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
+        <>
+          {trackedPurchase ? <PurchaseTracker purchase={trackedPurchase} /> : null}
+          <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-medium">
               Purchase complete. Your resource is now in your library.
@@ -201,8 +222,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             </div>
           </div>
         </div>
-      ) : null}
-
+        </>
       {purchases.length === 0 ? (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-alt)] text-2xl">
