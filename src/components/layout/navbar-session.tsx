@@ -2,7 +2,7 @@
 
 import Link from"next/link";
 import { usePathname } from"next/navigation";
-import { useEffect, useState, useTransition } from"react";
+import { useEffect, useRef, useState, useTransition } from"react";
 import { resendVerificationEmailFormAction } from"@/server/actions/email-verification-actions";
 import { logoutAction } from"@/server/actions/auth-actions";
 import { MobileOverlayMenu } from"@/components/layout/mobile-overlay-menu";
@@ -26,6 +26,63 @@ type NavbarSessionResponse =
 
 let navbarSessionCache: NavbarSessionResponse | undefined;
 let navbarSessionRequest: Promise<NavbarSessionResponse> | null = null;
+
+function useUnreadMessages(authenticated: boolean, emailVerified: boolean) {
+  const [count, setCount] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!authenticated || !emailVerified) {
+      setCount(0);
+      return;
+    }
+
+    const fetchCount = () => {
+      fetch("/api/messages/unread-count", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : { count: 0 }))
+        .then((data: { count?: number }) => setCount(data.count ?? 0))
+        .catch(() => undefined);
+    };
+
+    fetchCount();
+    intervalRef.current = setInterval(fetchCount, 30_000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [authenticated, emailVerified]);
+
+  return count;
+}
+
+function InboxButton({ unreadCount }: { unreadCount: number }) {
+  return (
+    <Link
+      href="/messages"
+      aria-label={unreadCount > 0 ? `Messages (${unreadCount} unread)` : "Messages"}
+      className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-soft bg-[var(--surface-alt)] shadow-sm transition hover:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-[var(--ring-focus)]"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5 w-5 text-[var(--text)]"
+        aria-hidden="true"
+      >
+        <rect width="20" height="16" x="2" y="4" rx="2" />
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+      </svg>
+      {unreadCount > 0 ? (
+        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+          {unreadCount > 9 ? "9+" : unreadCount}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
 
 function getInitials(name?: string | null) {
   return (
@@ -199,6 +256,12 @@ function AccountMenuContent({
         <div className="mt-1 text-xs text-[var(--muted)]">{email}</div>
       </div>
       <Link
+        href="/messages"
+        className="nav-dropdown-item"
+      >
+        Messages
+      </Link>
+      <Link
         href="/library"
         className="nav-dropdown-item"
       >
@@ -371,6 +434,10 @@ export function NavbarSessionBanner() {
 
 export function NavbarSessionControls() {
   const session = useNavbarSession();
+  const unreadMessages = useUnreadMessages(
+    session?.authenticated === true,
+    session?.authenticated ? session.user.emailVerified : false
+  );
 
   if (!session) {
     return <NavbarSessionControlsSkeleton />;
@@ -405,6 +472,7 @@ export function NavbarSessionControls() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <InboxButton unreadCount={unreadMessages} />
           <div className="group relative">
             <button
               type="button"

@@ -36,30 +36,27 @@ export default async function ConversationPage({ params }: ConversationPageProps
     return notFound();
   }
 
+  const otherName = otherParticipant.user.name ?? otherParticipant.user.email;
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <Link
-            href="/messages"
-            className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)]"
-          >
-            ← Back to inbox
-          </Link>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text)]">
-            {otherParticipant.user.name ?? otherParticipant.user.email}
-          </h1>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
-            Conversation with {otherParticipant.user.name ?? otherParticipant.user.email}.
-          </p>
-        </div>
+    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mb-6">
+        <Link
+          href="/messages"
+          className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)]"
+        >
+          ← Back to inbox
+        </Link>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text)]">
+          {otherName}
+        </h1>
       </div>
 
-      <div className="grid gap-8 xl:grid-cols-[1.3fr_0.7fr]">
+      <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
         <MessageThread
           conversationId={conversation.id}
           currentUserId={userId}
-          otherUserName={otherParticipant.user.name ?? otherParticipant.user.email}
+          otherUserName={otherName}
           messages={conversation.messages.map((message) => ({
             id: message.id,
             body: message.body,
@@ -68,14 +65,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
             senderName: message.sender.name,
           }))}
         />
-
-        <div className="card-section space-y-4">
-          <div>
-            <p className="text-sm font-semibold text-[var(--text)]">Message creator</p>
-            <p className="mt-2 text-sm text-[var(--text-muted)]">
-              Send a new message and keep the conversation in one place.
-            </p>
-          </div>
+        <div className="border-t border-[var(--border)] bg-[var(--card)] px-5 py-4">
           <MessageComposer conversationId={conversation.id} />
         </div>
       </div>
