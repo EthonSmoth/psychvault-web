@@ -32,7 +32,7 @@ function buildCsp(): string {
     "frame-ancestors 'none'",
     "object-src 'none'",
     "form-action 'self' https://checkout.stripe.com https://appleid.apple.com",
-    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com",
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
