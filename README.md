@@ -201,8 +201,7 @@ Important:
 
 ```text
 src/
-  middleware.ts               Next.js middleware entry point — re-exports proxy and config from proxy.ts
-  proxy.ts                    Middleware implementation: auth redirect for /creator routes + CSP header
+  proxy.ts                    Next.js middleware entry point: auth redirect for /creator routes + per-request CSP header
   app/
     (creator)/creator/      Creator dashboard routes (store, resources, analytics, sales, payouts)
     (protected)/messages/   Auth-required messaging routes

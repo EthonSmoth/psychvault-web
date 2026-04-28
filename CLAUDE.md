@@ -87,9 +87,9 @@ Key relationships:
 
 Resources and stores have a `ModerationStatus` enum (APPROVED / PENDING_REVIEW / REJECTED) and an `isPublished` flag. `ModerationEvent` logs every admin action. Creator trust score is computed in `src/lib/creator-trust.ts`. Admin routes live at `/admin`.
 
-### Middleware (`src/middleware.ts` → `src/proxy.ts`)
+### Middleware (`src/proxy.ts`)
 
-Next.js middleware lives at `src/middleware.ts`, which re-exports `proxy` and `config` from `src/proxy.ts`. The proxy wraps NextAuth's `auth()` and does two things:
+Next.js middleware lives at `src/proxy.ts` — Next.js recognises this file as the middleware entry point directly (no separate `middleware.ts` is needed or should be created alongside it). The proxy wraps NextAuth's `auth()` and does two things:
 1. Redirects unauthenticated requests to `/creator/*` to `/login`.
 2. Sets a per-request CSP response header on every non-static route.
 
