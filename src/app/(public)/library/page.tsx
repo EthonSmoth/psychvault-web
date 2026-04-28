@@ -223,6 +223,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           </div>
         </div>
         </>
+      ) : null}
+
       {purchases.length === 0 ? (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-alt)] text-2xl">
