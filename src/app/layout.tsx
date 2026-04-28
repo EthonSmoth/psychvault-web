@@ -185,6 +185,25 @@ export default function RootLayout({
           </>
         )}
         <link rel="preconnect" href="https://checkout.stripe.com" />
+        {/* Consent Mode v2 default — must run synchronously before any gtag call.
+            analytics_storage is granted by default so anonymous hits fire immediately.
+            Ad signals stay denied until a cookie banner calls gtag('consent','update'). */}
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+          <script
+            dangerouslySetInnerHTML={{
+              __html:
+                "window.dataLayer=window.dataLayer||[];" +
+                "function gtag(){dataLayer.push(arguments);}" +
+                "gtag('consent','default',{" +
+                  "ad_storage:'denied'," +
+                  "ad_user_data:'denied'," +
+                  "ad_personalization:'denied'," +
+                  "analytics_storage:'granted'," +
+                  "wait_for_update:500" +
+                "});",
+            }}
+          />
+        ) : null}
       </head>
       <body className="min-h-screen bg-[var(--background)] text-[var(--text)] antialiased">
         <Suspense fallback={null}>

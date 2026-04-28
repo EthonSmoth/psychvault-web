@@ -75,3 +75,30 @@ export function trackPurchase(data: PurchaseEventData) {
   });
 }
 
+type ConsentState = "granted" | "denied";
+
+interface ConsentParams {
+  ad_storage: ConsentState;
+  ad_user_data: ConsentState;
+  ad_personalization: ConsentState;
+  analytics_storage: ConsentState;
+}
+
+/**
+ * Call this from a cookie banner when the user accepts or rejects tracking.
+ *
+ * Accept all:
+ *   updateConsent({ ad_storage: "granted", ad_user_data: "granted",
+ *                   ad_personalization: "granted", analytics_storage: "granted" })
+ *
+ * Reject (analytics-only — analytics stays granted):
+ *   updateConsent({ ad_storage: "denied", ad_user_data: "denied",
+ *                   ad_personalization: "denied", analytics_storage: "granted" })
+ */
+export function updateConsent(params: ConsentParams) {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") {
+    return;
+  }
+  window.gtag("consent", "update", params as unknown as Record<string, unknown>);
+}
+
