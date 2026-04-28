@@ -2,7 +2,6 @@ import"./globals.css";
 import"./components.css";
 import type { Metadata, Viewport } from"next";
 import { Suspense } from"react";
-import { headers } from"next/headers";
 import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from"@/lib/env";
 import { serializeJsonLd } from"@/lib/input-safety";
 import { GoogleAnalytics } from"@/components/analytics/google-analytics";
@@ -92,12 +91,12 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const nonce = (await headers()).get("x-nonce") ?? "";
+  const nonce = "";
   const organizationSchema = {
 "@context":"https://schema.org",
 "@type":"Organization",
