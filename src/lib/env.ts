@@ -79,3 +79,7 @@ export function getBusinessAddress() {
   const raw = getOptionalTrimmedEnv("BUSINESS_ADDRESS");
   return raw ? raw.replace(/\\n/g, "\n") : null;
 }
+
+export function getFacebookAppId() {
+  return getOptionalTrimmedEnv("FACEBOOK_APP_ID");
+}

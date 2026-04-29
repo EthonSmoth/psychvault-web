@@ -424,12 +424,14 @@ SUPPORT_PHONE=
 BUSINESS_ADDRESS=
 
 NEXT_PUBLIC_GA_MEASUREMENT_ID=
+FACEBOOK_APP_ID=
 ```
 
 Optional:
 
 - `DIRECT_URL` for Prisma schema operations when you have a working direct database connection
 - `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` if enabling Google OAuth
+- `FACEBOOK_APP_ID` — your Facebook App ID; when set, emits `fb:app_id` in the `<head>` on every page for the Facebook Open Graph validator and share debugger
 
 Notes:
 

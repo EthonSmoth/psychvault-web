@@ -191,7 +191,7 @@ Copy `.env.example` to `.env`. Required variables:
 - `RESEND_API_KEY`, `EMAIL_FROM`, `SUPPORT_EMAIL`
 - `NEXT_PUBLIC_APP_URL`
 
-Optional: `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` for Google OAuth, `NEXT_PUBLIC_GA_MEASUREMENT_ID` for Analytics, `PAYMENTS_AVAILABLE=false` to disable checkout.
+Optional: `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` for Google OAuth, `NEXT_PUBLIC_GA_MEASUREMENT_ID` for Analytics, `PAYMENTS_AVAILABLE=false` to disable checkout, `FACEBOOK_APP_ID` for `fb:app_id` Open Graph metadata (used by the Facebook share debugger and Open Graph validators).
 
 ## Documentation vault
 

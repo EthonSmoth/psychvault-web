@@ -2,7 +2,7 @@ import"./globals.css";
 import"./components.css";
 import type { Metadata, Viewport } from"next";
 import { Suspense } from"react";
-import { getAppBaseUrl, getBusinessAddress, getSupportEmail, getSupportPhone } from"@/lib/env";
+import { getAppBaseUrl, getBusinessAddress, getFacebookAppId, getSupportEmail, getSupportPhone } from"@/lib/env";
 import { serializeJsonLd } from"@/lib/input-safety";
 import { GoogleAnalytics } from"@/components/analytics/google-analytics";
 import { Navbar } from"@/components/layout/navbar";
@@ -12,6 +12,7 @@ const baseUrl = getAppBaseUrl();
 const supportEmail = getSupportEmail();
 const supportPhone = getSupportPhone();
 const businessAddress = getBusinessAddress();
+const facebookAppId = getFacebookAppId();
 const socialProfiles = [
   "https://www.facebook.com/PsychVaultHQ",
   "https://www.instagram.com/psychvaulthq",
@@ -42,11 +43,15 @@ export const metadata: Metadata = {
   other: {
 "contact:email": supportEmail,
     ...(supportPhone ? {"contact:phone_number": supportPhone } : {}),
+    ...(facebookAppId ? { "fb:app_id": facebookAppId } : {}),
   },
   icons: {
-    icon:"/logo-PNG.png",
-    shortcut:"/logo-PNG.png",
-    apple:"/logo-PNG.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo-PNG.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/logo-PNG.png",
   },
   openGraph: {
     type:"website",
