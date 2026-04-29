@@ -1,7 +1,9 @@
-import { ImageResponse } from"next/og";
+import { ImageResponse } from "next/og";
+import { readFileSync } from "fs";
+import { join } from "path";
 
-export const runtime ="edge";
-export const alt ="PsychVault";
+export const runtime = "nodejs";
+export const alt = "PsychVault";
 export const size = {
   width: 1200,
   height: 630,
@@ -9,6 +11,9 @@ export const size = {
 export const contentType ="image/png";
 
 export default function OpenGraphImage() {
+  const logoData = readFileSync(join(process.cwd(), "public", "logo-PNG.png"));
+  const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -49,22 +54,14 @@ export default function OpenGraphImage() {
               gap:"16px",
             }}
           >
-            <div
-              style={{
-                display:"flex",
-                width:"76px",
-                height:"76px",
-                borderRadius:"24px",
-                background:"#80502d",
-                color:"#ffffff",
-                alignItems:"center",
-                justifyContent:"center",
-                fontSize:"34px",
-                fontWeight: 700,
-              }}
-            >
-              PV
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoBase64}
+              width={76}
+              height={76}
+              alt="PsychVault logo"
+              style={{ objectFit: "contain" }}
+            />
             <div
               style={{
                 display:"flex",
