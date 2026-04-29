@@ -50,9 +50,9 @@ Before the system, you need to understand what you are building toward. The 5+1 
 | Professional development / education & training | 60 hours |
 | Supervisor direct observations | 8 sessions total (minimum 2 assessment + 2 intervention per 6 months) |
 
-The supervision ratio changed under the December 2025 guidelines. Previously the requirement was 1 hour of supervision for every 17 hours of practice. Under the updated guidelines, the mandatory ratio has been removed — the Board now suggests approximately 1 hour of supervision per 18 hours of practice as a guide, with the expectation that supervision occurs weekly while you are practising. The ultimate frequency is agreed between you and your principal supervisor.
+The supervision ratio changed under the [December 2025 guidelines](https://www.psychologyboard.gov.au/Registration/Provisional/5-1-Internship-Program.aspx). Previously the requirement was 1 hour of supervision for every 17 hours of practice. Under the updated guidelines, the mandatory ratio has been removed — the Board now suggests approximately 1 hour of supervision per 18 hours of practice as a guide, with the expectation that supervision occurs weekly while you are practising. The ultimate frequency is agreed between you and your principal supervisor.
 
-One other significant change from December 2025: case studies and progress reports no longer need to be submitted to AHPRA. Your supervisor still completes a final assessment of competence at the end of the internship, and the logbook still needs to be maintained and reviewed regularly — but the administrative burden has been reduced considerably.
+One other significant change from [December 2025](https://www.psychologyboard.gov.au/Standards-and-Guidelines/Codes-Guidelines-Policies.aspx): case studies and progress reports no longer need to be submitted to AHPRA. Your supervisor still completes a final assessment of competence at the end of the internship, and the logbook still needs to be maintained and reviewed regularly — but the administrative burden has been reduced considerably.
 
 ---
 
@@ -136,7 +136,7 @@ Discuss this approach with your supervisor before you start and make sure they a
 
 **Prepare for supervision at the same time.** As you work through entries, note anything that feels unresolved — a session that did not go as planned, a client you are uncertain about, a clinical question you want to bring. Your logbook review and your supervision prep become the same activity.
 
-**Send to your supervisor on schedule.** Agree with your supervisor upfront on the review arrangement — weekly or fortnightly depending on whether you are full-time or part-time, as the December 2025 AHPRA guidelines recommend. Some supervisors prefer to clear entries via email once they are satisfied with the format, rather than reviewing every entry in the supervision session itself. Get this arrangement in writing — an email chain confirming the process is sufficient — so the review record is clear if the logbook is ever requested by the Board.
+**Send to your supervisor on schedule.** Agree with your supervisor upfront on the review arrangement — weekly or fortnightly depending on whether you are full-time or part-time, as the [December 2025 AHPRA guidelines](https://www.psychologyboard.gov.au/Registration/Provisional/5-1-Internship-Program.aspx) recommend. Some supervisors prefer to clear entries via email once they are satisfied with the format, rather than reviewing every entry in the supervision session itself. Get this arrangement in writing — an email chain confirming the process is sufficient — so the review record is clear if the logbook is ever requested by the Board.
 
 ---
 

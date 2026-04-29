@@ -33,7 +33,7 @@ A well-written note should serve four purposes:
 
 1. **Continuity of care** — if another clinician picks up the file, they can understand where treatment stands
 2. **Accountability** — the note shows that you acted professionally and within your scope
-3. **Funding and rebate compliance** — for Medicare, NDIS, and third-party funders, the note is often evidence that the session occurred and was clinically appropriate
+3. **Funding and rebate compliance** — for [Medicare](https://www.health.gov.au/our-work/better-access-initiative), NDIS, and third-party funders, the note is often evidence that the session occurred and was clinically appropriate
 4. **Medico-legal protection** — in complaints or legal proceedings, contemporaneous notes are your primary record
 
 A note that satisfies all four purposes is not necessarily long. It is specific, structured, and clearly connected to treatment goals.

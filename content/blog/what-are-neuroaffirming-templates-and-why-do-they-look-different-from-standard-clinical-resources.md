@@ -49,9 +49,9 @@ This does not mean clinical documentation needs to be stripped of clinical conte
 
 ## What changed in December 2025
 
-In December 2025, the Psychology Board of Australia updated the core competency standards required for general registration. For the first time, neurodiversity-informed practice was included as an explicit professional standard — not a specialisation, not an optional CPD category, but a baseline expectation for every registered psychologist in Australia.
+In December 2025, the Psychology Board of Australia [updated the core competency standards](https://www.psychologyboard.gov.au/Standards-and-Guidelines/Professional-practice-standards/Professional-competencies-for-psychology.aspx) required for general registration. For the first time, neurodiversity-informed practice was included as an explicit professional standard — not a specialisation, not an optional CPD category, but a baseline expectation for every registered psychologist in Australia. Competency 7.9 specifically requires that psychologists understand neurodiversity, strengths-based and trauma-informed approaches, and can adapt their practice and make reasonable adjustments for people with disability.
 
-This is a meaningful shift. It means neurodiversity-affirming practice is now part of what it means to practise ethically and competently, regardless of your client population or practice setting. A forensic psychologist, a school psychologist, a clinician in private practice — all are now professionally accountable for practising in a way that is informed by an understanding of neurodiversity.
+This is a meaningful shift. It means neurodiversity-affirming practice is now part of what it means to practise ethically and competently. A forensic psychologist, a school psychologist, a clinician in private practice — all are now professionally accountable for practising in a way that is informed by an understanding of neurodiversity.
 
 The practical implications of this are still being worked through. But one clear implication is that the tools clinicians use — including templates, handouts, worksheets, and psychoeducation resources — need to reflect the same values that the competency standards describe.
 

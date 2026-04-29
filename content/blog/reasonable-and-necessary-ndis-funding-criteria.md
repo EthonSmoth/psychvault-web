@@ -23,7 +23,7 @@ This post explains the reasonable and necessary ndis criteria in plain language,
 
 ## What does "reasonable and necessary" mean under the NDIS?
 
-The term "reasonable and necessary" comes from the *National Disability Insurance Scheme Act 2013*. Section 34 of the Act sets out the criteria a support must meet before the NDIA will fund it.
+The term "reasonable and necessary" comes from the [*National Disability Insurance Scheme Act 2013*](https://www.legislation.gov.au/Details/C2013A00020). [Section 34 of the Act](https://www.ndis.gov.au/understanding/supports-funded-ndis/reasonable-and-necessary-supports) sets out the criteria a support must meet before the NDIA will fund it.
 
 In plain terms, a support is considered reasonable and necessary if it is related to a participant's disability, is an appropriate use of NDIS funding, is likely to be effective, and does not replace something that should be funded elsewhere — by family, community, or another government system like Medicare or education.
 
