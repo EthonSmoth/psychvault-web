@@ -120,6 +120,7 @@ Existing blog posts (as of April 2026):
 - `reasonable-and-necessary-ndis-funding-criteria.md`
 - `sell-psychology-resources-without-looking-spammy.md`
 - `lbpp-76-weekly-system-blog-post.md` — LBPP-76 logbook weekly system guide for 5+1 provisional psychologists
+- `clinical-hours-trap-clinical-masters.md` — risks when admin issues force an early exit from a clinical masters and what it means for 5+1 hours and registration
 
 ### Category routing and SEO conventions
 
