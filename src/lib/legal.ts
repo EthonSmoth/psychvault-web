@@ -1,1 +1,1 @@
-export const LEGAL_LAST_UPDATED = "12 April 2026";
+export const LEGAL_LAST_UPDATED = "1 May 2026";

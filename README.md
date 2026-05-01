@@ -104,7 +104,7 @@ Examples: CBT thought record templates, NDIS report templates, therapy intake fo
 
 ### Buyer experience
 
-- email/password login with optional Google sign-in
+- email/password login with optional Google and Facebook sign-in
 - free and paid resource claiming/purchase flows
 - protected download access through the buyer library
 - reviews for purchased resources
@@ -434,6 +434,7 @@ Optional:
 
 - `DIRECT_URL` for Prisma schema operations when you have a working direct database connection
 - `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` if enabling Google OAuth
+- `AUTH_FACEBOOK_ID` and `AUTH_FACEBOOK_SECRET` if enabling Facebook OAuth (different from `FACEBOOK_APP_ID` which is for Open Graph meta tags only)
 - `FACEBOOK_APP_ID` — your Facebook App ID; when set, emits `fb:app_id` in the `<head>` on every page for the Facebook Open Graph validator and share debugger
 
 Notes:
@@ -462,7 +463,7 @@ Current app behavior:
 Implemented:
 
 - credentials auth with bcrypt password hashes, Supabase `auth.users` created first on signup
-- optional Google OAuth with `allowDangerousEmailAccountLinking` — OAuth sign-in links into an existing credentials account instead of creating a duplicate
+- optional Google OAuth and Facebook OAuth with `allowDangerousEmailAccountLinking` — OAuth sign-in links into an existing credentials account instead of creating a duplicate
 - `User.id` is a UUID pinned to `auth.users.id`, keeping Prisma and Supabase auth in sync
 - JWT-backed sessions
 - throttled auth-user refreshes to reduce unnecessary Prisma reads

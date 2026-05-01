@@ -3,10 +3,9 @@
 import { FormEvent, useMemo, useState } from"react";
 import { signIn } from"next-auth/react";
 import { useRouter, useSearchParams } from"next/navigation";
-import { GoogleAuthButton } from"@/components/auth/google-auth-button";
-import { getSafeRedirectTarget } from"@/lib/redirects";
+import { GoogleAuthButton } from"@/components/auth/google-auth-button";import { FacebookAuthButton } from "@/components/auth/facebook-auth-button";import { getSafeRedirectTarget } from"@/lib/redirects";
 
-export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
+export function SignupForm({ googleEnabled = false, facebookEnabled = false }: { googleEnabled?: boolean; facebookEnabled?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -70,9 +69,14 @@ export function SignupForm({ googleEnabled = false }: { googleEnabled?: boolean 
     <form onSubmit={handleSubmit} className="space-y-5">
       <input type="hidden" name="redirectTo" value={redirectTo} />
 
-      {googleEnabled ? (
+      {(googleEnabled || facebookEnabled) ? (
         <>
-          <GoogleAuthButton redirectTo={redirectTo} label="Continue with Google" />
+          {googleEnabled && (
+            <GoogleAuthButton redirectTo={redirectTo} label="Continue with Google" />
+          )}
+          {facebookEnabled && (
+            <FacebookAuthButton redirectTo={redirectTo} label="Continue with Facebook" />
+          )}
           <div className="relative py-1">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-[var(--border)]" />

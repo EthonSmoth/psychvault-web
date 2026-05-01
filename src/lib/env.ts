@@ -67,6 +67,12 @@ export function isGoogleOAuthEnabled() {
   );
 }
 
+export function isFacebookOAuthEnabled() {
+  return Boolean(
+    process.env.AUTH_FACEBOOK_ID?.trim() && process.env.AUTH_FACEBOOK_SECRET?.trim()
+  );
+}
+
 export function getSupportEmail() {
   return getOptionalTrimmedEnv("SUPPORT_EMAIL") || "hello@psychvault.com.au";
 }

@@ -2,7 +2,7 @@ import type { Metadata } from"next";
 import Link from"next/link";
 import { redirect } from"next/navigation";
 import { auth } from"@/lib/auth";
-import { isGoogleOAuthEnabled } from"@/lib/env";
+import { isGoogleOAuthEnabled, isFacebookOAuthEnabled } from "@/lib/env";
 import { getSafeRedirectTarget } from"@/lib/redirects";
 import { SignupForm } from"@/components/auth/signup-form";
 
@@ -22,6 +22,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   const params = (await searchParams) ?? {};
   const redirectTo = getSafeRedirectTarget(params.redirectTo,"/library");
   const googleEnabled = isGoogleOAuthEnabled();
+  const facebookEnabled = isFacebookOAuthEnabled();
 
   if (session?.user) {
     redirect(redirectTo);
@@ -60,7 +61,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             </p>
           </div>
 
-          <SignupForm googleEnabled={googleEnabled} />
+          <SignupForm googleEnabled={googleEnabled} facebookEnabled={facebookEnabled} />
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
             Already have an account?{" "}

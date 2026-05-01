@@ -146,6 +146,47 @@ export function PrivacyPolicyContent() {
         </section>
 
         <section className="card-panel">
+          <h2 className="text-xl font-semibold text-[var(--text)]">Data deletion requests</h2>
+          <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
+            <p>
+              You have the right to request that PsychVault delete the personal
+              information we hold about you. This includes account details, profile
+              information, stored messages, and any other personal data associated with
+              your account.
+            </p>
+            <p>To submit a deletion request, email us at{" "}
+              <a
+                href="mailto:hello@psychvault.com.au?subject=Data%20Deletion%20Request"
+                className="font-medium text-[var(--text)] underline"
+              >
+                hello@psychvault.com.au
+              </a>{" "}
+              with the subject line <strong>Data Deletion Request</strong> and include
+              the email address associated with your account. We will acknowledge your
+              request within 5 business days and action it within 30 days.
+            </p>
+            <p>
+              We may retain certain information where we are legally required to do so —
+              for example, records of completed transactions for tax and accounting
+              purposes, evidence needed to investigate fraud or disputes, or data required
+              by Australian Consumer Law or financial regulations. Where retention is
+              required, we will let you know what data we are keeping and why.
+            </p>
+            <p>
+              If you signed up or logged in using Facebook Login, you can also submit a
+              deletion request via the{" "}
+              <Link href="/data-deletion" className="font-medium text-[var(--text)] underline">
+                Data Deletion Instructions
+              </Link>{" "}
+              page. Removing the PsychVault app from your Facebook account settings will
+              stop any further data sharing via Facebook Login, but it will not
+              automatically delete data already held by PsychVault — a separate email
+              request is required for that.
+            </p>
+          </div>
+        </section>
+
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Related policies</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             For more information about digital purchases, licensing, and refund handling,

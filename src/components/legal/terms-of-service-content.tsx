@@ -150,6 +150,38 @@ export function TermsOfServiceContent() {
         </section>
 
         <section className="card-panel">
+          <h2 className="text-xl font-semibold text-[var(--text)]">Account closure and data deletion</h2>
+          <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-muted)]">
+            <p>
+              You may request deletion of your account and personal data at any time by
+              emailing{" "}
+              <a
+                href="mailto:hello@psychvault.com.au?subject=Data%20Deletion%20Request"
+                className="font-medium text-[var(--text)] underline"
+              >
+                hello@psychvault.com.au
+              </a>{" "}
+              with the subject line <strong>Data Deletion Request</strong>. We will
+              action the request within 30 days.
+            </p>
+            <p>
+              We may retain certain records after account closure where required by law —
+              for example, transaction history for tax and financial reporting obligations.
+              Our{" "}
+              <Link href="/privacy-policy" className="font-medium text-[var(--text)] underline">
+                Privacy Policy
+              </Link>{" "}
+              explains what is kept, for how long, and why. Users who signed in via
+              Facebook Login can also visit our{" "}
+              <Link href="/data-deletion" className="font-medium text-[var(--text)] underline">
+                Data Deletion Instructions
+              </Link>{" "}
+              page.
+            </p>
+          </div>
+        </section>
+
+        <section className="card-panel">
           <h2 className="text-xl font-semibold text-[var(--text)]">Changes to these terms</h2>
           <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
             We may update these terms from time to time to reflect product changes,

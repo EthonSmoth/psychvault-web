@@ -4,12 +4,11 @@ import Link from"next/link";
 import { useActionState, useMemo } from"react";
 import { useSearchParams } from"next/navigation";
 import { loginAction } from"@/app/(public)/login/actions";
-import { GoogleAuthButton } from"@/components/auth/google-auth-button";
-import { SubmitButton } from"@/components/auth/submit-button";
+import { GoogleAuthButton } from"@/components/auth/google-auth-button";import { FacebookAuthButton } from "@/components/auth/facebook-auth-button";import { SubmitButton } from"@/components/auth/submit-button";
 import { requestNavbarSessionRefresh } from"@/lib/navbar-session-sync";
 import { getSafeRedirectTarget } from"@/lib/redirects";
 
-export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
+export function LoginForm({ googleEnabled = false, facebookEnabled = false }: { googleEnabled?: boolean; facebookEnabled?: boolean }) {
   const searchParams = useSearchParams();
 
   const redirectTo = useMemo(
@@ -29,9 +28,14 @@ export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }
     >
       <input type="hidden" name="redirectTo" value={redirectTo} />
 
-      {googleEnabled ? (
+      {(googleEnabled || facebookEnabled) ? (
         <>
-          <GoogleAuthButton redirectTo={redirectTo} label="Continue with Google" />
+          {googleEnabled && (
+            <GoogleAuthButton redirectTo={redirectTo} label="Continue with Google" />
+          )}
+          {facebookEnabled && (
+            <FacebookAuthButton redirectTo={redirectTo} label="Continue with Facebook" />
+          )}
           <div className="relative py-1">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-[var(--border)]" />

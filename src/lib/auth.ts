@@ -1,12 +1,13 @@
 import NextAuth, { AuthError } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import Facebook from "next-auth/providers/facebook";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
-import { getRequiredServerEnv, isGoogleOAuthEnabled } from "@/lib/env";
+import { getRequiredServerEnv, isGoogleOAuthEnabled, isFacebookOAuthEnabled } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getSafeAuthRedirectUrl } from "@/lib/redirects";
 
@@ -163,6 +164,15 @@ const providers = [
         Google({
           clientId: getRequiredServerEnv("AUTH_GOOGLE_ID"),
           clientSecret: getRequiredServerEnv("AUTH_GOOGLE_SECRET"),
+          allowDangerousEmailAccountLinking: true,
+        }),
+      ]
+    : []),
+  ...(isFacebookOAuthEnabled()
+    ? [
+        Facebook({
+          clientId: getRequiredServerEnv("AUTH_FACEBOOK_ID"),
+          clientSecret: getRequiredServerEnv("AUTH_FACEBOOK_SECRET"),
           allowDangerousEmailAccountLinking: true,
         }),
       ]

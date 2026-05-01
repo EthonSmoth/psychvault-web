@@ -37,7 +37,7 @@ NextAuth v5 beta with a custom `createLinkedPrismaAdapter()` that wraps the stan
 
 For credentials sign-up, a Supabase auth user is created first (via `supabase.auth.admin.createUser`), and the returned UUID is used as `User.id` in Prisma. On Prisma failure, the Supabase auth user is rolled back.
 
-Supports credentials (bcrypt) and optional Google OAuth. Sessions are JWT-backed. The session JWT caches user state (role, email verified, isSuperAdmin) and only refreshes from the database every 30 seconds (`AUTH_USER_STATE_REFRESH_MS`) to reduce Prisma reads.
+Supports credentials (bcrypt), optional Google OAuth, and optional Facebook OAuth. Sessions are JWT-backed. The session JWT caches user state (role, email verified, isSuperAdmin) and only refreshes from the database every 30 seconds (`AUTH_USER_STATE_REFRESH_MS`) to reduce Prisma reads.
 
 Role hierarchy: `BUYER` → `CREATOR` → `ADMIN`. `isSuperAdmin` is a separate boolean on `User`.
 
@@ -196,7 +196,7 @@ Copy `.env.example` to `.env`. Required variables:
 - `RESEND_API_KEY`, `EMAIL_FROM`, `SUPPORT_EMAIL`
 - `NEXT_PUBLIC_APP_URL`
 
-Optional: `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` for Google OAuth, `NEXT_PUBLIC_GA_MEASUREMENT_ID` for Analytics, `PAYMENTS_AVAILABLE=false` to disable checkout, `FACEBOOK_APP_ID` for `fb:app_id` Open Graph metadata (used by the Facebook share debugger and Open Graph validators).
+Optional: `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` for Google OAuth, `AUTH_FACEBOOK_ID` + `AUTH_FACEBOOK_SECRET` for Facebook OAuth (note: `FACEBOOK_APP_ID` is a separate var used only for `fb:app_id` Open Graph meta tags — not for OAuth), `NEXT_PUBLIC_GA_MEASUREMENT_ID` for Analytics, `PAYMENTS_AVAILABLE=false` to disable checkout, `FACEBOOK_APP_ID` for `fb:app_id` Open Graph metadata (used by the Facebook share debugger and Open Graph validators).
 
 ## Documentation vault
 

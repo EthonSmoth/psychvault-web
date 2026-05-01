@@ -3,7 +3,7 @@ import Link from"next/link";
 import { redirect } from"next/navigation";
 import { auth } from"@/lib/auth";
 import { db } from"@/lib/db";
-import { isGoogleOAuthEnabled } from"@/lib/env";
+import { isGoogleOAuthEnabled, isFacebookOAuthEnabled } from "@/lib/env";
 import { getSafeRedirectTarget } from"@/lib/redirects";
 import { LoginForm } from"@/components/auth/login-form";
 
@@ -23,6 +23,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = (await searchParams) ?? {};
   const redirectTo = getSafeRedirectTarget(params.redirectTo,"/library");
   const googleEnabled = isGoogleOAuthEnabled();
+  const facebookEnabled = isFacebookOAuthEnabled();
 
   const dbUser =
     session?.user?.email
@@ -66,7 +67,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
           </div>
 
-          <LoginForm googleEnabled={googleEnabled} />
+          <LoginForm googleEnabled={googleEnabled} facebookEnabled={facebookEnabled} />
 
           <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
             Don’t have an account?{" "}
