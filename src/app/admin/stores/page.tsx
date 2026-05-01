@@ -40,7 +40,15 @@ export default async function StoresPage() {
     db.store.findMany({
       orderBy: { createdAt: "desc" },
       take: 15,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        isPublished: true,
+        isVerified: true,
+        moderationStatus: true,
+        ahpraRegistrationNumber: true,
+        createdAt: true,
         owner: {
           select: {
             id: true,
@@ -92,6 +100,24 @@ export default async function StoresPage() {
                         <MetaPill>{formatCount(store.resources.length)} published resource{store.resources.length === 1 ? "" : "s"}</MetaPill>
                         <MetaPill>{formatCount(store.followers.length)} follower{store.followers.length === 1 ? "" : "s"}</MetaPill>
                       </div>
+                      {store.ahpraRegistrationNumber ? (
+                        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2">
+                          <span className="text-xs font-semibold text-blue-800">AHPRA:</span>
+                          <span className="font-mono text-xs font-medium text-blue-900">{store.ahpraRegistrationNumber}</span>
+                          <a
+                            href={`https://www.ahpra.gov.au/Registration/Registers-of-Practitioners.aspx`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-1 text-xs text-blue-600 underline hover:text-blue-800"
+                          >
+                            Verify on AHPRA ↗
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                          No AHPRA registration number provided.
+                        </div>
+                      )}
                     </div>
                     <Link
                       href={`/stores/${store.slug}`}

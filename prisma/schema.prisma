@@ -206,10 +206,11 @@ model Store {
   bannerUrl        String?
   logoUrl          String?
   location         String?
-  isPublished      Boolean          @default(false)
-  isVerified       Boolean          @default(false)
-  isListable       Boolean          @default(false)
-  moderationStatus ModerationStatus @default(APPROVED)
+  isPublished                Boolean          @default(false)
+  isVerified                 Boolean          @default(false)
+  isListable                 Boolean          @default(false)
+  ahpraRegistrationNumber    String?
+  moderationStatus           ModerationStatus @default(APPROVED)
   moderationReason String?
   moderatedAt      DateTime?
   moderatedById    String?          @db.Uuid

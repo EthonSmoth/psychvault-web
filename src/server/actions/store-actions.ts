@@ -58,6 +58,7 @@ export async function saveStoreAction(
       maxLength: 5000,
       preserveNewlines: true,
     });
+    const ahpraRegistrationNumber = sanitizeUserText(formData.get("ahpraRegistrationNumber"), { maxLength: 50 })?.toUpperCase().replace(/\s/g, "") || null;
     const isPublished = formData.get("isPublished") === "on";
     const moderation = moderateStoreText({
       name,
@@ -89,6 +90,7 @@ export async function saveStoreAction(
       select: {
         id: true,
         role: true,
+        isSuperAdmin: true,
         emailVerified: true,
         store: {
           select: {
@@ -104,6 +106,17 @@ export async function saveStoreAction(
 
     if (!user.emailVerified) {
       return { error: EMAIL_VERIFICATION_REQUIRED_MESSAGE };
+    }
+
+    const isAdminOrSuperAdmin = user.role === "ADMIN" || user.isSuperAdmin;
+
+    if (!isAdminOrSuperAdmin) {
+      if (!ahpraRegistrationNumber) {
+        return { error: "AHPRA registration number is required." };
+      }
+      if (!/^[A-Za-z]{2,4}\d{5,12}$/.test(ahpraRegistrationNumber)) {
+        return { error: "Please enter a valid AHPRA registration number (e.g. PSY0001234567)." };
+      }
     }
 
     const trustProfile = await getCreatorTrustProfile(user.id);
@@ -140,6 +153,7 @@ export async function saveStoreAction(
           isPublished: shouldPublish,
           bannerUrl: bannerUrl || null,
           logoUrl: logoUrl || null,
+          ...(isAdminOrSuperAdmin ? {} : { ahpraRegistrationNumber }),
           moderationStatus: moderation.decision === "warn" ? "PENDING_REVIEW" : "APPROVED",
           moderationReason,
           moderatedAt: moderation.decision === "warn" ? null : new Date(),
@@ -160,6 +174,7 @@ export async function saveStoreAction(
           isPublished: shouldPublish,
           bannerUrl: bannerUrl || null,
           logoUrl: logoUrl || null,
+          ahpraRegistrationNumber: isAdminOrSuperAdmin ? null : ahpraRegistrationNumber,
           moderationStatus: moderation.decision === "warn" ? "PENDING_REVIEW" : "APPROVED",
           moderationReason,
           moderatedAt: moderation.decision === "warn" ? null : new Date(),

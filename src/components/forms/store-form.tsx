@@ -16,8 +16,10 @@ type StoreFormProps = {
     logoUrl: string | null;
     moderationStatus?: string;
     moderationReason?: string | null;
+    ahpraRegistrationNumber?: string | null;
   };
   csrfToken: string;
+  isAdminOrSuperAdmin?: boolean;
 };
 
 type UploadedFile = { url: string };
@@ -31,7 +33,7 @@ async function uploadFile(file: File, uploadKind:"thumbnail" |"preview"): Promis
   return res.json();
 }
 
-export function StoreForm({ store, csrfToken }: StoreFormProps) {
+export function StoreForm({ store, csrfToken, isAdminOrSuperAdmin = false }: StoreFormProps) {
   const [state, formAction, pending] = useActionState(saveStoreAction, initialState);
 
   const [banner, setBanner] = useState<string | null>(store?.bannerUrl ?? null);
@@ -259,6 +261,37 @@ export function StoreForm({ store, csrfToken }: StoreFormProps) {
           className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]"
         />
       </div>
+
+      {/* AHPRA registration number */}
+      {!isAdminOrSuperAdmin ? (
+        <div>
+          <label htmlFor="ahpraRegistrationNumber" className="mb-2 block text-sm font-medium text-[var(--text)]">
+            AHPRA registration number <span className="text-red-500">*</span>
+          </label>
+          <p className="mb-3 text-xs text-[var(--text-muted)]">
+            Required so an admin can confirm you are a registered practitioner before your store is verified on PsychVault. Your number is never shown publicly.
+          </p>
+          <input
+            id="ahpraRegistrationNumber"
+            name="ahpraRegistrationNumber"
+            defaultValue={store?.ahpraRegistrationNumber ?? ""}
+            placeholder="PSY0001234567"
+            className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-sm font-mono text-[var(--text)] outline-none transition placeholder:text-[var(--text-light)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--ring-focus)]" 
+          />
+          <p className="mt-2 text-xs text-[var(--text-light)]">
+            Find your number on the{" "}
+            <a
+              href="https://www.ahpra.gov.au/Registration/Registers-of-Practitioners.aspx"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[var(--primary)]"
+            >
+              AHPRA public register
+            </a>
+            .
+          </p>
+        </div>
+      ) : null}
 
       {/* Bio */}
       <div>

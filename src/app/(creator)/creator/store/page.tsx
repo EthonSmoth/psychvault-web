@@ -20,6 +20,7 @@ export default async function CreatorStorePage() {
     select: {
       id: true,
       isSuperAdmin: true,
+      role: true,
       store: {
         select: {
           id: true,
@@ -32,6 +33,7 @@ export default async function CreatorStorePage() {
           isPublished: true,
           moderationStatus: true,
           moderationReason: true,
+          ahpraRegistrationNumber: true,
         },
       },
       payoutAccount: {
@@ -50,6 +52,7 @@ export default async function CreatorStorePage() {
   await requireVerifiedEmailOrRedirect(user.id,"/creator/store");
 
   const csrfToken = generateCSRFToken(user.id);
+  const isAdminOrSuperAdmin = user.isSuperAdmin || user.role === "ADMIN";
   const payoutReady = isPayoutAccountReady(user.payoutAccount);
   const bypassesPaidPayoutRequirement = canBypassPaidResourcePayoutRequirement(user);
   const paidResourcePayoutReady = isPaidResourcePayoutReady({
@@ -62,6 +65,7 @@ export default async function CreatorStorePage() {
     { label:"Store bio added", done: Boolean(user.store?.bio?.trim()) },
     { label:"Store logo uploaded", done: Boolean(user.store?.logoUrl) },
     { label:"Store banner uploaded", done: Boolean(user.store?.bannerUrl) },
+    ...(!isAdminOrSuperAdmin ? [{ label: "AHPRA registration number added", done: Boolean(user.store?.ahpraRegistrationNumber?.trim()) }] : []),
     {
       label: bypassesPaidPayoutRequirement
         ?"Admin paid listing access"
@@ -121,7 +125,7 @@ export default async function CreatorStorePage() {
       </div>
 
       <div className="card-panel-md">
-        <StoreForm store={user.store ?? undefined} csrfToken={csrfToken} />
+        <StoreForm store={user.store ?? undefined} csrfToken={csrfToken} isAdminOrSuperAdmin={isAdminOrSuperAdmin} />
       </div>
 
       {!paidResourcePayoutReady ? (
