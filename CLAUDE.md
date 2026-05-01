@@ -83,6 +83,8 @@ Key relationships:
 - `Purchase` → `RefundRequest?`
 - `Conversation` ↔ `User` via `ConversationParticipant`
 
+`Store` has `ahpraRegistrationNumber String?` — stored uppercased with whitespace stripped, validated server-side with `/^[A-Za-z]{2,4}\d{5,12}$/`. Never exposed publicly. Admins/superadmins are exempt from supplying it. Required for all other creators on both store create and update.
+
 `Resource` has denormalized columns (`averageRating`, `reviewCount`, `salesCount`, `hasMainFile`) that are updated by server actions to avoid expensive aggregation queries on public pages.
 
 ### Moderation
