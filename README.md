@@ -9,6 +9,7 @@ The app is structured for production deployment on Vercel with Cloudflare in fro
 - Public homepage, resource browse, store browse, search, resource detail, store detail, and blog surfaces
 - Template SEO landing pages grouped by clinical workflow and search intent
 - Creator dashboard with store settings, resource creation/editing, sales, analytics, and payouts
+- **AHPRA registration gate on store creation** — non-admin creators must supply their AHPRA registration number when creating or editing a store; validated against `/^[A-Za-z]{2,4}\d{5,12}$/`, stored uppercased, never shown publicly. Admins and superadmins bypass the requirement.
 - Buyer account flows including library access, purchases, reviews, follows, and creator messaging
 - **AHPRA-aware review compliance system** with 26 hard-trigger rejections, 16 soft-signal flags, and user education
 - Admin moderation for queued resources, marketplace reports, recent activity, creator trust context, and flagged reviews
@@ -112,6 +113,7 @@ Examples: CBT thought record templates, NDIS report templates, therapy intake fo
 ### Creator experience
 
 - public store profile with logo, banner, bio, and publishing controls
+- **AHPRA registration number required** — creators must provide a valid AHPRA number (e.g. `PSY0001234567`) when setting up their store; it is never displayed publicly and is only accessible to admins for verification
 - resource creation and editing with taxonomy, previews, pricing, and main-download uploads
 - resource archiving and draft management
 - sales and analytics views
@@ -123,6 +125,7 @@ Examples: CBT thought record templates, NDIS report templates, therapy intake fo
 - open resource and store reports
 - creator trust scoring and moderation context
 - recent resource and store visibility into marketplace health
+- **AHPRA cross-check workflow** — the admin stores page (`/admin/stores`) displays each store's AHPRA registration number with a direct "Verify on AHPRA ↗" link to the public register; admins use the existing "Verify store" button to confirm after cross-checking
 - **review compliance moderation** for AHPRA-flagged and auto-rejected reviews
   - soft-signal flagged reviews await admin approval
   - hard-trigger rejected reviews with user education feedback

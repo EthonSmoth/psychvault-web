@@ -52,6 +52,8 @@ All mutations live in `src/server/actions/`. Actions call:
 
 Action files: `account-actions`, `admin-actions`, `auth-actions`, `blog-comment-actions`, `creator-application-actions`, `creator-resource-actions`, `email-verification-actions`, `follow-actions`, `message-actions`, `refund-actions`, `report-actions`, `resource-actions`, `review-actions`, `store-actions`, `store-danger-action`.
 
+`saveStoreAction` in `store-actions` enforces the AHPRA registration requirement: it checks `user.role === "ADMIN" || user.isSuperAdmin` and only skips the AHPRA validation and write for those users. Non-admin creators get a hard error if the number is missing or fails the regex. The `StoreForm` component accepts an `isAdminOrSuperAdmin` boolean prop and hides the field entirely for admins. The go-live checklist on the creator store page includes an "AHPRA registration number added" item for non-admin creators only.
+
 ### Storage (`src/lib/storage.ts`)
 
 Two Supabase buckets:
