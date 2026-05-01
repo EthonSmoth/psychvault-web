@@ -887,6 +887,7 @@ export default function HomePage() {
   return (
     <div>
       <HomeHero />
+      <HomeFounderBannerSection />
       <MarketplaceTrustSection />
 
       <Suspense fallback={<HomeRecentFallback />}>
@@ -904,8 +905,6 @@ export default function HomePage() {
       <Suspense fallback={<HomeBlogFallback />}>
         <HomeBlogSection />
       </Suspense>
-
-      <HomeFounderBannerSection />
 
       <HomeValueSection />
     </div>
