@@ -29,10 +29,13 @@ function formatDate(date: Date | string) {
   }).format(new Date(date));
 }
 
+const PAGE_SIZE = 12;
+
 type LibraryPageProps = {
   searchParams: Promise<{
     purchase?: string;
     resource?: string;
+    page?: string;
   }>;
 };
 
@@ -48,6 +51,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     isValidSlug(resolvedSearchParams.resource)
       ? resolvedSearchParams.resource
       : null;
+  const currentPage = Math.max(1, parseInt(resolvedSearchParams.page ?? "1", 10) || 1);
   const session = await auth();
 
   if (!session?.user?.email) {
@@ -97,57 +101,49 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     );
   }
 
-  const purchases = await db.purchase.findMany({
-    where: {
-      buyerId: user.id,
-    },
-    orderBy: {
-      createdAt:"desc",
-    },
-    select: {
-      id: true,
-      amountCents: true,
-      createdAt: true,
-      resource: {
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          shortDescription: true,
-          thumbnailUrl: true,
-          isFree: true,
-          priceCents: true,
-          store: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
+  const [purchases, totalPurchases] = await Promise.all([
+    db.purchase.findMany({
+      where: { buyerId: user.id },
+      orderBy: { createdAt: "desc" },
+      skip: (currentPage - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+      select: {
+        id: true,
+        amountCents: true,
+        createdAt: true,
+        resource: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            shortDescription: true,
+            thumbnailUrl: true,
+            isFree: true,
+            priceCents: true,
+            averageRating: true,
+            reviewCount: true,
+            store: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
             },
-          },
-          files: {
-            where: {
-              kind:"MAIN_DOWNLOAD",
-            },
-            select: {
-              id: true,
-              fileName: true,
-            },
-          },
-          reviews: {
-            select: {
-              id: true,
-              rating: true,
+            files: {
+              where: { kind: "MAIN_DOWNLOAD" },
+              select: { id: true, fileName: true },
             },
           },
         },
+        refundRequest: {
+          select: { id: true, status: true },
+        },
       },
-      refundRequest: {
-        select: { id: true, status: true },
-      },
-    },
-  });
+    }),
+    db.purchase.count({ where: { buyerId: user.id } }),
+  ]);
 
-  const totalPurchases = purchases.length;
+  const totalPages = Math.ceil(totalPurchases / PAGE_SIZE);
 
   // Find the purchase to track as a conversion (slug-matched, or most recent).
   // Only present when the user just arrived from a purchase flow.
@@ -270,11 +266,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             const resource = purchase.resource;
             const mainDownload = resource.files[0] ?? null;
             const averageRating =
-              resource.reviews.length > 0
-                ? (
-                    resource.reviews.reduce((sum, review) => sum + review.rating, 0) /
-                    resource.reviews.length
-                  ).toFixed(1)
+              resource.reviewCount > 0
+                ? resource.averageRating.toFixed(1)
                 : null;
 
             const isPaid = purchase.amountCents > 0;
@@ -344,7 +337,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
                         {averageRating ? (
                           <span>
-                            {averageRating}★ ({resource.reviews.length})
+                            {averageRating}★ ({resource.reviewCount})
                           </span>
                         ) : (
                           <span>No reviews yet</span>
@@ -427,6 +420,35 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             );
           })}
           </div>
+
+          {totalPages > 1 ? (
+            <div className="mt-8 flex items-center justify-between gap-4">
+              <p className="text-sm text-[var(--text-muted)]">
+                Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, totalPurchases)} of {totalPurchases} resources
+              </p>
+              <div className="flex items-center gap-2">
+                {currentPage > 1 ? (
+                  <Link
+                    href={`/library?page=${currentPage - 1}`}
+                    className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+                  >
+                    ← Previous
+                  </Link>
+                ) : null}
+                <span className="text-sm text-[var(--text-muted)]">
+                  Page {currentPage} of {totalPages}
+                </span>
+                {currentPage < totalPages ? (
+                  <Link
+                    href={`/library?page=${currentPage + 1}`}
+                    className="inline-flex items-center rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-alt)]"
+                  >
+                    Next →
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </>
       )}
     </div>
