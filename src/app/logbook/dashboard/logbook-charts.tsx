@@ -221,7 +221,7 @@ function SupervisionTypeChart({ stats }: { stats: DashboardStats }) {
               ))}
             </Pie>
             <Tooltip
-              formatter={(v: number) => `${v.toFixed(1)} hrs`}
+              formatter={(v) => `${(+(v ?? 0)).toFixed(1)} hrs`}
               contentStyle={{
                 background: "#fbf6ee",
                 border: "1px solid rgba(112,79,52,0.24)",
