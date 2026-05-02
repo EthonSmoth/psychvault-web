@@ -206,6 +206,65 @@ SEO linking rule: internal links in homepage body copy and navigation must use c
 
 Transactional email via Resend. HTML content is escaped with `escape-goat` before sending. Triggered from server actions and the Stripe webhook handler.
 
+### Logbook parser (`src/app/logbook/`, `src/app/api/logbook/`)
+
+Pay-per-parse tool for AHPRA 5+1 internship logbooks. **Stores no logbook content in the database.** All parsed data lives only in React state in the browser and is destroyed when the user leaves the page.
+
+**Data model:**
+- `ParseCredit` — tracks paid parse credits per user (upserted by the Stripe webhook on purchase)
+- `ParseReceipt` — minimal audit record (timestamp + detected form type only; no logbook content)
+
+Run the following SQL in the Supabase SQL Editor before using this feature:
+
+```sql
+CREATE TABLE "ParseCredit" (
+  id TEXT NOT NULL,
+  "userId" UUID NOT NULL,
+  credits INTEGER NOT NULL DEFAULT 0,
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (id),
+  UNIQUE ("userId"),
+  FOREIGN KEY ("userId") REFERENCES "User"(id) ON DELETE CASCADE
+);
+
+CREATE TABLE "ParseReceipt" (
+  id TEXT NOT NULL,
+  "userId" UUID NOT NULL,
+  "formType" TEXT NOT NULL,
+  "parsedAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (id),
+  FOREIGN KEY ("userId") REFERENCES "User"(id) ON DELETE CASCADE
+);
+
+CREATE INDEX "ParseReceipt_userId_idx" ON "ParseReceipt"("userId");
+CREATE INDEX "ParseReceipt_userId_parsedAt_idx" ON "ParseReceipt"("userId", "parsedAt");
+```
+
+**AHPRA hour requirements** (from `src/lib/logbook-constants.ts`):
+- Total internship hours target: 1,500
+- Total supervision hours required: 80
+- Principal supervisor individual hours required: 50
+- Direct client contact hours required: 500
+- PD/education hours: 60 (informational)
+- **Advisory supervision ratio: ~1:18 per December 2025 guidelines (mandatory ratio removed; shown as a warning, not an error)**
+- Telephone supervision cap: 20 hrs (warning)
+- Async supervision cap: 10 hrs (warning)
+- Short sessions cap: 10 sessions under 1 hour (warning)
+
+**Parse flow:**
+1. `POST /api/logbook/parse` receives a multipart file, checks `ParseCredit ≥ 1`
+2. XLSX → SheetJS parser (Section A/B/C/D sheets)
+3. PDF → `pdf-parse` text extraction + regex (no external API; extracts summary totals from digital PDFs — does not support scanned images)
+4. If parse succeeds: decrement `ParseCredit` + create `ParseReceipt` in a single transaction
+5. Return result to client; file is discarded — nothing stored
+
+**Stripe setup:**
+- Single product: "PsychVault Logbook Parse" at $2.00 AUD; quantities 1, 3, 5 via `price_data`
+- Separate webhook endpoint at `/api/logbook/webhook` (uses `LOGBOOK_STRIPE_WEBHOOK_SECRET`)
+- On `checkout.session.completed` where `metadata.purchase_type === 'logbook_credit'`: upsert `ParseCredit` incrementing by `metadata.quantity`
+
+**Supervision ratio note:** The prompt that generated this feature specified a 1:17 ratio. The correct current value is 1:18 (December 2025 guidelines). The ratio is also now advisory, not mandatory. The dashboard shows it as a guidance warning. Do not revert to 17.
+
 ## Source layout
 
 > For detailed descriptions of every file see `README.md#source-layout`. This section lists what exists so you don't create duplicates.
@@ -221,6 +280,12 @@ Transactional email via Resend. HTML content is escaped with `escape-goat` befor
 - `api/resources/`, `api/stores/`, `api/messages/`
 - `api/stripe/webhook/` — Stripe webhook (source of truth for purchase). `api/webhook/` is a legacy alias.
 - `api/stripe/connect/` — onboarding, return, dashboard
+- `api/logbook/checkout/` — POST: create Stripe Checkout session for parse credits (1, 3, or 5 × $2 AUD)
+- `api/logbook/webhook/` — POST: Stripe webhook for logbook credit fulfilment (separate endpoint, uses `LOGBOOK_STRIPE_WEBHOOK_SECRET`)
+- `api/logbook/credits/` — GET: return current parse credit balance for authenticated user
+- `api/logbook/parse/` — POST: parse uploaded XLSX (SheetJS) or PDF (Claude API); decrements credit; returns result; stores NO logbook content
+- `logbook/` — public marketing page at `/logbook`
+- `logbook/dashboard/` — auth-required dashboard (React state only; clears on refresh)
 - `templates/[slug]/`, `feed.xml/`, `robots.ts`, `sitemap.ts`
 
 **Components (`src/components/`)**
@@ -237,7 +302,7 @@ Transactional email via Resend. HTML content is escaped with `escape-goat` befor
 - `ui/` — verified-badge, form-submit-button, breadcrumb
 
 **Lib (`src/lib/`)** — all files that already exist; do not recreate:
-`analytics`, `auth`, `auth-guards`, `blog`, `category-seo`, `creator-trust`, `csrf`, `db`, `email`, `email-verification`, `env`, `http`, `input-safety`, `legal`, `logger`, `moderation-events`, `navbar-session-sync`, `password-reset`, `payments`, `payout-readiness`, `performance`, `public-resource-visibility`, `rate-limit`, `redirect-rules`, `redirects`, `request-security`, `require-admin`, `require-email-verification`, `resource-file-state`, `resource-moderation`, `resource-taxonomy`, `revenue-split`, `review-compliance`, `storage`, `stripe`, `stripe-connect`, `supabase`, `super-admin`, `template-landing-pages`, `unsubscribe`, `utils`, `validators`
+`analytics`, `auth`, `auth-guards`, `blog`, `category-seo`, `creator-trust`, `csrf`, `db`, `email`, `email-verification`, `env`, `http`, `input-safety`, `legal`, `logger`, `logbook-constants`, `moderation-events`, `navbar-session-sync`, `password-reset`, `payments`, `payout-readiness`, `performance`, `public-resource-visibility`, `rate-limit`, `redirect-rules`, `redirects`, `request-security`, `require-admin`, `require-email-verification`, `resource-file-state`, `resource-moderation`, `resource-taxonomy`, `revenue-split`, `review-compliance`, `storage`, `stripe`, `stripe-connect`, `supabase`, `super-admin`, `template-landing-pages`, `unsubscribe`, `utils`, `validators`
 
 **Server (`src/server/`)**
 - `actions/` — account-actions, admin-actions, auth-actions, blog-comment-actions, creator-application-actions, creator-resource-actions, email-verification-actions, follow-actions, message-actions, refund-actions, report-actions, resource-actions, review-actions, store-actions, store-danger-action
@@ -245,7 +310,7 @@ Transactional email via Resend. HTML content is escaped with `escape-goat` befor
 - `queries/` — public-content, resources, resource-viewer, stores, store-viewer
 - `services/` — purchase-fulfillment, resource-taxonomy, review-moderation, reviews
 
-**Types (`src/types/`)** — next-auth.d.ts, public.ts, resource-viewer.ts, store-viewer.ts
+**Types (`src/types/`)** — next-auth.d.ts, public.ts, resource-viewer.ts, store-viewer.ts, logbook.ts
 
 ## Design system
 
@@ -265,6 +330,10 @@ Copy `.env.example` to `.env`. Required variables:
 - `NEXT_PUBLIC_APP_URL`
 
 Optional: `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` for Google OAuth, `AUTH_FACEBOOK_ID` + `AUTH_FACEBOOK_SECRET` for Facebook OAuth (note: `FACEBOOK_APP_ID` is a separate var used only for `fb:app_id` Open Graph meta tags — not for OAuth), `NEXT_PUBLIC_GA_MEASUREMENT_ID` for Analytics, `PAYMENTS_AVAILABLE=false` to disable checkout, `FACEBOOK_APP_ID` for `fb:app_id` Open Graph metadata (used by the Facebook share debugger and Open Graph validators).
+
+Logbook parser (optional, needed to enable `/logbook`):
+- `LOGBOOK_STRIPE_WEBHOOK_SECRET` — separate Stripe webhook signing secret for the `/api/logbook/webhook` endpoint; configure a second webhook endpoint in the Stripe dashboard pointing to `https://yourapp.com/api/logbook/webhook` for `checkout.session.completed` events
+- No Anthropic API key needed — PDF parsing uses `pdf-parse` text extraction (free, no external API)
 
 ## Documentation vault
 
