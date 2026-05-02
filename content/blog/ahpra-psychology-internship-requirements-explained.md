@@ -21,20 +21,20 @@ This guide cuts through the jargon and gives you a clear, practical picture of w
 
 **Jump to a section:**
 
-- [The Big Picture — What the Psychology Internship Actually Is](#the-big-picture)
-- [Requirement #1 — Supervised Practice Hours](#requirement-1)
-- [Requirement #2 — The 8 Core Competencies](#requirement-2)
-- [Requirement #3 — The Logbook](#requirement-3)
-- [Requirement #4 — Supervision + Quarterly Reviews](#requirement-4)
-- [Why Most Interns Feel Overwhelmed](#why-overwhelmed)
-- [How to Survive Without Burning Out](#survival-tips)
-- [The Tools That Make the Internship Easier](#tools)
+- [The Big Picture — What the Psychology Internship Actually Is](#the-big-picture--what-the-psychology-internship-actually-is)
+- [Requirement #1 — Supervised Practice Hours](#requirement-1--supervised-practice-hours)
+- [Requirement #2 — The 8 Core Competencies](#requirement-2--the-8-core-competencies)
+- [Requirement #3 — The Logbook](#requirement-3--the-logbook)
+- [Requirement #4 — Supervision + Quarterly Reviews](#requirement-4--supervision--quarterly-reviews)
+- [Why Most Interns Feel Overwhelmed](#why-most-interns-feel-overwhelmed-and-why-its-normal)
+- [How to Survive Without Burning Out](#how-to-survive-the-internship-without-burning-out)
+- [The Tools That Make the Internship Easier](#the-tools-that-make-the-internship-10x-easier)
 
 ---
 
 ![Provisional psychologist at desk surrounded by logbooks and documentation with a supportive supervisor figure in the background](/blog/ahpra-psychology-internship-requirements-explained-hero.jpg)
 
-## The Big Picture — What the Psychology Internship Actually Is {#the-big-picture}
+## The Big Picture — What the Psychology Internship Actually Is
 
 Let's start with the fundamentals.
 
@@ -48,7 +48,7 @@ But here's the important bit: **AHPRA psychology internship requirements exist t
 
 ---
 
-## Requirement #1 — Supervised Practice Hours {#requirement-1}
+## Requirement #1 — Supervised Practice Hours
 
 This is the headline requirement, and it's where a lot of interns get confused about what actually counts.
 
@@ -87,7 +87,7 @@ Supervision is not optional, and it's not just a chat. It's a formal, documented
 
 ---
 
-## Requirement #2 — The 8 Core Competencies {#requirement-2}
+## Requirement #2 — The 8 Core Competencies
 
 AHPRA doesn't just care about hours. They care that you can actually *do the job*. This is where the 8 core competencies come in.
 
@@ -123,7 +123,7 @@ Your supervisor will assess you against these competencies at regular intervals.
 
 ---
 
-## Requirement #3 — The Logbook (The Part Everyone Underestimates) {#requirement-3}
+## Requirement #3 — The Logbook (The Part Everyone Underestimates)
 
 The logbook is simultaneously the most important and most dreaded part of the internship.
 
@@ -158,7 +158,7 @@ This is one of the most underestimated stressors in the internship, and it's wor
 
 ---
 
-## Requirement #4 — Supervision + Quarterly Reviews {#requirement-4}
+## Requirement #4 — Supervision + Quarterly Reviews
 
 Supervision is where theory meets practice.
 
@@ -204,7 +204,7 @@ These reviews are your safety net. If something's going wrong, these reviews cre
 
 ---
 
-## Why Most Interns Feel Overwhelmed (And Why It's Normal) {#why-overwhelmed}
+## Why Most Interns Feel Overwhelmed (And Why It's Normal)
 
 Here's the thing nobody tells you: you're not just learning clinical skills. You're learning administrative systems, documentation standards, workplace politics, professional culture, and a million other things *at the same time*.
 
@@ -218,7 +218,7 @@ This is normal. You're not inefficient. You're not failing. You're internalising
 
 ---
 
-## How to Survive the Internship Without Burning Out {#survival-tips}
+## How to Survive the Internship Without Burning Out
 
 Burnout is the silent threat of the internship year. Not everyone experiences it, but many do. Here's how to reduce your risk.
 
@@ -252,7 +252,7 @@ Some interns are morning people; others hit a wall by 3 pm. Schedule difficult c
 
 ---
 
-## The Tools That Make the Internship 10x Easier {#tools}
+## The Tools That Make the Internship 10x Easier
 
 You don't need much, but what you do get should actually work for you — designed by people who've walked this path.
 
