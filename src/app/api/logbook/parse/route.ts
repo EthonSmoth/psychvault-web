@@ -21,7 +21,7 @@ async function parseXlsxBuffer(
     return null;
   }
 
-  function sheetToRows(sheet: ReturnType<typeof workbook.Sheets[string]> | null): unknown[][] {
+  function sheetToRows(sheet: import("xlsx").WorkSheet | null): unknown[][] {
     if (!sheet) return [];
     return XLSX.utils.sheet_to_json(sheet, {
       header: 1,
