@@ -23,9 +23,9 @@ This post is not about compliance. It is not about whether your supervisor is ti
 **Jump to a section:**
 
 - [What supervision is supposed to do](#what-supervision-is-supposed-to-do)
-- [Green flags — what healthy supervision looks like](#green-flags)
-- [Red flags — patterns worth taking seriously](#red-flags)
-- [The grey zone — things that are complicated but not automatically wrong](#the-grey-zone)
+- [Green flags — what healthy supervision looks like](#green-flags-what-healthy-supervision-looks-like)
+- [Red flags — patterns worth taking seriously](#red-flags-patterns-worth-taking-seriously)
+- [The grey zone — things that are complicated but not automatically wrong](#the-grey-zone-things-that-are-complicated-but-not-automatically-wrong)
 - [What to do if something feels off](#what-to-do-if-something-feels-off)
 - [A note on the power imbalance](#a-note-on-the-power-imbalance)
 

@@ -21,14 +21,14 @@ The national psychology examination is a regulatory hurdle, not an academic one.
 **Jump to a section:**
 
 - [What the exam actually tests](#what-the-exam-actually-tests)
-- [Structure: 150 questions, four domains, 3.5 hours](#exam-structure)
-- [How to study, practically](#how-to-study)
+- [Structure: 150 questions, four domains, 3.5 hours](#structure-150-questions-four-domains-3-5-hours)
+- [How to study, practically](#how-to-study-practically)
 - [OLP or test centre](#olp-or-test-centre)
-- [Results, failures, and the three-strike policy](#results-and-failure)
+- [Results, failures, and the three-strike policy](#results-failures-and-the-three-strike-policy)
 
 ---
 
-## What the exam actually tests {#what-the-exam-actually-tests}
+## What the exam actually tests
 
 The NPE has existed since 1 July 2013. Its purpose is to confirm that candidates have reached the threshold competencies for general registration, not to rank them or reward high performers. You are not trying to get 95%. You are trying to hit a scaled 70%.
 
@@ -45,7 +45,7 @@ Every question is anchored in practice. The Board describes the exam as "based o
 
 ![Abstract Risograph illustration of four geometric segments arranged in a circle, amber and charcoal ink on cream, representing the four exam domains with visible grain texture](/blog/npe-domains.jpg "The four exam domains: ethics, assessment, intervention, and communication")
 
-## Structure: 150 questions, four domains, 3.5 hours {#exam-structure}
+## Structure: 150 questions, four domains, 3.5 hours
 
 There are 150 multiple-choice questions. Each follows the same format: a clinical scenario or vignette, a lead-in question, and five options — one correct answer and four plausible distractors. The distractors are designed to be plausible. This is not a test of who can eliminate obvious wrong answers.
 
@@ -71,7 +71,7 @@ Results are released 4 to 6 weeks after the close of the exam period.
 
 ![Risograph flat-graphic table abstracted as stacked amber blocks with fine charcoal grid lines on cream, visible ink bleed at edges, representing structured domain proportions](/blog/npe-structure.jpg "150 questions spread across four overlapping domains — no separate pass mark per domain")
 
-## How to study, practically {#how-to-study}
+## How to study, practically
 
 The most common study mistake is treating the NPE like a comprehensive exam from your postgraduate coursework. Wide reading builds background knowledge, but the exam tests whether you can reason through a case, not whether you can attribute a model to the right author.
 
@@ -97,7 +97,7 @@ The Board is explicit: the responsibility to prepare and pass rests with the can
 
 ![Risograph illustration of an open book beside a soft geometric hourglass shape, amber and sage green flat ink on cream, visible grain and ink misregistration, representing timed study preparation](/blog/npe-study.jpg "Structured, timed study is more effective than broad reading alone")
 
-## OLP or test centre {#olp-or-test-centre}
+## OLP or test centre
 
 You have two delivery options. Neither is objectively better — the right choice depends on your circumstances.
 
@@ -117,7 +117,7 @@ If you have a documented health condition or disability, special accommodation c
 
 ![Risograph split-composition illustration — left side shows a minimal desk lamp and home desk in amber and cream, right side shows a bare test room outline in charcoal, ink misregistration and grain visible at the divide](/blog/npe-delivery.jpg "Both OLP and test centre are valid options — the right choice depends on your circumstances")
 
-## Results, failures, and the three-strike policy {#results-and-failure}
+## Results, failures, and the three-strike policy
 
 You will receive your result by email within 4 to 6 weeks of the exam period closing. The email tells you whether you passed or failed. You will not receive your scaled score. This is a regulatory exam — the Board's view is that the outcome is the relevant data, not the number.
 

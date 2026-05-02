@@ -29,7 +29,7 @@ This article is for anyone considering a clinical masters after beginning the 5+
 - [The two pathways are separate streams](#the-two-pathways-are-separate-streams)
 - [What you give up when you accept a clinical masters offer](#what-you-give-up-when-you-accept-a-clinical-masters-offer)
 - [What happens to semester one coursework if you exit](#what-happens-to-semester-one-coursework-if-you-exit)
-- [What happens to your 5+1 hours](#what-happens-to-your-51-hours)
+- [What happens to your 5+1 hours](#what-happens-to-your-5-1-hours)
 - [The three-year clock](#the-three-year-clock)
 - [The limbo scenario nobody talks about](#the-limbo-scenario-nobody-talks-about)
 - [The semester one window is the most vulnerable](#the-semester-one-window-is-the-most-vulnerable)
