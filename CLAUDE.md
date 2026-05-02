@@ -292,6 +292,7 @@ CREATE INDEX "ParseReceipt_userId_parsedAt_idx" ON "ParseReceipt"("userId", "par
 - `analytics/` — google-analytics.tsx
 - `auth/` — login-form, signup-form, google-auth-button, submit-button
 - `blog/` — blog-post-card, markdown-renderer, blog-comments-section, blog-comment-form, blog-comment-list
+  - **markdown-renderer note:** detects anchor links (`#heading-text`) and renders them as plain `<a>` tags (not Next.js `<Link>`). This is critical for browser native anchor scrolling to work in jump-to-section navigation. Non-anchor internal links still use Next.js `<Link>` for client-side navigation.
 - `forms/` — account-form, contact-form, login-form, resource-form, signup-form, store-form
 - `layout/` — navbar, navbar-session, footer, mobile-overlay-menu
 - `legal/` — privacy-policy-content, terms-of-service-content, refund-policy-content, policy-contact-panel

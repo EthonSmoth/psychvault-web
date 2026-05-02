@@ -112,6 +112,27 @@ All blog illustrations use a **Risograph two-colour flat-print aesthetic** (ambe
 
 **ChatGPT conversation:** reuse `https://chatgpt.com/c/69f579bc-353c-8323-8b61-268335608dc5` (browser page `bc367268-932c-4c37-bc03-7af3cb45d1c2`) across sessions to stay authenticated. If the page is not open, open it with `open_browser_page`.
 
+### Anchor links in blog content (jump-to-sections)
+
+Blog posts can include jump-to-section navigation by using markdown links to anchor IDs. **Important:** the markdown renderer at `src/components/blog/markdown-renderer.tsx` detects anchor links (those starting with `#`) and renders them as plain HTML `<a>` tags instead of Next.js `<Link>` components. This is required for browser native anchor scrolling to work correctly.
+
+If you modify the markdown renderer or add new link-handling logic, ensure anchor links (starting with `#`) remain as plain `<a>` tags:
+
+```tsx
+const isAnchor = href.startsWith("#");
+parts.push(
+  isExternalUrl(href) || isAnchor ? (
+    <a href={href} ...>
+      {label}
+    </a>
+  ) : (
+    <Link href={href} ...>
+      {label}
+    </Link>
+  )
+);
+```
+
 ## Template Landing Pages
 
 Template SEO landing pages live at `/templates` and `/templates/[slug]`. Each page is defined in `src/lib/template-landing-pages.ts` and groups existing marketplace resources by clinical intent, tag, and category. They are designed to rank for high-intent clinician searches and link naturally into the browse catalog.
