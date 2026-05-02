@@ -51,7 +51,10 @@ const nextConfig: NextConfig = {
     imageSizes: [32, 48, 64, 72, 96, 128, 256],
   },
   async redirects() {
-    return REDIRECT_RULES;
+    // Cast needed: our HasMatcher includes "host" which Next.js types don't
+    // enumerate in RouteHas, but it is a valid runtime value.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return REDIRECT_RULES as any[];
   },
   async headers() {
     const headers = [
