@@ -1,6 +1,8 @@
 ---
 title: "The AHPRA Psychology Internship Requirements Explained (Without the Confusion)"
 description: "A practical guide to the Australian Psychology Board internship pathway. Understand the 5+1 requirements, logbooks, supervision hours, competencies, and how to survive without burnout."
+coverImage: "/blog/ahpra-psychology-internship-requirements-explained-hero.jpg"
+coverImageAlt: "Provisional psychologist at a desk surrounded by logbooks and documentation with a supportive supervisor figure in the background — Risograph illustration"
 publishedAt: "2026-05-02"
 updatedAt: "2026-05-02"
 author: "PsychVault Editorial Team"
@@ -15,11 +17,24 @@ The **AHPRA psychology internship requirements** can feel like a maze designed s
 
 This guide cuts through the jargon and gives you a clear, practical picture of what the Psychology Board actually expects, *why* they expect it, and — most importantly — how to navigate the year without burning out.
 
-![Provisional psychologist at desk surrounded by logbooks and documentation, with supportive supervisor figure in background](/blog/ahpra-psychology-internship-requirements-explained-hero.jpg "Professional support and logbook work")
+---
+
+**Jump to a section:**
+
+- [The Big Picture — What the Psychology Internship Actually Is](#the-big-picture)
+- [Requirement #1 — Supervised Practice Hours](#requirement-1)
+- [Requirement #2 — The 8 Core Competencies](#requirement-2)
+- [Requirement #3 — The Logbook](#requirement-3)
+- [Requirement #4 — Supervision + Quarterly Reviews](#requirement-4)
+- [Why Most Interns Feel Overwhelmed](#why-overwhelmed)
+- [How to Survive Without Burning Out](#survival-tips)
+- [The Tools That Make the Internship Easier](#tools)
 
 ---
 
-## The Big Picture — What the Psychology Internship Actually Is
+![Provisional psychologist at desk surrounded by logbooks and documentation with a supportive supervisor figure in the background](/blog/ahpra-psychology-internship-requirements-explained-hero.jpg)
+
+## The Big Picture — What the Psychology Internship Actually Is {#the-big-picture}
 
 Let's start with the fundamentals.
 
@@ -33,7 +48,7 @@ But here's the important bit: **AHPRA psychology internship requirements exist t
 
 ---
 
-## Requirement #1 — Supervised Practice Hours
+## Requirement #1 — Supervised Practice Hours {#requirement-1}
 
 This is the headline requirement, and it's where a lot of interns get confused about what actually counts.
 
@@ -72,7 +87,7 @@ Supervision is not optional, and it's not just a chat. It's a formal, documented
 
 ---
 
-## Requirement #2 — The 8 Core Competencies
+## Requirement #2 — The 8 Core Competencies {#requirement-2}
 
 AHPRA doesn't just care about hours. They care that you can actually *do the job*. This is where the 8 core competencies come in.
 
@@ -108,7 +123,7 @@ Your supervisor will assess you against these competencies at regular intervals.
 
 ---
 
-## Requirement #3 — The Logbook (The Part Everyone Underestimates)
+## Requirement #3 — The Logbook (The Part Everyone Underestimates) {#requirement-3}
 
 The logbook is simultaneously the most important and most dreaded part of the internship.
 
@@ -143,7 +158,7 @@ This is one of the most underestimated stressors in the internship, and it's wor
 
 ---
 
-## Requirement #4 — Supervision + Quarterly Reviews
+## Requirement #4 — Supervision + Quarterly Reviews {#requirement-4}
 
 Supervision is where theory meets practice.
 
@@ -189,7 +204,7 @@ These reviews are your safety net. If something's going wrong, these reviews cre
 
 ---
 
-## Why Most Interns Feel Overwhelmed (And Why It's Normal)
+## Why Most Interns Feel Overwhelmed (And Why It's Normal) {#why-overwhelmed}
 
 Here's the thing nobody tells you: you're not just learning clinical skills. You're learning administrative systems, documentation standards, workplace politics, professional culture, and a million other things *at the same time*.
 
@@ -203,7 +218,7 @@ This is normal. You're not inefficient. You're not failing. You're internalising
 
 ---
 
-## How to Survive the Internship Without Burning Out
+## How to Survive the Internship Without Burning Out {#survival-tips}
 
 Burnout is the silent threat of the internship year. Not everyone experiences it, but many do. Here's how to reduce your risk.
 
@@ -237,7 +252,7 @@ Some interns are morning people; others hit a wall by 3 pm. Schedule difficult c
 
 ---
 
-## The Tools That Make the Internship 10x Easier
+## The Tools That Make the Internship 10x Easier {#tools}
 
 You don't need much, but what you do get should actually work for you — designed by people who've walked this path.
 
