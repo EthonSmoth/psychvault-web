@@ -121,7 +121,7 @@ The CSP uses `'unsafe-inline'` for `script-src`. Nonce-based CSP **cannot** be u
 
 Blog posts are markdown files in `content/blog/*.md`. The blog system reads these at build/request time — no CMS. Cover and inline images go in `public/blog/`. Template SEO landing pages are defined statically in `src/lib/template-landing-pages.ts`.
 
-Existing blog posts (as of April 2026):
+Existing blog posts (as of May 2026):
 - `how-to-make-psychoeducation-handouts-clinician-friendly.md`
 - `how-to-write-psychology-progress-notes.md`
 - `ndis-report-template-checklist.md`
@@ -131,6 +131,68 @@ Existing blog posts (as of April 2026):
 - `sell-psychology-resources-without-looking-spammy.md`
 - `lbpp-76-weekly-system-blog-post.md` — LBPP-76 logbook weekly system guide for 5+1 provisional psychologists
 - `clinical-hours-trap-clinical-masters.md` — risks when admin issues force an early exit from a clinical masters and what it means for 5+1 hours and registration
+- `what-good-supervision-actually-feels-like.md` — green flags, red flags, and grey zones in the supervisory relationship for provisional psychologists
+- `national-psychology-examination-how-to-prepare.md` — NPE structure (150 questions, 4 domains, 70% scaled pass mark), study strategy, OLP vs test centre delivery, and the three-strike policy
+- `what-are-neuroaffirming-templates-and-why-do-they-look-different-from-standard-clinical-resources.md` — what neuroaffirming templates are, why the visual and language conventions differ, and how to use them
+
+#### Blog image generation workflow (as of May 2026)
+
+All blog illustrations use a **Risograph two-colour flat-print aesthetic** (amber + accent on cream, visible halftone grain and ink misregistration).
+
+Images are generated via **ChatGPT (GPT-4o image generation)** one prompt at a time, then downloaded via authenticated Node.js fetch and processed with sharp. The entire pipeline runs autonomously — no OS save dialogs, no user confirmation needed.
+
+**Autonomous workflow — exact steps:**
+
+1. **Write the post first.** Image references use the final `/blog/{slug}-{descriptor}.jpg` paths before images exist. Prompts live in each image's alt text.
+
+2. **Extract cookies once per session** (reuse until 401):
+   ```js
+   // Playwright: page bc367268-932c-4c37-bc03-7af3cb45d1c2 (ChatGPT)
+   const cookies = await page.evaluate(() => document.cookie);
+   ```
+   Write to `dl-cookies.txt` at repo root:
+   ```powershell
+   Set-Content -Path 'dl-cookies.txt' -Value $cookies -NoNewline
+   ```
+
+3. **Submit each prompt** via `type_in_page` into `div[contenteditable="true"]`, then `key: Enter`.
+
+4. **Poll for completion** — do NOT use screenshots. Poll with Playwright until image count increases:
+   ```js
+   const imgs = await page.evaluate(() => {
+     const all = Array.from(document.querySelectorAll('main img'));
+     return [...new Set(all.filter(i => i.src.includes('file_')).map(i => i.src))];
+   });
+   ```
+   Poll every ~15 seconds. Average generation time is 60–75 seconds.
+
+5. **Get the new image URL** — it's the last entry in the deduped array above.
+
+6. **Update `dl-temp.js`** with the new URL and destination filename, then download:
+   ```powershell
+   node dl-temp.js
+   ```
+   `dl-temp.js` reads cookies from `dl-cookies.txt` automatically. If it exits non-zero with HTTP 401, refresh cookies (repeat step 2).
+
+7. **Repeat steps 3–6** for each image. ChatGPT free tier rate-limits to ~3–4 images per 10 minutes. On hitting a rate limit, record state and resume after the reset window — do not ask the user.
+
+8. **Run sharp** after all raws are in place:
+   ```powershell
+   node scripts/process-blog-images.mjs
+   ```
+   - Files ending in `-hero` → 1200×630 → `public/blog/{slug}-hero.jpg`
+   - All other files → 800×500 → `public/blog/{slug}-{descriptor}.jpg`
+   - `jpeg({ quality: 82, mozjpeg: true })`
+
+9. **Verify**: check that every `![...]( /blog/... )` path in the post matches an existing JPG in `public/blog/`.
+
+**Key files:**
+- `dl-temp.js` — reusable one-image downloader. Edit the `IMAGES` array to set URL + dest, then `node dl-temp.js`. Reads cookies from `dl-cookies.txt`.
+- `dl-cookies.txt` — session cookies written by the agent. Not committed. Refresh when stale (401).
+- `dl-chatgpt-img.js` — legacy single-image downloader. Takes URL + cookie string as CLI args.
+- `scripts/process-blog-images.mjs` — sharp batch processor. Safe to re-run; skips already-processed files.
+
+**ChatGPT conversation:** always use the existing conversation at `https://chatgpt.com/c/69f579bc-353c-8323-8b61-268335608dc5` (browser page `bc367268-932c-4c37-bc03-7af3cb45d1c2`) to avoid re-authenticating. Open it if not already open via `open_browser_page`.
 
 ### Category routing and SEO conventions
 

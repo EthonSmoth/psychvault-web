@@ -43,7 +43,7 @@ The blog is built into the app and is intended to support both SEO and topical a
 - cover images and inline images should live in `public/blog`
 - blog index, blog post pages, JSON-LD, RSS, robots, and sitemap entries are already wired up
 
-Published posts (as of April 2026):
+Published posts (as of May 2026):
 
 | Slug | Topic |
 |---|---|
@@ -54,6 +54,9 @@ Published posts (as of April 2026):
 | `reasonable-and-necessary-ndis-funding-criteria` | NDIS funding criteria |
 | `sell-psychology-resources-without-looking-spammy` | Creator marketing |
 | `lbpp-76-weekly-system-blog-post` | LBPP-76 logbook weekly system for 5+1 provisional psychologists |
+| `clinical-hours-trap-clinical-masters` | Risks when admin issues force early exit from clinical masters |
+| `what-good-supervision-actually-feels-like` | Green flags, red flags, and grey zones in supervision |
+| `national-psychology-examination-how-to-prepare` | NPE structure, study strategy, OLP vs test centre, three-strike policy |
 
 Example frontmatter:
 
@@ -82,6 +85,31 @@ Optional caption:
 ```md
 ![Helpful alt text](/blog/example-inline.webp "Optional caption")
 ```
+
+### Blog image generation workflow
+
+All blog illustrations use a **Risograph two-colour flat-print aesthetic** (amber + accent on cream, visible halftone grain and ink misregistration). The pipeline is fully autonomous — no OS save dialogs, no user confirmation required.
+
+**Key files:**
+
+| File | Purpose |
+|---|---|
+| `dl-temp.js` | One-image downloader. Edit `IMAGES` array (URL + dest), run `node dl-temp.js`. Reads cookies from `dl-cookies.txt`. |
+| `dl-cookies.txt` | ChatGPT session cookies (not committed). Refresh on 401. |
+| `scripts/process-blog-images.mjs` | sharp batch processor. `-hero` files → 1200×630; all others → 800×500. Safe to re-run. |
+
+**Workflow summary:**
+
+1. Write the post first; inline image references use the final `/blog/{slug}-{descriptor}.jpg` paths.
+2. Extract cookies once: `page.evaluate(() => document.cookie)` → write to `dl-cookies.txt`.
+3. Submit each Risograph prompt to ChatGPT (`div[contenteditable="true"]` → Enter).
+4. Poll DOM every ~15s until image count increases: `[...new Set(Array.from(document.querySelectorAll('main img')).filter(i=>i.src.includes('file_')).map(i=>i.src))]`
+5. Update `dl-temp.js` with the new URL and dest filename, run `node dl-temp.js`.
+6. Repeat for all images. ChatGPT free tier allows ~3–4 images per 10 minutes; on rate limit, record state and resume autonomously after the reset window.
+7. After all raws are in `public/blog/raw/`, run `node scripts/process-blog-images.mjs`.
+8. Confirm every `![...](/blog/...)` reference in the markdown has a matching processed JPG.
+
+**ChatGPT conversation:** reuse `https://chatgpt.com/c/69f579bc-353c-8323-8b61-268335608dc5` (browser page `bc367268-932c-4c37-bc03-7af3cb45d1c2`) across sessions to stay authenticated. If the page is not open, open it with `open_browser_page`.
 
 ## Template Landing Pages
 
