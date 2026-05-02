@@ -93,6 +93,12 @@ Key relationships:
 
 Resources and stores have a `ModerationStatus` enum (APPROVED / PENDING_REVIEW / REJECTED) and an `isPublished` flag. `ModerationEvent` logs every admin action. Creator trust score is computed in `src/lib/creator-trust.ts`. Admin routes live at `/admin`.
 
+### Redirects (`src/lib/redirect-rules.ts`)
+
+All permanent (301) URL redirects are defined in `src/lib/redirect-rules.ts` as a typed `REDIRECT_RULES` array and consumed by `next.config.ts` via `async redirects()`. This is the single place to track URL changes — add an entry here before removing any old route so indexed pages and backlinks stay intact. The file includes commented examples and audit-trail fields (`added`, `reason`).
+
+`next.config.ts` is TypeScript (converted from `.js`) to allow direct import of `REDIRECT_RULES`. `/privacy` and `/terms` are 301-redirected to `/privacy-policy` and `/terms-of-service` here (previously handled as page-level 307s).
+
 ### Middleware (`src/proxy.ts`)
 
 Next.js middleware lives at `src/proxy.ts` — Next.js recognises this file as the middleware entry point directly (no separate `middleware.ts` is needed or should be created alongside it). The proxy wraps NextAuth's `auth()` and does two things:
@@ -169,7 +175,7 @@ Transactional email via Resend. HTML content is escaped with `escape-goat` befor
 - `ui/` — verified-badge, form-submit-button, breadcrumb
 
 **Lib (`src/lib/`)** — all files that already exist; do not recreate:
-`analytics`, `auth`, `auth-guards`, `blog`, `category-seo`, `creator-trust`, `csrf`, `db`, `email`, `email-verification`, `env`, `http`, `input-safety`, `legal`, `logger`, `moderation-events`, `navbar-session-sync`, `password-reset`, `payments`, `payout-readiness`, `performance`, `public-resource-visibility`, `rate-limit`, `redirects`, `request-security`, `require-admin`, `require-email-verification`, `resource-file-state`, `resource-moderation`, `resource-taxonomy`, `revenue-split`, `review-compliance`, `storage`, `stripe`, `stripe-connect`, `supabase`, `super-admin`, `template-landing-pages`, `unsubscribe`, `utils`, `validators`
+`analytics`, `auth`, `auth-guards`, `blog`, `category-seo`, `creator-trust`, `csrf`, `db`, `email`, `email-verification`, `env`, `http`, `input-safety`, `legal`, `logger`, `moderation-events`, `navbar-session-sync`, `password-reset`, `payments`, `payout-readiness`, `performance`, `public-resource-visibility`, `rate-limit`, `redirect-rules`, `redirects`, `request-security`, `require-admin`, `require-email-verification`, `resource-file-state`, `resource-moderation`, `resource-taxonomy`, `revenue-split`, `review-compliance`, `storage`, `stripe`, `stripe-connect`, `supabase`, `super-admin`, `template-landing-pages`, `unsubscribe`, `utils`, `validators`
 
 **Server (`src/server/`)**
 - `actions/` — account-actions, admin-actions, auth-actions, blog-comment-actions, creator-application-actions, creator-resource-actions, email-verification-actions, follow-actions, message-actions, refund-actions, report-actions, resource-actions, review-actions, store-actions, store-danger-action

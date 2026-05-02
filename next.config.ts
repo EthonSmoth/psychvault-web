@@ -1,5 +1,7 @@
-/** @type {import('next').NextConfig} */
-const remotePatterns = [];
+import type { NextConfig } from "next";
+import { REDIRECT_RULES } from "./src/lib/redirect-rules";
+
+const remotePatterns: { protocol: string; hostname: string; pathname: string }[] = [];
 
 if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
   try {
@@ -20,7 +22,7 @@ if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
 // for script-src. Static security headers below still apply to all routes
 // including static assets where middleware does not run.
 
-const nextConfig = {
+const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: {
     root: __dirname,
@@ -38,6 +40,9 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 7,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [32, 48, 64, 72, 96, 128, 256],
+  },
+  async redirects() {
+    return REDIRECT_RULES;
   },
   async headers() {
     const headers = [
@@ -72,4 +77,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
