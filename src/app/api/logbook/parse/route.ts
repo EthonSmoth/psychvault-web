@@ -254,9 +254,10 @@ function detectPdfFormType(
 async function parsePdfWithTextExtraction(
   buffer: Buffer
 ): Promise<ParsedFormResult> {
-  // Use the internal dist file to bypass pdf-parse's test-file check in Next.js.
+  // pdf-parse is listed in serverExternalPackages in next.config.ts so Turbopack
+  // does not attempt to bundle it — the normal require works fine server-side.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require("pdf-parse/lib/pdf-parse.js") as (
+  const pdfParse = require("pdf-parse") as (
     b: Buffer
   ) => Promise<{ text: string }>;
 

@@ -24,6 +24,9 @@ if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // pdf-parse reads a test file at module init time which confuses Turbopack's
+  // bundler. Marking it external tells Next.js to use Node.js require() directly.
+  serverExternalPackages: ["pdf-parse"],
   turbopack: {
     root: __dirname,
   },
