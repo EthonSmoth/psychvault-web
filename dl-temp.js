@@ -4,8 +4,8 @@ const path = require('path');
 
 const IMAGES = [
   {
-    url: 'https://chatgpt.com/backend-api/estuary/content?id=file_00000000118071fa9ed454c6b75b61e8&ts=493805&p=fs&cid=1&sig=1dfacb0389a695ca6fc2478e3c2ea35732f0e55425fd5b6c6d81caefa5adfe92&v=0',
-    dest: path.join(__dirname, 'public', 'blog', 'raw', 'npe-delivery.png')
+    url: 'https://chatgpt.com/backend-api/estuary/content?id=file_000000005a24720693c7c8abe1c221c2&ts=493807&p=fs&cid=1&sig=3e078951c150239e40c6d506da75f0715fa64a961d35a60ce1f850f046272858&v=0',
+    dest: path.join(__dirname, 'public', 'blog', 'raw', 'ahpra-psychology-internship-requirements-explained-tools.png')
   }
 ];
 
