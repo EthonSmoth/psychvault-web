@@ -1,14 +1,14 @@
-import type { NextConfig } from "next";
+import type { NextConfig, RemotePattern } from "next";
 import { REDIRECT_RULES } from "./src/lib/redirect-rules";
 
-const remotePatterns: { protocol: string; hostname: string; pathname: string }[] = [];
+const remotePatterns: RemotePattern[] = [];
 
 if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
   try {
     const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname;
 
     remotePatterns.push({
-      protocol: "https",
+      protocol: "https" as const,
       hostname: supabaseHost,
       pathname: "/storage/v1/object/public/**",
     });
