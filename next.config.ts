@@ -1,5 +1,11 @@
-import type { NextConfig, RemotePattern } from "next";
+import type { NextConfig } from "next";
 import { REDIRECT_RULES } from "./src/lib/redirect-rules";
+
+type RemotePattern = NonNullable<NextConfig["images"]>["remotePatterns"] extends
+  | (infer T)[]
+  | undefined
+  ? T
+  : never;
 
 const remotePatterns: RemotePattern[] = [];
 
