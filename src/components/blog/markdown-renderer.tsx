@@ -126,14 +126,15 @@ function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
     } else if (earliest.type ==="link") {
       const href = secondGroup.trim();
       const label = renderInlineMarkdown(firstGroup, `${key}-label`);
+      const isAnchor = href.startsWith("#");
 
       parts.push(
-        isExternalUrl(href) ? (
+        isExternalUrl(href) || isAnchor ? (
           <a
             key={key}
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
+            target={isExternalUrl(href) ? "_blank" : undefined}
+            rel={isExternalUrl(href) ? "noopener noreferrer" : undefined}
             className="font-medium text-[var(--accent)] underline decoration-[var(--border-strong)] underline-offset-4"
           >
             {label}
