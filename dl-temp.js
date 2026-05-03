@@ -4,8 +4,8 @@ const path = require('path');
 
 const IMAGES = [
   {
-    url: 'https://chatgpt.com/backend-api/estuary/content?id=file_000000000f547207891a6f63473512c9&ts=493813&p=fs&cid=1&sig=3807634759efcf1b07ac5625388c97de4d07fd796c37ac0e3e6eabd511757d00&v=0',
-    dest: path.join(__dirname, 'public', 'blog', 'raw', 'find-board-approved-supervisor-5-plus-1-support.jpg')
+    url: 'https://chatgpt.com/backend-api/estuary/content?id=file_0000000060b072079af95536e3dcb4d0&ts=493837&p=fs&cid=1&sig=f43dbe0bd9fecb3db7c5309bd3cca6da0d03c0700157c7898ca28d7c900a9902&v=0',
+    dest: path.join(__dirname, 'public', 'blog', 'raw', 'supervision-hours-that-count-flexible.jpg')
   }
 ];
 
