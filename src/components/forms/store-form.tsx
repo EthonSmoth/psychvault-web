@@ -142,7 +142,7 @@ export function StoreForm({ store, csrfToken, isAdminOrSuperAdmin = false }: Sto
               <>
                 <span className="text-2xl">🖼️</span>
                 <span className="font-medium text-[var(--text)]">Click to upload banner</span>
-                <span className="text-xs">JPG, PNG, WEBP — 1200×300px recommended</span>
+                <span className="text-xs">JPG, PNG, WEBP — 1200×300px recommended · min 400×100px</span>
               </>
             )}
           </button>
@@ -164,7 +164,7 @@ export function StoreForm({ store, csrfToken, isAdminOrSuperAdmin = false }: Sto
           Store logo
         </span>
         <p className="mb-3 text-xs text-[var(--text-muted)]">
-          Square logo shown on your store page and resource cards. Recommended 200×200px.
+          Square logo shown on your store page and resource cards. Recommended 400×400px.
         </p>
 
         <div className="flex items-center gap-4">

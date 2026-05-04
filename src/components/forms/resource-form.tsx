@@ -671,7 +671,7 @@ export default function ResourceForm({
               Thumbnail image
             </span>
             <p className="mb-3 text-xs text-[var(--text-light)]">
-              This appears on browse cards and the resource header. JPG, PNG or WEBP.
+              This appears on browse cards and the resource header. Recommended 800×500px — JPG, PNG or WEBP.
             </p>
 
             {thumbnail ? (
@@ -679,7 +679,7 @@ export default function ResourceForm({
                 <img
                   src={thumbnail.url}
                   alt="Thumbnail preview"
-                  className="aspect-[16/9] w-full object-cover"
+                  className="aspect-[16/10] w-full object-cover"
                 />
                 <button
                   type="button"
@@ -712,7 +712,7 @@ export default function ResourceForm({
                     <span className="font-medium text-[var(--text)]">
                       Click to upload thumbnail
                     </span>
-                    <span className="text-xs">JPG, PNG, WEBP up to 10MB</span>
+                    <span className="text-xs">Recommended 800×500px · JPG, PNG or WEBP up to 10MB</span>
                   </>
                 )}
               </button>
@@ -816,7 +816,7 @@ export default function ResourceForm({
               <span className="ml-2 text-xs font-normal text-[var(--text-light)]">up to 4</span>
             </span>
             <p className="mb-3 text-xs text-[var(--text-light)]">
-              Sample pages or screenshots shown to buyers before purchase.
+              Sample pages or screenshots shown to buyers before purchase. Recommended 1200×900px.
             </p>
 
             {previews.length > 0 ? (
@@ -864,7 +864,7 @@ export default function ResourceForm({
                     <span className="font-medium text-[var(--text)]">
                       {previews.length === 0 ?"Add preview images" :"Add more previews"}
                     </span>
-                    <span className="text-xs">{previewSlotsRemaining} remaining</span>
+                    <span className="text-xs">{previewSlotsRemaining} remaining · min 400×300px</span>
                   </>
                 )}
               </button>

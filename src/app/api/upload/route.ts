@@ -54,7 +54,37 @@ function withExtension(name: string, extension: string) {
   return name.replace(/\.[^.]+$/, "") + extension;
 }
 
-async function optimizeImageUpload(file: File, uploadKind: UploadKind) {
+// Minimum accepted dimensions per upload kind.
+const UPLOAD_MIN_DIMENSIONS: Partial<Record<UploadKind, { width: number; height: number }>> = {
+  thumbnail: { width: 400, height: 250 },
+  preview: { width: 400, height: 300 },
+};
+
+// Target output dimensions (bounding box — aspect ratio is preserved via fit:"inside").
+const UPLOAD_OUTPUT_DIMENSIONS: Partial<Record<UploadKind, { width: number; height: number; quality: number }>> = {
+  // Thumbnails are shown at 16:10 on resource cards; 800×600 bounding box keeps landscape
+  // images at ~800px wide and portrait images within 600px tall.
+  thumbnail: { width: 800, height: 600, quality: 82 },
+  // Previews can be portrait document pages; 1200×1600 bounding box limits width for
+  // landscape and height for portrait without distorting either.
+  preview: { width: 1200, height: 1600, quality: 82 },
+};
+
+type OptimizeSuccess = {
+  body: Buffer;
+  contentType: string;
+  fileName: string;
+  size: number;
+};
+
+type OptimizeValidationError = {
+  validationError: string;
+};
+
+async function optimizeImageUpload(
+  file: File,
+  uploadKind: UploadKind
+): Promise<OptimizeSuccess | OptimizeValidationError | null> {
   if (uploadKind === "main") {
     return null;
   }
@@ -63,25 +93,31 @@ async function optimizeImageUpload(file: File, uploadKind: UploadKind) {
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const optimizationProfile =
-      uploadKind === "thumbnail"
-        ? {
-            maxDimension: 960,
-            quality: 80,
-          }
-        : {
-            maxDimension: 1440,
-            quality: 82,
-          };
+
+    // Check actual image dimensions before processing.
+    const metadata = await sharp(buffer).metadata();
+    const imgWidth = metadata.width ?? 0;
+    const imgHeight = metadata.height ?? 0;
+    const minDims = UPLOAD_MIN_DIMENSIONS[uploadKind];
+
+    if (minDims && (imgWidth < minDims.width || imgHeight < minDims.height)) {
+      const label = uploadKind === "thumbnail" ? "Thumbnail" : "Preview image";
+      const rec = uploadKind === "thumbnail" ? "800×500px" : "1200×900px";
+      return {
+        validationError: `${label} is too small (${imgWidth}×${imgHeight}px). Minimum size is ${minDims.width}×${minDims.height}px. Recommended ${rec}.`,
+      };
+    }
+
+    const profile = UPLOAD_OUTPUT_DIMENSIONS[uploadKind] ?? { width: 1200, height: 1200, quality: 82 };
 
     const optimizedBuffer = await sharp(buffer)
       .rotate()
-      .resize(optimizationProfile.maxDimension, optimizationProfile.maxDimension, {
+      .resize(profile.width, profile.height, {
         fit: "inside",
         withoutEnlargement: true,
       })
       .webp({
-        quality: optimizationProfile.quality,
+        quality: profile.quality,
         effort: 4,
       })
       .toBuffer();
@@ -194,6 +230,12 @@ export async function POST(req: NextRequest) {
 
     const timestamp = Date.now();
     const optimizedImage = await optimizeImageUpload(file, uploadKind);
+
+    // Reject if the image failed the minimum dimension check.
+    if (optimizedImage && "validationError" in optimizedImage) {
+      return NextResponse.json({ error: optimizedImage.validationError }, { status: 400 });
+    }
+
     const uploadBody = optimizedImage?.body ?? file;
     const contentType = optimizedImage?.contentType ?? file.type;
     const safeName = getSafeFileName(optimizedImage?.fileName ?? file.name);
